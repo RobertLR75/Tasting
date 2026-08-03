@@ -3,12 +3,14 @@ using SharedLibrary.Configuration;
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Configuration;
 using Tasting.Api.Infrastructure.Migrations;
+using Tasting.Api.Infrastructure.Rating;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 builder.ConfigureFastEndPoints();
 builder.ConfigureServices();
+builder.AddRatingServices();
 
 var oidcSettings = builder.Configuration
     .GetSection("OpenIdConnect")
@@ -39,3 +41,6 @@ app.UseEndpoints(routePrefix: "api/v1");
 app.MapDefaultEndpoints();
 
 app.Run();
+
+// Required for WebApplicationFactory in integration tests
+public partial class Program { }
