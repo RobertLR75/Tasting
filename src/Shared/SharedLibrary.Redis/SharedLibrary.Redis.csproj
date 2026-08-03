@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+        <PackageId>SharedLibrary.Redis</PackageId>
+        <PackageVersion>$(Version)</PackageVersion>
+        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageOutputPath>../../../../nugets</PackageOutputPath>
+        <IncludeReferencedProjects>true</IncludeReferencedProjects>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj">
+        <PrivateAssets>all</PrivateAssets>
+        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.1.2" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+    </ItemGroup>
+</Project>

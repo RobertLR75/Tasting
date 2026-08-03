@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="../../Version.props" />
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+        <PackageId>SharedLibrary.FastEndpoints</PackageId>
+        <PackageVersion>$(Version)</PackageVersion>
+        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageOutputPath>../../../../nugets</PackageOutputPath>
+        <IncludeReferencedProjects>true</IncludeReferencedProjects>
+    </PropertyGroup> 
+
+    <ItemGroup>
+      <ProjectReference Include="..\SharedLibrary.Services\SharedLibrary.Services.csproj" />
+      <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj">
+        <PrivateAssets>all</PrivateAssets>
+        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FastEndpoints" Version="8.0.1" />
+      <PackageReference Include="FastEndpoints.Attributes" Version="8.0.1" />
+      <PackageReference Include="FastEndpoints.Messaging.Core" Version="8.0.1" />
+      <PackageReference Include="FastEndpoints.Security" Version="8.0.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
+      <PackageReference Include="Scalar.AspNetCore" Version="2.13.10" />
+    </ItemGroup>
+
+</Project>
