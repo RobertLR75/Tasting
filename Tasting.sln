@@ -24,6 +24,58 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{45C4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{A8753D48-8F27-472A-ACC0-F9F2615D0228}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.FastEndpoints", "src\Shared\SharedLibrary.FastEndpoints\SharedLibrary.FastEndpoints.csproj", "{82DC2378-965F-4771-9CB7-9F94EA84B12A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.HttpClient", "src\Shared\SharedLibrary.HttpClient\SharedLibrary.HttpClient.csproj", "{E011C7DC-F915-4302-8955-8401E22B6D88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.PostgreSql.EntityFramework", "src\Shared\SharedLibrary.PostgreSql.EntityFramework\SharedLibrary.PostgreSql.EntityFramework.csproj", "{467B805F-02BB-4EA8-91C1-365D9C320F8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.Services", "src\Shared\SharedLibrary.Services\SharedLibrary.Services.csproj", "{E8271F2E-BF13-4D99-9448-8860B8067BB6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}"
+	ProjectSection(SolutionItems) = preProject
+		docs\glossary.md = docs\glossary.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-6909-4332-BE19-0DDE9B97EED7}"
+	ProjectSection(SolutionItems) = preProject
+		docs\adr\0001-arrangement-lifecycle-gates.md = docs\adr\0001-arrangement-lifecycle-gates.md
+		docs\adr\0023-rating-rounding-policy.md = docs\adr\0023-rating-rounding-policy.md
+		docs\adr\0002-participant-references-user.md = docs\adr\0002-participant-references-user.md
+		docs\adr\0009-participants-submit-ratings.md = docs\adr\0009-participants-submit-ratings.md
+		docs\adr\0032-api-versioning-from-day-one.md = docs\adr\0032-api-versioning-from-day-one.md
+		docs\adr\0024-beer-name-unique-per-brewery.md = docs\adr\0024-beer-name-unique-per-brewery.md
+		docs\adr\0033-user-role-and-lifecycle-rules.md = docs\adr\0033-user-role-and-lifecycle-rules.md
+		docs\adr\0003-arrangement-status-transitions.md = docs\adr\0003-arrangement-status-transitions.md
+		docs\adr\0029-hide-inactive-beers-by-default.md = docs\adr\0029-hide-inactive-beers-by-default.md
+		docs\adr\0012-results-scoring-and-tie-breakers.md = docs\adr\0012-results-scoring-and-tie-breakers.md
+		docs\adr\0005-rating-and-results-gated-by-status.md = docs\adr\0005-rating-and-results-gated-by-status.md
+		docs\adr\0006-arrangement-optimistic-concurrency.md = docs\adr\0006-arrangement-optimistic-concurrency.md
+		docs\adr\0013-membership-removal-only-in-created.md = docs\adr\0013-membership-removal-only-in-created.md
+		docs\adr\0004-membership-uniqueness-and-conflicts.md = docs\adr\0004-membership-uniqueness-and-conflicts.md
+		docs\adr\0007-arrangement-immutable-after-started.md = docs\adr\0007-arrangement-immutable-after-started.md
+		docs\adr\0027-server-generates-entity-identifiers.md = docs\adr\0027-server-generates-entity-identifiers.md
+		docs\adr\0011-results-auto-created-on-first-rating.md = docs\adr\0011-results-auto-created-on-first-rating.md
+		docs\adr\0008-admin-controls-arrangement-membership.md = docs\adr\0008-admin-controls-arrangement-membership.md
+		docs\adr\0026-result-participant-rating-is-per-beer.md = docs\adr\0026-result-participant-rating-is-per-beer.md
+		docs\adr\0025-inactive-brewery-forces-inactive-beers.md = docs\adr\0025-inactive-brewery-forces-inactive-beers.md
+		docs\adr\0021-admin-manages-catalog-participants-rate.md = docs\adr\0021-admin-manages-catalog-participants-rate.md
+		docs\adr\0031-unified-error-contract-across-endpoints.md = docs\adr\0031-unified-error-contract-across-endpoints.md
+		docs\adr\0016-rating-requires-beerid-and-composite-key.md = docs\adr\0016-rating-requires-beerid-and-composite-key.md
+		docs\adr\0030-optimistic-concurrency-on-rating-updates.md = docs\adr\0030-optimistic-concurrency-on-rating-updates.md
+		docs\adr\0010-one-rating-per-participant-beer-with-edits.md = docs\adr\0010-one-rating-per-participant-beer-with-edits.md
+		docs\adr\0019-single-result-document-per-arrangement-beer.md = docs\adr\0019-single-result-document-per-arrangement-beer.md
+		docs\adr\0022-snapshot-beer-metadata-at-arrangement-start.md = docs\adr\0022-snapshot-beer-metadata-at-arrangement-start.md
+		docs\adr\0018-result-model-aligned-to-arrangement-and-beer.md = docs\adr\0018-result-model-aligned-to-arrangement-and-beer.md
+		docs\adr\0028-full-list-endpoints-without-pagination-in-v1.md = docs\adr\0028-full-list-endpoints-without-pagination-in-v1.md
+		docs\adr\0015-beer-requires-brewery-and-brewery-soft-delete.md = docs\adr\0015-beer-requires-brewery-and-brewery-soft-delete.md
+		docs\adr\0017-server-calculates-totalrating-and-score-scale.md = docs\adr\0017-server-calculates-totalrating-and-score-scale.md
+		docs\adr\0020-taxonomy-uses-concrete-models-and-id-references.md = docs\adr\0020-taxonomy-uses-concrete-models-and-id-references.md
+		docs\adr\0014-fastendpoints-mongodb-and-shared-service-pattern.md = docs\adr\0014-fastendpoints-mongodb-and-shared-service-pattern.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.EntityFramework", "src\Shared\SharedLibrary.EntityFramework\SharedLibrary.EntityFramework.csproj", "{B3513A36-702E-48AF-83C7-B062F3A4731D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +106,26 @@ Global
 		{209DBAB6-9D96-4CD9-9DEF-293724A14AE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{209DBAB6-9D96-4CD9-9DEF-293724A14AE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{209DBAB6-9D96-4CD9-9DEF-293724A14AE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82DC2378-965F-4771-9CB7-9F94EA84B12A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82DC2378-965F-4771-9CB7-9F94EA84B12A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82DC2378-965F-4771-9CB7-9F94EA84B12A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82DC2378-965F-4771-9CB7-9F94EA84B12A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E011C7DC-F915-4302-8955-8401E22B6D88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E011C7DC-F915-4302-8955-8401E22B6D88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E011C7DC-F915-4302-8955-8401E22B6D88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E011C7DC-F915-4302-8955-8401E22B6D88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{467B805F-02BB-4EA8-91C1-365D9C320F8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{467B805F-02BB-4EA8-91C1-365D9C320F8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{467B805F-02BB-4EA8-91C1-365D9C320F8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{467B805F-02BB-4EA8-91C1-365D9C320F8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8271F2E-BF13-4D99-9448-8860B8067BB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8271F2E-BF13-4D99-9448-8860B8067BB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8271F2E-BF13-4D99-9448-8860B8067BB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8271F2E-BF13-4D99-9448-8860B8067BB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3513A36-702E-48AF-83C7-B062F3A4731D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3513A36-702E-48AF-83C7-B062F3A4731D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3513A36-702E-48AF-83C7-B062F3A4731D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3513A36-702E-48AF-83C7-B062F3A4731D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A1615412-985C-48C9-9B5D-BCFC09BFEB5D} = {6A7B1649-D70D-4061-A3D9-0F25E8ACFB7B}
@@ -65,5 +137,11 @@ Global
 		{209DBAB6-9D96-4CD9-9DEF-293724A14AE0} = {0B64AECD-BB4B-4F65-8AAB-8B94707B4640}
 		{45C48463-D0CF-49A7-B96C-00955E62D847} = {6A7B1649-D70D-4061-A3D9-0F25E8ACFB7B}
 		{A8753D48-8F27-472A-ACC0-F9F2615D0228} = {6A7B1649-D70D-4061-A3D9-0F25E8ACFB7B}
+		{82DC2378-965F-4771-9CB7-9F94EA84B12A} = {A1615412-985C-48C9-9B5D-BCFC09BFEB5D}
+		{E011C7DC-F915-4302-8955-8401E22B6D88} = {A1615412-985C-48C9-9B5D-BCFC09BFEB5D}
+		{467B805F-02BB-4EA8-91C1-365D9C320F8A} = {A1615412-985C-48C9-9B5D-BCFC09BFEB5D}
+		{E8271F2E-BF13-4D99-9448-8860B8067BB6} = {A1615412-985C-48C9-9B5D-BCFC09BFEB5D}
+		{D2F5F26F-6909-4332-BE19-0DDE9B97EED7} = {537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}
+		{B3513A36-702E-48AF-83C7-B062F3A4731D} = {A1615412-985C-48C9-9B5D-BCFC09BFEB5D}
 	EndGlobalSection
 EndGlobal

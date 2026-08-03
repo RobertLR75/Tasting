@@ -1,6 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="../../Version.props" />
-
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -23,16 +21,16 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FastEndpoints" Version="8.0.1" />
-      <PackageReference Include="FastEndpoints.Attributes" Version="8.0.1" />
-      <PackageReference Include="FastEndpoints.Messaging.Core" Version="8.0.1" />
-      <PackageReference Include="FastEndpoints.Security" Version="8.0.1" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
-      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
-      <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.5" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-      <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
-      <PackageReference Include="Scalar.AspNetCore" Version="2.13.10" />
+      <PackageReference Include="FastEndpoints" Version="8.2.0" />
+      <PackageReference Include="FastEndpoints.Attributes" Version="8.2.0" />
+      <PackageReference Include="FastEndpoints.Messaging.Core" Version="8.2.0" />
+      <PackageReference Include="FastEndpoints.Security" Version="8.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.10" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+      <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.8.0" />
+      <PackageReference Include="Scalar.AspNetCore" Version="2.16.17" />
     </ItemGroup>
 
 </Project>
