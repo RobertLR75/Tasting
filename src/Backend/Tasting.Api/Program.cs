@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SharedLibrary.Configuration;
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Configuration;
+using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
 using Tasting.Api.Infrastructure.Migrations;
 
@@ -29,8 +31,11 @@ builder.Services
             RoleClaimType = "role"
         };
     });
-
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
+builder.Services.AddCatalog(builder.Configuration);
 
 var app = builder.Build();
 
