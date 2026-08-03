@@ -1,27 +1,25 @@
 # Architecture — Tasting (C4 Level 2 Container Diagram)
 
 ```mermaid
-C4Container
-    title Tasting — Container Diagram (C4 Level 2)
+graph TD
+    User(["👤 Bruker\n(Admin / Deltaker)"])
 
-    Person(user, "Bruker", "Admin eller deltaker i tastings")
+    subgraph ACA["☁️ Azure Container Apps"]
+        Frontend["🖥️ Frontend\nTBD · SPA"]
+        API["⚙️ Tasting API\nC# .NET 9 · FastEndpoints\nVertical Slice Architecture\nJWT Auth"]
+        PostgreSQL[("🗄️ PostgreSQL\nArrangements · Ratings · Results\nUsers · Breweries · Beers · Taxonomy")]
+        Redis[("⚡ Redis\nCaching")]
+    end
 
-    System_Boundary(azure, "Azure Container Apps") {
-        Container(frontend, "Frontend", "TBD (SPA)", "Brukergrensesnitt for tastings, ratings og resultater")
-        Container(api, "Tasting API", "C# .NET 9, FastEndpoints\nVertical Slice Architecture", "REST API. Håndterer autentisering (JWT), arrangement-, rating- og resultatflyt")
-        ContainerDb(postgres, "PostgreSQL", "Azure Database for PostgreSQL", "Arrangements, Ratings, Results, Users, Breweries, Beers, Taxonomy")
-        ContainerDb(redis, "Redis", "Azure Cache for Redis", "Caching")
-    }
+    KeyVault["🔑 Azure Key Vault\nHemmeligheter"]
+    Monitor["📊 Azure Monitor\nApplication Insights\nOpenTelemetry OTLP"]
 
-    System_Ext(keyvault, "Azure Key Vault", "Lagrer hemmeligheter: connection strings, JWT signing key")
-    System_Ext(monitor, "Azure Monitor", "Application Insights via OpenTelemetry OTLP — traces, metrics, logs")
-
-    Rel(user, frontend, "Bruker", "HTTPS")
-    Rel(frontend, api, "REST API-kall", "HTTPS / JSON")
-    Rel(api, postgres, "Les/skriv domenedata", "EF Core + SQL")
-    Rel(api, redis, "Hent/sett cache", "StackExchange.Redis")
-    Rel(api, keyvault, "Hent hemmeligheter ved oppstart", "Azure SDK")
-    Rel(api, monitor, "Send telemetri", "OTLP")
+    User -->|HTTPS| Frontend
+    Frontend -->|REST / JSON| API
+    API -->|EF Core + SQL| PostgreSQL
+    API -->|StackExchange.Redis| Redis
+    API -->|Azure SDK – oppstart| KeyVault
+    API -->|OTLP traces/metrics/logs| Monitor
 ```
 
 ## Komponenter
