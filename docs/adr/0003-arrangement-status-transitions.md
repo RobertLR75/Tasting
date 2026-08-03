@@ -20,3 +20,4 @@ Ikke tillatt:
 - Endepunkter må avvise ulovlige transitions med tydelig feilkode.
 - Status kan behandles som enkel state machine med deterministisk validering.
 - Trenger avklaring av hvilken rolle/autorisasjon som kan utføre hver gyldig overgang.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

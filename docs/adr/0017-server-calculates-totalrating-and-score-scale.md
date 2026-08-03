@@ -14,3 +14,4 @@ Beregning og validering av rating måtte standardiseres for å unngå klientvari
 - Enhetlig og sikker scoreberegning uavhengig av klient.
 - Rating-endepunkt må validere range og step før lagring.
 - Klient trenger ikke sende/ha autoritet over totalfelt.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

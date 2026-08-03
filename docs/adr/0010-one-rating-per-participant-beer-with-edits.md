@@ -14,3 +14,4 @@ Semantikk for gjentatt rating per participant/beer i samme arrangement måtte av
 - Krever unik constraint på `(ArrangementId, ParticipantId, BeerId)`.
 - Re-submit må mappe til update-operasjon.
 - Rating er låst når arrangement ikke lenger er `Started` (inkludert `Completed`).
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

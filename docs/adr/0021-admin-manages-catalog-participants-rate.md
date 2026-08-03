@@ -13,3 +13,4 @@ Rolleansvar for katalogforvaltning versus ratingflyt måtte tydeliggjøres.
 - Endepunkter må bruke tydelige rollekrav (`Admin` vs `Participant`).
 - Reduserer risiko for uautoriserte katalogendringer under aktive arrangement.
 - Krever entydig autentisering/autorisasjonsmapping mellom brukerroller.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

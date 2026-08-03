@@ -12,3 +12,4 @@ Kun participants kan legge inn ratings.
 - Rating-endepunkt må verifisere at innlogget bruker er participant i aktuelt arrangement.
 - Ikke-participants (inkludert admin uten participant-rolle) får `403 Forbidden`.
 - Krever tydelig identitetskobling mellom `User` og arrangement-participant.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

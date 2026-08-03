@@ -12,3 +12,4 @@ Server genererer `Id` for `Beer`, `Rating` og `Result`.
 - Konsistent identitetshåndtering på tvers av klienter.
 - Reduserer risiko for konflikt ved klient-retries.
 - Krever at create-kontrakter skiller tydelig mellom request-modeller (uten `Id`) og response-modeller (med `Id`).
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

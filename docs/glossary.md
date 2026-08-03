@@ -60,7 +60,7 @@
 
 ## Rating identity key
 **Definition:** Entydig identifikasjon av rating med kombinasjonen `ArrangementId + ParticipantId + BeerId`.  
-**Used in:** Upsert/update av rating og unikhetskontroll i MongoDB.
+**Used in:** Upsert/update av rating og unikhetskontroll i PostgreSQL.
 
 ## Rating scale
 **Definition:** Gyldig skala for delscore: 0 til 10 i steg på 0.5.  
@@ -72,7 +72,7 @@
 
 ## Taxonomy reference
 **Definition:** Lagring av klassifisering via ID-referanser (`BeerTypeId`, `BeerStyleId`) i stedet for full embedding.  
-**Used in:** Beer-dokumentmodell i MongoDB.
+**Used in:** Beer-modell i PostgreSQL med relasjonelle referanser.
 
 ## Metadata snapshot
 **Definition:** Frosset kopi av visningsmetadata som brukes for historisk konsistens i et arrangement.  

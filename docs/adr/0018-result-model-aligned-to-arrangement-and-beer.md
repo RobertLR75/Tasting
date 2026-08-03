@@ -18,3 +18,4 @@ Opprinnelig `ResultModel` brukte `RoundId` (string), som ikke matchet domenet el
 - Results blir konsistent med rating- og arrangementdomene.
 - Mapping mellom rating og resultater blir direkte og entydig.
 - Krever presis definisjon av hva participant-listen representerer (råscore, aggregat, eller begge).
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

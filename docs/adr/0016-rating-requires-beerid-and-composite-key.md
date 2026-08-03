@@ -13,3 +13,4 @@ Rating måtte knyttes entydig til en beer innen arrangementet; eksisterende mode
 - API kan validere og oppdatere korrekt rating uten tvetydighet.
 - Persistens må håndheve unikhet for å unngå duplikater.
 - Results-beregning får entydig kobling til beer.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

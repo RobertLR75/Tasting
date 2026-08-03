@@ -12,6 +12,7 @@ User-endepunkter må håndheve klare regler for rolle, identitet og tilgang for 
 - Kun eksisterende `Admin` kan opprette nye `Admin`-brukere.
 
 ## Consequences
-- Krever unik indeks på normalisert e-post.
+- Krever unik indeks på normalisert e-post i PostgreSQL, opprettet via FluentMigration.
 - Krever autorisasjonsregel i create-endepunkt for admin-opprettelse.
 - Krever sentral policy som avviser inaktive brukere ved autentisering/autorisering.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

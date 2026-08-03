@@ -16,3 +16,4 @@ Bruk optimistic concurrency på `Arrangement` (f.eks. `RowVersion`/ETag).
 - Deterministisk konfliktatferd under konkurrerende writes.
 - Klient må håndtere retry/reload på `409`.
 - Krever versjonsfelt i persistens + mapping til API-kontrakt.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

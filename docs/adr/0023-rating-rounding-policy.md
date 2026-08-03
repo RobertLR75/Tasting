@@ -15,3 +15,4 @@ Uten eksplisitt avrundingsregel kan totalscore og ranking avvike mellom miljøer
 - Deterministiske scorer og stabil presentasjon.
 - Mindre risiko for subtile ranking-avvik på grunn av flyttall/avrunding.
 - Krever konsekvent implementasjon i både write- og read-path.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

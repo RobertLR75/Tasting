@@ -14,3 +14,5 @@ Ved overgang til `Completed` fryses resultatene.
 - Ingen separat manuell oppretting av resultater er nødvendig.
 - Krever deterministisk trigger i rating-flyt (første vellykkede rating).
 - Resultatberegning blir en kontinuerlig read-model under `Started`, og immutable snapshot etter `Completed`.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.
+- Resultatlesing kan caches i Redis når målinger viser at rangeringer eller oppslag er en ytelsesflaskehals.

@@ -13,3 +13,4 @@ Resultatvisning for arrangementet bruker snapshot-data, ikke live-katalog.
 - Historikk påvirkes ikke av senere katalogendringer.
 - Krever snapshot-felt i arrangement/resultatstruktur.
 - Øker dataduplisering noe, men gir sterkere revisjonssporbarhet.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

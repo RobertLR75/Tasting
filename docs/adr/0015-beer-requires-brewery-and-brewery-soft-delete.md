@@ -12,5 +12,7 @@ Relasjonen mellom beer og brewery, samt livssyklus for brewery, måtte avklares 
 
 ## Consequences
 - Beer-oppretting må validere gyldig og aktiv `BreweryId`.
+- Krever foreign key mellom `Beer` og `Brewery` i PostgreSQL, opprettet via FluentMigration.
 - Historiske arrangement/rating-data forblir konsistente siden brewery ikke fjernes fysisk.
 - Krever eksplisitte regler for om `Inactive` brewery fortsatt kan brukes for nye beers.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

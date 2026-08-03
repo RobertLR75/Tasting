@@ -16,3 +16,5 @@ Rangering per beer beregnes med:
 - Stabil og reproduserbar ranking selv ved like scorer.
 - Krever at ratingtelling og standardavvik beregnes i samme read-model.
 - Klient kan stole på deterministisk sortering uten flapping mellom kall.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.
+- Resultatvisninger kan caches i Redis når målinger viser gevinst og invalidasjon følger rating-/resultatoppdateringer.

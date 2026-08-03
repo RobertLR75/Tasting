@@ -13,3 +13,4 @@ Det var nødvendig å fastsette når rating kan utføres, og om resultater kan e
 - Rating-endepunkt må validere status `Started` før mutasjon.
 - Resultatlogikk må avvise writes utenfor gyldig flyt.
 - Trenger presis mapping av feilstatus (f.eks. `409` vs `422`) for ulovlig tidspunkt.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

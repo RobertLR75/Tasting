@@ -16,4 +16,5 @@ Endepunkter som muterer medlemskap må validere status før endring.
 ## Consequences
 - Forutsigbar domenelogikk og færre inkonsistente data.
 - Klient får eksplisitte valideringsfeil ved ulovlige statusoverganger eller mutations.
-- Krever at statusregler sentraliseres i domene/service-lag, ikke spres i endepunkter.
+- Krever at statusregler sentraliseres i `IRequestHandler`-laget, ikke spres i endepunkter.
+- Skal verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

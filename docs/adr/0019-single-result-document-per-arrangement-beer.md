@@ -1,4 +1,4 @@
-# 0019. Single Result document per Arrangement and Beer
+# 0019. Single Result row per Arrangement and Beer
 
 **Status:** Accepted
 
@@ -6,10 +6,11 @@
 Resultpersistens måtte avklares for å unngå tvetydig datamodell og duplikater.
 
 ## Decision
-Det lagres nøyaktig ett `Result`-dokument per `(ArrangementId, BeerId)`.
-Dokumentet oppdateres fortløpende mens arrangement er `Started`, og fryses ved `Completed`.
+Det lagres nøyaktig én `Result`-rad per `(ArrangementId, BeerId)`.
+Raden oppdateres fortløpende mens arrangement er `Started`, og fryses ved `Completed`.
 
 ## Consequences
 - Enkelt lesemønster for resultattabeller/rangering.
-- Krever unik indeks på `(ArrangementId, BeerId)` i MongoDB.
+- Krever unik constraint eller unik indeks på `(ArrangementId, BeerId)` i PostgreSQL, opprettet via FluentMigration.
 - Oppdateringer må være idempotente og concurrency-sikre.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

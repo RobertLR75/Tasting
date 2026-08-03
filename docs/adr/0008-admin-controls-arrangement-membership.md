@@ -15,3 +15,4 @@ Kun administrator kan:
 - Endepunkter må håndheve rollekrav (`Admin`) eksplisitt.
 - Klient må håndtere `403 Forbidden` for ikke-admins.
 - Trenger eksplisitt avklaring for `Start`, `Rating` og `Results` lesing/skriving.
+- Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

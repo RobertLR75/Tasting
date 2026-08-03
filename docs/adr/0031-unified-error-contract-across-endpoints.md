@@ -14,4 +14,5 @@ Alle endepunkter bruker samme feilkontrakt for minst `400`, `403`, `404`, `409`,
 ## Consequences
 - Forenkler klientlogikk og observability.
 - Krever konsistent mapping fra domene/valideringsfeil til standardiserte feilkoder.
-- Bør implementeres sentralt i endpoint/shared library-lag.
+- Bør implementeres sentralt i `SharedLibrary.FastEndpoints`, med eventuelle delte kontraktstyper i `SharedLibrary`.
+- Feilmappingen skal verifiseres med unit tests for relevante `IRequestHandler`-forløp og integrasjonstester for alle endepunkter.
