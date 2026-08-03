@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UserSecretsId>8b3f2a1c-6d4e-4f7b-9a0c-2e1d3b4c5a6f</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Config\Tasting.ServiceDefaults\Tasting.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary\SharedLibrary.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary.FastEndpoints\SharedLibrary.FastEndpoints.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary.FluentMigration\SharedLibrary.FluentMigration.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary.PostgreSql.EntityFramework\SharedLibrary.PostgreSql.EntityFramework.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary.Services\SharedLibrary.Services.csproj" />
+    </ItemGroup>
+
+</Project>
