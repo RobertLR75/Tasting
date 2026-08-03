@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using SharedLibrary.Configuration;
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Configuration;
+using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
 using Tasting.Api.Infrastructure.Migrations;
@@ -36,6 +37,7 @@ builder.Services.AddAuthorizationBuilder()
         .RequireAuthenticatedUser()
         .Build());
 builder.Services.AddCatalog(builder.Configuration);
+builder.Services.AddArrangement(builder.Configuration);
 
 var app = builder.Build();
 

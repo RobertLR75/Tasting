@@ -12,6 +12,9 @@ internal sealed class TestAuthHandler(
     UrlEncoder encoder)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
+    public static readonly Guid AdminUserId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+    public static readonly Guid RegularUserId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
@@ -25,11 +28,14 @@ internal sealed class TestAuthHandler(
             return Task.FromResult(AuthenticateResult.Fail("Missing bearer token."));
         }
 
-        var role = string.Equals(token, "admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "User";
+        var isAdmin = string.Equals(token, "admin", StringComparison.OrdinalIgnoreCase);
+        var userId = isAdmin ? AdminUserId : RegularUserId;
+        var role = isAdmin ? "Admin" : "User";
+
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, "test-user"),
-            new Claim("sub", "test-user"),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim("sub", userId.ToString()),
             new Claim(ClaimTypes.Role, role),
             new Claim("role", role)
         };

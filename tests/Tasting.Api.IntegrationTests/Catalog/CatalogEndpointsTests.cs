@@ -1,15 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Tasting.Api.Features.Catalog.Beers.ListBeers;
 using Tasting.Api.Features.Catalog.Domain;
-using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.IntegrationTests.Infrastructure;
 using Xunit;
 
 namespace Tasting.Api.IntegrationTests.Catalog;
 
-public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>
+public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>, IAsyncLifetime
 {
     private readonly TastingApiFactory _factory;
 
@@ -17,6 +15,13 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>
     {
         _factory = factory;
     }
+
+    public async Task InitializeAsync()
+    {
+        await _factory.EnsureSystemUsersSeededAsync();
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateBrewery_ReturnsForbidden_ForNonAdmin()
@@ -37,7 +42,7 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>
         var styleId = Guid.NewGuid();
         var typeId = Guid.NewGuid();
         var breweryId = Guid.NewGuid();
-        await SeedAsync(db =>
+        await _factory.SeedAsync(db =>
         {
             db.BeerStyles.Add(new BeerStyle { Id = styleId, Name = "IPA", CreatedAt = DateTimeOffset.UtcNow });
             db.BeerTypes.Add(new BeerType { Id = typeId, Name = "Ale", CreatedAt = DateTimeOffset.UtcNow });
@@ -67,7 +72,7 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>
         var styleId = Guid.NewGuid();
         var typeId = Guid.NewGuid();
         var breweryId = Guid.NewGuid();
-        await SeedAsync(db =>
+        await _factory.SeedAsync(db =>
         {
             db.BeerStyles.Add(new BeerStyle { Id = styleId, Name = "Stout", CreatedAt = DateTimeOffset.UtcNow });
             db.BeerTypes.Add(new BeerType { Id = typeId, Name = "Dark", CreatedAt = DateTimeOffset.UtcNow });
@@ -104,15 +109,5 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>
         Assert.NotNull(payload);
         Assert.Single(payload.Beers);
         Assert.Equal("Active", payload.Beers.Single().Name);
-    }
-
-    private async Task SeedAsync(Action<CatalogDbContext> seedAction)
-    {
-        await using var scope = _factory.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-        dbContext.Database.EnsureDeleted();
-        dbContext.Database.EnsureCreated();
-        seedAction(dbContext);
-        await dbContext.SaveChangesAsync();
     }
 }
