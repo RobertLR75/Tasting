@@ -8,6 +8,7 @@ using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
 using Tasting.Api.Infrastructure.Migrations;
+using Tasting.Api.Infrastructure.Rating;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.AddServiceDefaults();
 builder.ConfigureFastEndPoints();
 builder.ConfigureServices();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
+builder.AddRatingServices();
 
 var oidcSettings = builder.Configuration
     .GetSection("OpenIdConnect")

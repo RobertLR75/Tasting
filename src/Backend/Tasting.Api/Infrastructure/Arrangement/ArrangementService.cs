@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tasting.Api.Contracts;
-using Tasting.Api.Features.Arrangement.Domain;
+using ArrangementDomainStatus = Tasting.Api.Features.Arrangement.Domain.ArrangementStatus;
 
 namespace Tasting.Api.Infrastructure.Arrangement;
 
@@ -10,7 +10,7 @@ public sealed class ArrangementService(ArrangementDbContext dbContext) : IArrang
     {
         var status = await dbContext.Arrangements
             .Where(a => a.Id == arrangementId)
-            .Select(a => (ArrangementStatus?)a.Status)
+            .Select(a => (ArrangementDomainStatus?)a.Status)
             .FirstOrDefaultAsync(ct);
 
         if (status is null)
@@ -19,7 +19,7 @@ public sealed class ArrangementService(ArrangementDbContext dbContext) : IArrang
                 $"Arrangement '{arrangementId}' was not found.");
         }
 
-        return status.Value;
+        return (ArrangementStatus)status.Value;
     }
 
     public async Task<bool> IsParticipantAsync(Guid arrangementId, Guid userId, CancellationToken ct = default)
@@ -32,5 +32,24 @@ public sealed class ArrangementService(ArrangementDbContext dbContext) : IArrang
     {
         return await dbContext.Beers
             .AnyAsync(b => b.ArrangementId == arrangementId && b.BeerId == beerId, ct);
+    }
+
+    public async Task<string?> GetBeerNameSnapshotAsync(Guid arrangementId, Guid beerId, CancellationToken ct = default)
+    {
+        return await dbContext.Beers
+            .Where(b => b.ArrangementId == arrangementId && b.BeerId == beerId)
+            .Select(b => b.NameSnapshot)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<string?> GetParticipantNameSnapshotAsync(
+        Guid arrangementId,
+        Guid participantId,
+        CancellationToken ct = default)
+    {
+        return await dbContext.Participants
+            .Where(p => p.ArrangementId == arrangementId && p.UserId == participantId)
+            .Select(p => $"{p.FirstNameSnapshot} {p.LastNameSnapshot}")
+            .FirstOrDefaultAsync(ct);
     }
 }
