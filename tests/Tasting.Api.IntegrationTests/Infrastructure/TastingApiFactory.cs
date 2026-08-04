@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Tasting.Api.Features.Identity.Users;
@@ -26,7 +27,8 @@ public sealed class TastingApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<UsersDbContext>();
 
             services.AddDbContext<CatalogDbContext>(options =>
-                options.UseInMemoryDatabase($"catalog-int-{_dbSuffix}"));
+                options.UseInMemoryDatabase($"catalog-int-{_dbSuffix}")
+                    .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
             services.AddDbContext<UsersDbContext>(options =>
                 options.UseInMemoryDatabase($"users-int-{_dbSuffix}"));
 

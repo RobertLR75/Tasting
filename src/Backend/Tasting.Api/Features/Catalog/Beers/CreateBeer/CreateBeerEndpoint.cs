@@ -1,6 +1,7 @@
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Catalog.Domain;
+using Tasting.Api.Features.Identity.Users;
 
 namespace Tasting.Api.Features.Catalog.Beers.CreateBeer;
 
@@ -10,6 +11,6 @@ public sealed class CreateBeerEndpoint(IRequestHandler<CreateBeerCommand, Beer> 
     public override void Configure()
     {
         Post("/beers");
-        Roles("Admin");
+        Roles(UserRole.Admin.ToString());
     }
 }
