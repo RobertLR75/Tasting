@@ -25,8 +25,6 @@ public static class FastEndPointsExtensions
         this WebApplication app,
         string routePrefix = "api/v1")
     {
-        app.UseMiddleware<CorrelationIdMiddleware>();
-        app.UseExceptionHandler(errorApp => errorApp.Run(WriteErrorResponseAsync));
         app.UseHttpsRedirection();
 
         app.UseFastEndpoints(config =>
@@ -44,7 +42,7 @@ public static class FastEndPointsExtensions
         }
     }
 
-    private static async Task WriteErrorResponseAsync(HttpContext context)
+    public static async Task WriteErrorResponseAsync(HttpContext context)
     {
         var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
         var (statusCode, code, message) = MapException(exception);

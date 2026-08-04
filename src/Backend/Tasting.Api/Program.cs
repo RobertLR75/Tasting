@@ -43,6 +43,8 @@ builder.Services.AddArrangement(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseExceptionHandler(errorApp => errorApp.Run(FastEndPointsExtensions.WriteErrorResponseAsync));
+
 var connectionString = app.Configuration.GetConnectionString("TastingDb");
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
