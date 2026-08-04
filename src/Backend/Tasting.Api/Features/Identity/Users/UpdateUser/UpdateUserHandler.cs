@@ -26,6 +26,18 @@ public sealed class UpdateUserHandler(IUserRepository userRepository) : IRequest
             }
         }
 
+        if (!user.IsActive && request.Role != user.Role)
+        {
+            throw new ConflictException("Inactive users cannot change role.");
+        }
+
+        if (user.Role == UserRole.Admin &&
+            request.Role != UserRole.Admin &&
+            await userRepository.CountActiveAdminsAsync(ct) == 1)
+        {
+            throw new ConflictException("The last active admin cannot be downgraded.");
+        }
+
         user.FirstName = request.FirstName.Trim();
         user.LastName = request.LastName.Trim();
         user.Email = email;
