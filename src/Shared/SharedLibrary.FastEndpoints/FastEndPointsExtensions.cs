@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -44,7 +45,7 @@ public static class FastEndPointsExtensions
                     .WithTitle("Tasting API")
                     .WithTheme(ScalarTheme.Default)
                     .AddDocument("v1", "Tasting API v1");
-            });
+            }).AllowAnonymous();
         }
         else
         {
@@ -56,7 +57,7 @@ public static class FastEndPointsExtensions
                         .WithTheme(ScalarTheme.Default)
                         .AddDocument("v1", "Tasting API v1");
                 })
-                .RequireAuthorization();
+                .AllowAnonymous();
         }
     }
 

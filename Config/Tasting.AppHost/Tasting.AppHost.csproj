@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.5.0" />
         <ProjectReference Include="..\..\src\Backend\Tasting.Api\Tasting.Api.csproj" />
         <ProjectReference Include="..\..\src\Frontend\Tasting.Admin\Tasting.Admin.csproj" />
     </ItemGroup>
