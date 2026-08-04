@@ -1,0 +1,123 @@
+@page "/arrangements/{ArrangementId:guid}/beers"
+@using MudBlazor
+@using Tasting.Admin.Features.Arrangement.Models
+@using Tasting.Admin.Features.Arrangement.Services
+@using Tasting.Admin.Shared.Components
+@using Tasting.Admin.Features.Catalog.Models
+@using Tasting.Admin.Features.Catalog.Services
+@inject IArrangementsApiClient ArrangementsApiClient
+@inject IBeersApiClient BeersApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Add Beers to Arrangement</PageTitle>
+
+<PageHeader Title="Add Beers to Arrangement" />
+
+@if (ErrorMessage is not null)
+{
+    <ErrorAlert Message="@ErrorMessage" />
+}
+else if (IsLoading)
+{
+    <LoadingIndicator />
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Available Beers</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField @bind-value="SearchTerm" 
+                             Label="Search beers" 
+                             Placeholder="Enter beer name"
+                             Immediate="true"
+                             Variant="Variant.Outlined" />
+            </MudCardContent>
+            <MudCardActions>
+                <ActionButton Text="Search" Color="Color.Primary" OnClick="@SearchBeersAsync" />
+            </MudCardActions>
+        </MudCard>
+
+        @if (AvailableBeers.Count > 0)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudTable Items="AvailableBeers" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Action</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Name">@context.Name</MudTd>
+                            <MudTd DataLabel="Action">
+                                <ActionButton Text="Add" Color="Color.Primary" 
+                                            OnClick="@(() => AddBeerAsync(context.Id))"
+                                            Disabled="@AddingBeerIds.Contains(context.Id)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudCardContent>
+            </MudCard>
+        }
+
+        <ActionButton Text="Back" Color="Color.Default" OnClick="@(() => Navigation.NavigateTo("/arrangements"))" />
+    </MudStack>
+}
+
+@code {
+    [Parameter]
+    public Guid ArrangementId { get; set; }
+
+    private List<BeerDto> AvailableBeers { get; set; } = new();
+    private HashSet<Guid> AddingBeerIds { get; set; } = new();
+    private string SearchTerm { get; set; } = "";
+    private string? ErrorMessage { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchBeersAsync();
+    }
+
+    private async Task SearchBeersAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            var response = await BeersApiClient.ListAsync(null, SearchTerm);
+            AvailableBeers = response?.Beers.ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load beers: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task AddBeerAsync(Guid beerId)
+    {
+        AddingBeerIds.Add(beerId);
+        try
+        {
+            var request = new AddBeerToArrangementRequest(beerId);
+            await ArrangementsApiClient.AddBeerAsync(ArrangementId, request);
+            AvailableBeers.RemoveAll(b => b.Id == beerId);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to add beer: {ex.Message}";
+        }
+        finally
+        {
+            AddingBeerIds.Remove(beerId);
+        }
+    }
+}

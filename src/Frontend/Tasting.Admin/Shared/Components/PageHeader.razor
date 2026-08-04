@@ -1,0 +1,27 @@
+@namespace Tasting.Admin.Shared.Components
+@using MudBlazor
+
+<div class="mb-4">
+    <MudText Typo="Typo.h4" GutterBottom="true">@Title</MudText>
+    @if (!string.IsNullOrEmpty(Subtitle))
+    {
+        <MudText Typo="Typo.body2">@Subtitle</MudText>
+    }
+    @if (BreadcrumbContent != null)
+    {
+        <div class="mt-2">
+            @BreadcrumbContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Page";
+
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    [Parameter]
+    public RenderFragment? BreadcrumbContent { get; set; }
+}

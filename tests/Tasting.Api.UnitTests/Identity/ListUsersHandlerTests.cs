@@ -52,4 +52,40 @@ public sealed class ListUsersHandlerTests
 
         Assert.Empty(result.Users);
     }
+
+    [Fact]
+    public async Task Should_filter_users_by_name_or_email_case_insensitive()
+    {
+        using var fixture = new HandlerTestFixture();
+        fixture.Context.Users.AddRange(
+            new User
+            {
+                Id = Guid.NewGuid(),
+                Email = "alpha@tasting.no",
+                EmailNormalized = "alpha@tasting.no",
+                FirstName = "Alice",
+                LastName = "Anderson",
+                Role = UserRole.Admin,
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow
+            },
+            new User
+            {
+                Id = Guid.NewGuid(),
+                Email = "bravo@tasting.no",
+                EmailNormalized = "bravo@tasting.no",
+                FirstName = "Bob",
+                LastName = "Builder",
+                Role = UserRole.User,
+                IsActive = false,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        await fixture.Context.SaveChangesAsync();
+
+        var handler = new ListUsersHandler(fixture.Context);
+        var result = await handler.HandleAsync(new ListUsersQuery("BOB"));
+
+        Assert.Single(result.Users);
+        Assert.Equal("bravo@tasting.no", result.Users.Single().Email);
+    }
 }

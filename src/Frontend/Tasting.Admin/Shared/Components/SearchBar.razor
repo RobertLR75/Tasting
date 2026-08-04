@@ -1,0 +1,39 @@
+@namespace Tasting.Admin.Shared.Components
+@using MudBlazor
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" sm="8">
+            <MudTextField 
+                @bind-value="SearchTerm" 
+                Label="@Label" 
+                Variant="Variant.Outlined"
+                FullWidth="true" />
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudButton 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                FullWidth="true"
+                OnClick="PerformSearch">
+                Search
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "Search";
+
+    [Parameter]
+    public string SearchTerm { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> OnSearch { get; set; }
+
+    private async Task PerformSearch()
+    {
+        await OnSearch.InvokeAsync(SearchTerm ?? "");
+    }
+}

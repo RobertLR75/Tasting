@@ -12,4 +12,10 @@ public sealed class UserRepository(UsersDbContext context) : EntityFrameworkPost
         return context.Users.AsNoTracking()
             .FirstOrDefaultAsync(user => user.EmailNormalized == normalized, cancellationToken);
     }
+
+    public Task<int> CountActiveAdminsAsync(CancellationToken cancellationToken = default)
+    {
+        return context.Users.AsNoTracking()
+            .CountAsync(user => user.IsActive && user.Role == UserRole.Admin, cancellationToken);
+    }
 }

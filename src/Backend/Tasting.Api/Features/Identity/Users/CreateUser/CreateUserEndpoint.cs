@@ -20,6 +20,7 @@ public sealed class CreateUserEndpoint(
             req.Email,
             req.FirstName,
             req.LastName,
+            req.Password,
             req.Role,
             User.IsInRole(UserRole.Admin.ToString()));
     }

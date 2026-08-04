@@ -1,0 +1,33 @@
+@namespace Tasting.Admin.Shared.Components
+@using MudBlazor
+@typeparam TItem
+
+
+<MudTable Items="Items" Hover="true" Striped="true" Dense="false">
+    <ToolBarContent>
+        @ToolBarContent
+    </ToolBarContent>
+    <HeaderContent>
+        @HeaderContent
+    </HeaderContent>
+    <RowTemplate>
+        @RowTemplate(context)
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+    </PagerContent>
+</MudTable>
+
+@code {
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; } = new List<TItem>();
+
+    [Parameter]
+    public RenderFragment? ToolBarContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? RowTemplate { get; set; }
+}

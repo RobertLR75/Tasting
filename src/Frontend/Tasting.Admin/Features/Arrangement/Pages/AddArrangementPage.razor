@@ -1,22 +1,24 @@
 @page "/arrangements/add"
+@using MudBlazor
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
 @using Tasting.Admin.Shared.Components
 @inject IArrangementsApiClient ArrangementsApiClient
 @inject NavigationManager Navigation
 
+<PageTitle>Add Arrangement</PageTitle>
+
 <FormLayout Title="Add New Arrangement" ErrorMessage="@errorMessage">
     <FormField 
-        Label="Event Name" 
-        @bind-Value="@name"
-        ErrorMessage="@GetFieldError(nameof(name))"
+        Label="Arrangement Name" 
+        @bind-value="@arrangementName"
+        ErrorMessage="@GetFieldError(nameof(arrangementName))"
         Required="true" />
-    
-    <MudDatePicker @bind-Date="@eventDate" Label="Event Date" Required="true" />
     
     <FormField 
         Label="Description" 
-        @bind-Value="@description"
+        InputType="InputType.Text"
+        @bind-value="@description"
         ErrorMessage="@GetFieldError(nameof(description))" />
 
     <MudStack Row="true" Spacing="2">
@@ -33,28 +35,27 @@
 </FormLayout>
 
 @code {
-    private string name = "";
-    private DateTime? eventDate;
-    private string? description;
+    private string arrangementName = "";
+    private string description = "";
     private string? errorMessage;
     private bool isLoading = false;
     private Dictionary<string, string> fieldErrors = new();
 
     private async Task HandleCreateAsync()
     {
+        if (string.IsNullOrWhiteSpace(arrangementName))
+        {
+            fieldErrors["arrangementName"] = "Arrangement name is required";
+            return;
+        }
+
         isLoading = true;
         errorMessage = null;
         fieldErrors.Clear();
         
         try
         {
-            if (!eventDate.HasValue)
-            {
-                errorMessage = "Event date is required";
-                return;
-            }
-
-            var request = new AddArrangementRequest(name, eventDate.Value, description);
+            var request = new CreateArrangementRequest(arrangementName, description);
             var arrangement = await ArrangementsApiClient.CreateAsync(request);
             if (arrangement != null)
             {

@@ -6,9 +6,10 @@ namespace Tasting.Admin.Features.Catalog.Services;
 public interface IBreweriesApiClient
 {
     Task<ListBreweriesResponse?> ListAsync(string? searchTerm = null);
-    Task<BreweryDto?> GetAsync(int id);
-    Task<BreweryDto?> CreateAsync(AddBreweryRequest request);
-    Task<BreweryDto?> UpdateAsync(int id, UpdateBreweryRequest request);
+    Task<BreweryDto?> GetAsync(Guid id);
+    Task<BreweryDto?> CreateAsync(CreateBreweryRequest request);
+    Task<BreweryDto?> UpdateAsync(Guid id, UpdateBreweryRequest request);
+    Task<BreweryDto?> DeactivateAsync(Guid id);
 }
 
 public class BreweriesApiClient : IBreweriesApiClient
@@ -37,7 +38,7 @@ public class BreweriesApiClient : IBreweriesApiClient
         }
     }
 
-    public async Task<BreweryDto?> GetAsync(int id)
+    public async Task<BreweryDto?> GetAsync(Guid id)
     {
         try
         {
@@ -49,7 +50,7 @@ public class BreweriesApiClient : IBreweriesApiClient
         }
     }
 
-    public async Task<BreweryDto?> CreateAsync(AddBreweryRequest request)
+    public async Task<BreweryDto?> CreateAsync(CreateBreweryRequest request)
     {
         try
         {
@@ -63,7 +64,7 @@ public class BreweriesApiClient : IBreweriesApiClient
         }
     }
 
-    public async Task<BreweryDto?> UpdateAsync(int id, UpdateBreweryRequest request)
+    public async Task<BreweryDto?> UpdateAsync(Guid id, UpdateBreweryRequest request)
     {
         try
         {
@@ -76,13 +77,29 @@ public class BreweriesApiClient : IBreweriesApiClient
             throw new HttpRequestException($"Failed to update brewery {id}: {ex.Message}", ex);
         }
     }
+
+    public async Task<BreweryDto?> DeactivateAsync(Guid id)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsync($"/api/v1/breweries/{id}/deactivate", null);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<BreweryDto>();
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to deactivate brewery {id}: {ex.Message}", ex);
+        }
+    }
 }
 
 public interface IBeersApiClient
 {
-    Task<ListBeersResponse?> ListByBreweryAsync(int breweryId, string? searchTerm = null);
-    Task<BeerDto?> GetAsync(int breweryId, int beerId);
-    Task<BeerDto?> CreateAsync(int breweryId, AddBeerRequest request);
+    Task<ListBeersResponse?> ListAsync(Guid? breweryId = null, string? searchTerm = null);
+    Task<BeerDto?> GetAsync(Guid id);
+    Task<BeerDto?> CreateAsync(CreateBeerRequest request);
+    Task<BeerDto?> UpdateAsync(Guid id, UpdateBeerRequest request);
+    Task<BeerDto?> DeactivateAsync(Guid id);
 }
 
 public class BeersApiClient : IBeersApiClient
@@ -94,46 +111,83 @@ public class BeersApiClient : IBeersApiClient
         _httpClient = httpClient;
     }
 
-    public async Task<ListBeersResponse?> ListByBreweryAsync(int breweryId, string? searchTerm = null)
+    public async Task<ListBeersResponse?> ListAsync(Guid? breweryId = null, string? searchTerm = null)
     {
         try
         {
-            var url = $"/api/v1/breweries/{breweryId}/beers";
+            var url = "/api/v1/beers";
+            var queryParams = new List<string>();
+            if (breweryId.HasValue)
+            {
+                queryParams.Add($"breweryId={breweryId.Value}");
+            }
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                url += $"?searchTerm={Uri.EscapeDataString(searchTerm)}";
+                queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
+            }
+            if (queryParams.Count > 0)
+            {
+                url += "?" + string.Join("&", queryParams);
             }
             return await _httpClient.GetFromJsonAsync<ListBeersResponse>(url);
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to list beers for brewery {breweryId}: {ex.Message}", ex);
+            throw new HttpRequestException($"Failed to list beers: {ex.Message}", ex);
         }
     }
 
-    public async Task<BeerDto?> GetAsync(int breweryId, int beerId)
+    public async Task<BeerDto?> GetAsync(Guid id)
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<BeerDto>($"/api/v1/breweries/{breweryId}/beers/{beerId}");
+            return await _httpClient.GetFromJsonAsync<BeerDto>($"/api/v1/beers/{id}");
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to get beer {beerId}: {ex.Message}", ex);
+            throw new HttpRequestException($"Failed to get beer {id}: {ex.Message}", ex);
         }
     }
 
-    public async Task<BeerDto?> CreateAsync(int breweryId, AddBeerRequest request)
+    public async Task<BeerDto?> CreateAsync(CreateBeerRequest request)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"/api/v1/breweries/{breweryId}/beers", request);
+            var response = await _httpClient.PostAsJsonAsync("/api/v1/beers", request);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<BeerDto>();
         }
         catch (Exception ex)
         {
-            throw new HttpRequestException($"Failed to create beer for brewery {breweryId}: {ex.Message}", ex);
+            throw new HttpRequestException($"Failed to create beer: {ex.Message}", ex);
+        }
+    }
+
+    public async Task<BeerDto?> UpdateAsync(Guid id, UpdateBeerRequest request)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync($"/api/v1/beers/{id}", request);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<BeerDto>();
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to update beer {id}: {ex.Message}", ex);
+        }
+    }
+
+    public async Task<BeerDto?> DeactivateAsync(Guid id)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsync($"/api/v1/beers/{id}/deactivate", null);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<BeerDto>();
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to deactivate beer {id}: {ex.Message}", ex);
         }
     }
 }

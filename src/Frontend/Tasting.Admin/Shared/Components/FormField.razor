@@ -1,0 +1,40 @@
+@namespace Tasting.Admin.Shared.Components
+@using MudBlazor
+
+<div class="mb-4">
+    <MudTextField 
+        @bind-value="Value" 
+        Label="@Label" 
+        Variant="Variant.Outlined"
+        FullWidth="true"
+        InputType="@InputType"
+        Error="@(!string.IsNullOrEmpty(ErrorMessage))"
+        ErrorText="@ErrorMessage"
+        Required="@Required" />
+</div>
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public string Label { get; set; } = "Field";
+
+    [Parameter]
+    public InputType InputType { get; set; } = InputType.Text;
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public bool Required { get; set; } = false;
+
+    private async Task HandleValueChanged(string value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+}
