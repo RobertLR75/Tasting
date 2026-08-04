@@ -6,10 +6,10 @@
 Oppdateringsregler for arrangementfelter måtte konkretiseres for å unngå uklare writes i aktiv/avsluttet flyt.
 
 ## Decision
-Når arrangement har status `Started`, er arrangementet ikke lenger redigerbart.
+Bare arrangement med status `Created` er redigerbare. `Started`, `Completed` og `Canceled` er ikke redigerbare for navn, dato eller beskrivelse.
 
 ## Consequences
-- `UpdateArrangement` må avvise endringer når status er `Started`.
+- `UpdateArrangement` må avvise endringer når status ikke er `Created`.
 - Reduserer risiko for at grunnlag endres mens rating pågår.
-- Krever avklaring av hva som gjelder i `Canceled` og `Completed` for konsistent regelsett.
+- `Canceled` oppfører seg som et låst, men reverserbart utkast via separat statusendring tilbake til `Created`.
 - Skal implementeres i `IRequestHandler`-laget og verifiseres med unit tests for handlerlogikken og integrasjonstester for endepunktene.

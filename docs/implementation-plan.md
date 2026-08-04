@@ -1,436 +1,396 @@
-# Tasting.Api — Implementeringsplan
+# Tasting.Admin + Tasting.Api — Implementeringsplan
 
-## Arkitekturavgjørelser
+## Mål
+
+Lever admin-backoffice for `Login`, `Arrangement`, `Breweries` og `Users` som parallelle vertical slices i `Tasting.Admin`, med all kanonisk forretningslogikk håndhevet i `Tasting.Api`-handlers.
+
+## Styrende beslutninger
 
 | Beslutning | Valg |
 |---|---|
-| Backend-form | Enkelt `Tasting.Api`-prosjekt |
-| Features-struktur | Subdomene-grupperinger (Identity / Catalog / Arrangement / Rating) |
-| Participant-info | Snapshot av FirstName+LastName ved `Started` |
-| Redis v1 | Utelates — tas inn ved målte behov |
-| Feilkontrakt (ADR-0031) | Global exception-handler i `SharedLibrary.FastEndpoints` |
-| Arkitekturmønster | Modulær monolitt med 4 bounded contexts |
-| Bounded contexts | Identity / Catalog / Arrangement / Rating+Result |
-| Cross-context validering | `IArrangementService`-abstraksjon (service layer boundary) |
-| Autentisering | Ekstern OIDC + JWT-validering i Tasting.Api |
-| Leveransesekvens | Identity → Catalog → Arrangement → Rating → Result |
+| Admin-auth | Bare `Admin` får tilgang til admin-frontend |
+| Login-feil | Generisk feilmelding for feil legitimasjon og ikke-admin |
+| Arrangement-redigering | Bare `Created` kan redigeres |
+| Arrangement-medlemskap | Beers og participants kan bare legges til/fjernes i `Created` |
+| Arrangement-status | `Created -> Started`, `Created -> Canceled`, `Canceled -> Created`, `Started -> Completed` |
+| Reopen semantics | `Canceled -> Created` beholder beers og participants |
+| Arrangement-lister | Full liste med status som standard |
+| Arrangement beer-picking | Bare aktive breweries/beers, globalt beersøk, multi-select på tvers av breweries |
+| Arrangement participant-picking | Bare aktive users, eksisterende participants vises disabled |
+| Brewery uniqueness | `(Name, Country)` er unik kombinasjon |
+| Brewery search | Søker bare på brewery-navn |
+| Beer uniqueness | Beer-navn er unikt per brewery også mot inactive beers |
+| User lists | Viser både aktive og inactive users |
+| User search | Case-insensitivt deltreff på navn og e-post |
+| User role/status safety | Rolleendring krever aktiv user; siste aktive admin kan ikke deaktiveres eller nedgraderes |
+| Backend ownership | Forretningsregler implementeres i `IRequestHandler`-laget |
 
 ---
 
-## Mappestruktur
+## Arbeidsstrømmer som kan utvikles i parallell
 
-```
-src/Backend/Tasting.Api/
-├── Features/
-│   ├── Identity/
-│   │   └── Users/
-│   │       ├── CreateUser/        (Request, Handler, Endpoint, Mapper)
-│   │       ├── GetUser/
-│   │       ├── ListUsers/
-│   │       ├── UpdateUser/
-│   │       └── DeactivateUser/
-│   ├── Catalog/
-│   │   ├── Breweries/             (Create, Get, List, Update, Deactivate)
-│   │   ├── Beers/                 (Create, Get, List, Update, Deactivate)
-│   │   ├── BeerStyles/            (Create, Get, List)
-│   │   └── BeerTypes/             (Create, Get, List)
-│   ├── Arrangement/
-│   │   ├── Arrangements/          (Create, Get, List, Update, Start, Cancel, Complete)
-│   │   ├── Participants/          (Add, Remove)
-│   │   └── Beers/                 (Add, Remove)
-│   └── Rating/
-│       ├── Ratings/               (Submit — upsert semantikk)
-│       └── Results/               (GetResults)
-├── Infrastructure/
-│   ├── Identity/
-│   │   ├── IdentityDbContext.cs
-│   │   └── Migrations/
-│   ├── Catalog/
-│   │   ├── CatalogDbContext.cs
-│   │   └── Migrations/
-│   ├── Arrangement/
-│   │   ├── ArrangementDbContext.cs
-│   │   └── Migrations/
-│   └── Rating/
-│       ├── RatingDbContext.cs
-│       └── Migrations/
-├── Contracts/
-│   └── IArrangementService.cs     (brukes av Rating-context for cross-context validering)
-└── Program.cs
-```
+| Spor | Avhenger av | Leveranse |
+|---|---|---|
+| A. Backend auth + identity rules | Ingen | Login-kontrakter, user-søk, rolle/status-regler |
+| B. Backend arrangement rules | Ingen | Arrangement CRUD, statusendringer, add/remove beer/participant |
+| C. Backend catalog rules | Ingen | Brewery/beer-søk, create-flow, aktive katalogregler |
+| D. Frontend shell + login | A | Ruting, auth-guard, login-side |
+| E. Frontend users slice | A + D | Users list/add/edit/role/status |
+| F. Frontend breweries slice | C + D | Breweries list/add + beers under brewery |
+| G. Frontend arrangements slice | B + C + A + D | Arrangement list/edit/status/add beers/add participants |
+| H. Testspor | Løper sammen med hvert spor | Handler-, integrasjons- og bUnit-tester |
 
 ---
 
-## Fase 0 — Fundament
+## Spor A — Backend auth + identity rules
 
-**Mål:** Prosjektskjelett med alt på plass, men ingen features enda.
+### API-endringer
 
-### Oppgaver
+1. **Autentisering for admin-frontend**
+   - Verifiser eksisterende auth-oppsett i `Tasting.Api`.
+   - Innfør/login-endre endpoint eller auth-adapter som returnerer generisk feil ved:
+     - ukjent e-post
+     - feil passord
+     - gyldig bruker uten `Admin`
+     - inaktiv bruker
+   - Sørg for at admin-frontenden kun får gyldig sesjon/token for `Admin`.
 
-1. **Opprett `Tasting.Api`** — ASP.NET Core (.NET 10), legg til i `Tasting.sln` under `Backend`
-2. **Prosjektreferanser:** `SharedLibrary`, `SharedLibrary.FastEndpoints`, `SharedLibrary.PostgreSql.EntityFramework`, `SharedLibrary.FluentMigration`, `SharedLibrary.Services`
-3. **Aspire AppHost:** Registrer `Tasting.Api` som service i `Tasting.AppHost`
-4. **Global feilkontrakt (ADR-0031):** Implementer i `SharedLibrary.FastEndpoints`
-   - `ErrorResponse` record: `string Code`, `string Message`, `string CorrelationId`
-   - Fjern kommentert kode i `FastEndPointsExtensions.UseEndpoints`
-   - Legg til FastEndpoints global exception-handler som mapper:
-     - `ServiceNotFoundException` → 404 + `not_found`
-     - `ConflictException` → 409 + `conflict`
-     - `ForbiddenException` → 403 + `forbidden`
-     - `ValidationException` → 400 + `validation_error`
-     - Uventede exceptions → 500 + `internal_error`
-   - Legg til `CorrelationId` middleware (generer Guid per request, legg i header + response)
-5. **OIDC/JWT-auth:** Konfigurer i `Program.cs` med `OpenIdConnectSettings` fra `SharedLibrary`
-   - JWT Bearer-validering mot OIDC-provider
-   - Claim-mapping: `sub` → UserId, `role` → Role
-6. **API-versjonering (ADR-0032):** Sett route prefix `/api/v1` via FastEndpoints config
-7. **FluentMigration runner:** Registrer i `Program.cs` med DbContext per context
-8. **Felles unntak i SharedLibrary.Services:**
-   - `ConflictException` (409)
-   - `ForbiddenException` (403)
-   - `BusinessRuleException` (422)
+2. **Users list/search**
+   - Utvid `ListUsers` med fritekstsøk på `Email`, `FirstName`, `LastName`.
+   - Returner både aktive og inactive users som standard.
 
----
+3. **Create user**
+   - Håndhev global unikhet på e-post case-insensitivt, også mot inactive users.
+   - Nye users opprettes som `IsActive=true`.
 
-## Fase 1 — Identity Context
+4. **Update user**
+   - Tillat endring av navn og e-post.
+   - Håndhev samme e-postunikhet som ved create.
 
-**ADR-er:** 0033, 0002, 0031, 0032
+5. **Change user role**
+   - Lag eksplisitt operasjon/endepunkt for rolleendring hvis det ikke finnes.
+   - Avvis rolleendring hvis target user er inactive.
+   - Avvis nedgradering av siste aktive admin.
 
-### Datamodell
+6. **Change user status**
+   - Lag eksplisitt operasjon/endepunkt for aktivering/deaktivering hvis det ikke finnes.
+   - Avvis deaktivering av siste aktive admin.
 
-```csharp
-// User entity (IdentityDbContext)
-User {
-    Guid Id
-    string Email           // Unik, case-insensitiv (lowercase-indeks i PG)
-    string FirstName
-    string LastName
-    bool IsActive
-    Role Role              // enum: Admin | User
-    DateTimeOffset CreatedAt
-    DateTimeOffset? UpdatedAt
-}
-```
+### Tester
 
-### Migrasjoner (FluentMigration)
-
-- `Users`-tabell med unik indeks på `LOWER(email)` — ADR-0033
-- `CHECK`-constraint: `Role IN ('Admin', 'User')`
-
-### Features
-
-| Feature | Route | Auth | ADR |
-|---|---|---|---|
-| `CreateUser` | POST `/api/v1/users` | Admin (for Admin-opprettelse), autentisert for User | 0033 |
-| `GetUser` | GET `/api/v1/users/{id}` | Autentisert | — |
-| `ListUsers` | GET `/api/v1/users` | Admin | 0028 |
-| `UpdateUser` | PUT `/api/v1/users/{id}` | Admin | — |
-| `DeactivateUser` | PATCH `/api/v1/users/{id}/deactivate` | Admin | 0033 |
-
-**Handler-regler:**
-- `CreateUser`: Hvis `Role=Admin` i request, valider at caller er `Admin` (409 ellers) — ADR-0033
-- `CreateUser`: Sjekk e-post unikhet (case-insensitiv) — returner `409 Conflict` ved konflikt
-- `DeactivateUser`: Sett `IsActive=false` — blokkerer videre autentisering umiddelbart
-
-### Tests
-
-- Unit: handler-logikk (rollesjekk, e-postunikhet, deaktivering)
-- Integration: alle 5 endepunkter
+- Handler-tests for:
+  - generisk login-nekt
+  - e-postunikhet mot inactive users
+  - søk på navn/e-post
+  - blokkert rolleendring for inactive user
+  - blokkert deaktivering/nedgradering av siste aktive admin
+- Integrasjonstester for alle user-flyter
 
 ---
 
-## Fase 2 — Catalog Context
+## Spor B — Backend arrangement rules
 
-**ADR-er:** 0014, 0015, 0020, 0021, 0024, 0025, 0028, 0029
+### API-endringer
 
-### Datamodell
+1. **List arrangements**
+   - Returner full liste med status.
 
-```csharp
-Brewery {
-    Guid Id; string Name; bool IsActive; DateTimeOffset CreatedAt; DateTimeOffset? UpdatedAt
-}
+2. **Update arrangement**
+   - Håndhev at bare `Created` kan redigeres.
+   - Tillat endring av `Name`, `Date`, `Description`.
 
-BeerStyle { Guid Id; string Name; string? Description; DateTimeOffset CreatedAt }
-BeerType  { Guid Id; string Name; string? Description; DateTimeOffset CreatedAt }
+3. **Status transitions**
+   - Oppdater state machine til:
+     - `Created -> Started`
+     - `Created -> Canceled`
+     - `Canceled -> Created`
+     - `Started -> Completed`
+   - Alle andre overganger avvises.
 
-Beer {
-    Guid Id
-    Guid BreweryId         // FK → Brewery, required — ADR-0015
-    Guid BeerStyleId       // FK → BeerStyle — ADR-0020
-    Guid BeerTypeId        // FK → BeerType — ADR-0020
-    string Name            // Unik per Brewery, case-insensitiv — ADR-0024
-    bool IsActive
-    DateTimeOffset CreatedAt
-    DateTimeOffset? UpdatedAt
-}
-```
+4. **Reopen semantics**
+   - `Canceled -> Created` må ikke slette beers eller participants.
 
-### Migrasjoner
+5. **Participant membership**
+   - `AddParticipant` og `RemoveParticipant` bare når `Status == Created`.
+   - Participant må være aktiv user.
+   - Duplikater gir `409`.
 
-- `Breweries`, `BeerStyles`, `BeerTypes`, `Beers`
-- FK: `Beers.BreweryId → Breweries.Id`, `BeerStyleId → BeerStyles.Id`, `BeerTypeId → BeerTypes.Id`
-- Unik indeks på `(BreweryId, LOWER(Name))` i Beers — ADR-0024
+6. **Beer membership**
+   - `AddBeer` og `RemoveBeer` bare når `Status == Created`.
+   - Beer må være aktiv og tilhøre aktivt brewery.
+   - Duplikater gir `409`.
 
-### Features
+7. **Arrangement details for admin pages**
+   - Sørg for at `GetArrangement` returnerer nok data til:
+     - redigeringsside
+     - visning av eksisterende beers
+     - visning av eksisterende participants
+     - statusstyring
 
-| Feature | Route | Auth | ADR |
-|---|---|---|---|
-| `CreateBrewery` | POST `/api/v1/breweries` | Admin | 0021 |
-| `GetBrewery` | GET `/api/v1/breweries/{id}` | Autentisert | — |
-| `ListBreweries` | GET `/api/v1/breweries` | Autentisert | 0028 |
-| `UpdateBrewery` | PUT `/api/v1/breweries/{id}` | Admin | 0021 |
-| `DeactivateBrewery` | PATCH `/api/v1/breweries/{id}/deactivate` | Admin | 0015, 0025 |
-| `CreateBeerStyle` | POST `/api/v1/beer-styles` | Admin | 0021 |
-| `GetBeerStyle` | GET `/api/v1/beer-styles/{id}` | Autentisert | — |
-| `ListBeerStyles` | GET `/api/v1/beer-styles` | Autentisert | 0028 |
-| `CreateBeerType` | POST `/api/v1/beer-types` | Admin | 0021 |
-| `GetBeerType` | GET `/api/v1/beer-types/{id}` | Autentisert | — |
-| `ListBeerTypes` | GET `/api/v1/beer-types` | Autentisert | 0028 |
-| `CreateBeer` | POST `/api/v1/beers` | Admin | 0021 |
-| `GetBeer` | GET `/api/v1/beers/{id}` | Autentisert | — |
-| `ListBeers` | GET `/api/v1/beers?includeInactive=false` | Autentisert (Admin for includeInactive=true) | 0029 |
-| `UpdateBeer` | PUT `/api/v1/beers/{id}` | Admin | 0021 |
-| `DeactivateBeer` | PATCH `/api/v1/beers/{id}/deactivate` | Admin | 0029 |
+### Tester
 
-**Handler-regler:**
-- `DeactivateBrewery`: Transaksjonelt sett alle tilknyttede `Beer.IsActive=false` — ADR-0025
-- `CreateBeer`: Valider `BreweryId` er aktiv og eksisterer — ADR-0015
-- `CreateBeer` / `UpdateBeer`: Sjekk `(BreweryId, LOWER(Name))` unikhet — ADR-0024
-- `ListBeers`: Default filter `IsActive=true`; `Admin` kan sende `includeInactive=true` — ADR-0029
-
-### Tests
-
-- Unit: brewery-deaktiverings-kaskade, beer-navneunikhet, inaktiv-brewery-validering
-- Integration: alle endepunkter
+- Handler-tests for:
+  - `Canceled -> Created`
+  - medlemskap beholdes ved reopen
+  - blokkert redigering når status != `Created`
+  - blokkert add/remove utenfor `Created`
+  - blokkert add participant for inactive user
+  - blokkert add beer for inactive beer/brewery
+- Integrasjonstester for hele arrangementflyten
 
 ---
 
-## Fase 3 — Arrangement Context
+## Spor C — Backend catalog rules
 
-**ADR-er:** 0001, 0003, 0004, 0006, 0007, 0008, 0013, 0022
+### API-endringer
 
-### Datamodell
+1. **List breweries**
+   - Full liste for admin.
+   - Støtt søk bare på brewery-navn.
 
-```csharp
-Arrangement {
-    Guid Id
-    string Name
-    string? Description
-    ArrangementStatus Status     // enum: Created | Started | Canceled | Completed
-    uint RowVersion              // Optimistic concurrency — ADR-0006
-    DateTimeOffset CreatedAt
-    DateTimeOffset? UpdatedAt
-}
+2. **Create brewery**
+   - Håndhev unik kombinasjon `(Name, Country)` case-insensitivt etter repo-konvensjon.
 
-ArrangementParticipant {
-    Guid Id
-    Guid ArrangementId
-    Guid UserId
-    string FirstNameSnapshot     // Snapshot ved Started — ADR-0022 + grilling-beslutning
-    string LastNameSnapshot
-    DateTimeOffset CreatedAt
-}
+3. **List beers for brewery**
+   - Sørg for et lesekall som kan drive brewery-beers-siden.
+   - Støtt søk på beer-navn.
 
-ArrangementBeer {
-    Guid Id
-    Guid ArrangementId
-    Guid BeerId
-    string NameSnapshot          // Snapshot ved Started — ADR-0022
-    string BreweryNameSnapshot
-    string BeerStyleSnapshot
-    string BeerTypeSnapshot
-    DateTimeOffset CreatedAt
-}
-```
+4. **Create beer**
+   - Opprett beer knyttet til valgt brewery.
+   - Håndhev at navn er unikt per brewery også mot inactive beers.
 
-### Migrasjoner
+5. **Catalog selection for arrangement**
+   - Sørg for lesekall som støtter:
+     - liste av aktive breweries
+     - aktive beers
+     - globalt beersøk på tvers av breweries
+   - Returner markører nok til at frontend kan vise hvilket brewery et beer tilhører.
 
-- `Arrangements`, `ArrangementParticipants`, `ArrangementBeers`
-- Unik constraint: `(ArrangementId, UserId)` i ArrangementParticipants — ADR-0004
-- Unik constraint: `(ArrangementId, BeerId)` i ArrangementBeers — ADR-0004
-- `RowVersion` / `xmin` i Arrangements — ADR-0006
+### Tester
 
-### `IArrangementService` (Contracts/)
-
-```csharp
-public interface IArrangementService {
-    Task<ArrangementStatus> GetStatusAsync(Guid arrangementId, CancellationToken ct);
-    Task<bool> IsParticipantAsync(Guid arrangementId, Guid userId, CancellationToken ct);
-    Task<bool> IsBeerInArrangementAsync(Guid arrangementId, Guid beerId, CancellationToken ct);
-}
-```
-
-### Features
-
-| Feature | Route | Auth | ADR |
-|---|---|---|---|
-| `CreateArrangement` | POST `/api/v1/arrangements` | Admin | 0008 |
-| `GetArrangement` | GET `/api/v1/arrangements/{id}` | Autentisert | — |
-| `ListArrangements` | GET `/api/v1/arrangements` | Autentisert | 0028 |
-| `UpdateArrangement` | PUT `/api/v1/arrangements/{id}` | Admin | 0007, 0008 |
-| `StartArrangement` | POST `/api/v1/arrangements/{id}/start` | Admin | 0003, 0008 |
-| `CancelArrangement` | POST `/api/v1/arrangements/{id}/cancel` | Admin | 0003, 0008 |
-| `CompleteArrangement` | POST `/api/v1/arrangements/{id}/complete` | Admin | 0003, 0008 |
-| `AddParticipant` | POST `/api/v1/arrangements/{id}/participants` | Admin | 0001, 0004, 0008 |
-| `RemoveParticipant` | DELETE `/api/v1/arrangements/{id}/participants/{userId}` | Admin | 0013 |
-| `AddBeer` | POST `/api/v1/arrangements/{id}/beers` | Admin | 0001, 0004, 0008 |
-| `RemoveBeer` | DELETE `/api/v1/arrangements/{id}/beers/{beerId}` | Admin | 0013 |
-
-**Handler-regler:**
-- `UpdateArrangement`: Avvis hvis status ≠ `Created` → 409 — ADR-0007
-- `AddParticipant` / `AddBeer` / `RemoveParticipant` / `RemoveBeer`: Status må være `Created` — ADR-0001, 0013
-- Alle mutasjoner på Arrangement: Bruk optimistic concurrency med `RowVersion` → 409 ved konflikt — ADR-0006
-- Status-transisjonsmatrise (ADR-0003):
-  - `Created → Started` ✓ (trigger snapshot-taking: ADR-0022)
-  - `Created → Canceled` ✓
-  - `Started → Completed` ✓
-  - Alt annet → 409
-- `StartArrangement`: Ta snapshot av navn fra User og beer-metadata fra Catalog (via service-grensesnitt)
-- `AddParticipant` / `AddBeer`: Sjekk duplikat → 409 — ADR-0004
-
-### Tests
-
-- Unit: state machine, snapshot-logikk, concurrency-konflikt, duplikatsjekk
-- Integration: alle 11 endepunkter, inkludert concurrency-scenario
+- Handler-tests for:
+  - brewery uniqueness `(Name, Country)`
+  - beer uniqueness mot inactive beers
+  - brewery-søk bare på navn
+  - globalt beersøk bare over aktive elementer
+- Integrasjonstester for brewery/beer flytene
 
 ---
 
-## Fase 4+5 — Rating+Result Context
+## Spor D — Frontend shell + login
 
-**ADR-er:** 0005, 0009, 0010, 0011, 0012, 0016, 0017, 0018, 0019, 0023, 0026, 0027, 0030
+### UI-endringer
 
-### Datamodell
+1. **Routing**
+   - Definer sider og ruter for:
+     - `/login`
+     - `/arrangements`
+     - `/arrangements/{id}/edit`
+     - `/arrangements/{id}/beers`
+     - `/arrangements/{id}/participants`
+     - `/arrangements/{id}/status`
+     - `/breweries`
+     - `/breweries/new`
+     - `/breweries/{id}/beers`
+     - `/breweries/{id}/beers/new`
+     - `/users`
+     - `/users/new`
+     - `/users/{id}/edit`
+     - `/users/{id}/role`
+     - `/users/{id}/status`
 
-```csharp
-Rating {
-    Guid Id                      // Server-generert — ADR-0027
-    Guid ArrangementId
-    Guid ParticipantId           // UserId
-    Guid BeerId                  // ADR-0016
-    decimal Visibility           // 0-10, steg 0.5 — ADR-0017
-    decimal Smell
-    decimal Taste
-    decimal Toast
-    decimal TotalRating          // Server-beregnet — ADR-0017
-    uint RowVersion              // Optimistic concurrency — ADR-0030
-    DateTimeOffset CreatedAt
-    DateTimeOffset? UpdatedAt
-}
+2. **Auth guard**
+   - Uautentiserte brukere sendes til login.
+   - Kun admin-sesjon får åpne backoffice-ruter.
 
-Result {
-    Guid Id                      // Server-generert — ADR-0027
-    Guid ArrangementId
-    Guid BeerId                  // ADR-0018, 0019
-    string BeerNameSnapshot      // Fra arrangement-snapshot
-    decimal TotalRating          // Avrundet til 2dp — ADR-0023
-    int RatingCount              // For tie-break — ADR-0012
-    decimal StandardDeviation    // Intern (ikke avrundet) — ADR-0023
-    int Rank
-    DateTimeOffset CreatedAt
-    DateTimeOffset? UpdatedAt
-}
+3. **Login page**
+   - Felter for e-post og passord.
+   - Login-knapp.
+   - Generisk feil ved avvist innlogging.
 
-ResultParticipant {
-    Guid Id
-    Guid ResultId
-    Guid ParticipantId
-    string ParticipantNameSnapshot
-    decimal Rating               // Deltakerens score for denne beer — ADR-0026
-}
-```
+4. **HTTP-klienter og slice services**
+   - Lag feature-nære klienter/modeller per slice i frontend.
+   - Ikke legg domenevalidering i UI; bare inputvalidering og presentasjon.
 
-### Migrasjoner
+### Tester
 
-- `Ratings`, `Results`, `ResultParticipants`
-- Unik constraint: `(ArrangementId, ParticipantId, BeerId)` i Ratings — ADR-0016
-- Unik constraint: `(ArrangementId, BeerId)` i Results — ADR-0019
-- `RowVersion` i Ratings — ADR-0030
-
-### Features
-
-| Feature | Route | Auth | ADR |
-|---|---|---|---|
-| `SubmitRating` | POST `/api/v1/arrangements/{id}/ratings` | Participant (autentisert) | 0005, 0009, 0010 |
-| `GetResults` | GET `/api/v1/arrangements/{id}/results` | Autentisert | 0011, 0012 |
-
-**SubmitRating handler-regler (ADR-0005, 0009, 0010, 0011, 0016, 0017, 0023, 0027, 0030):**
-
-1. Hent arrangement-status via `IArrangementService.GetStatusAsync` → avvis (409) hvis ≠ `Started`
-2. Valider at caller er participant via `IArrangementService.IsParticipantAsync` → 403 hvis ikke
-3. Valider at beerId er i arrangementet via `IArrangementService.IsBeerInArrangementAsync` → 404 hvis ikke
-4. Valider sub-scores: hvert felt i [0, 10] med steg 0.5 → 400 hvis ugyldig
-5. Beregn `TotalRating = (Visibility + Smell + Taste + Toast) / 4` server-side
-6. Avrund til 2 desimaler med `MidpointRounding.AwayFromZero` — ADR-0023
-7. Upsert: sjekk `(ArrangementId, ParticipantId, BeerId)` — oppdater hvis eksisterer, opprett hvis ikke — ADR-0010
-8. Bruk optimistic concurrency ved update → 409 ved konflikt — ADR-0030
-9. Auto-opprett/oppdater `Result`-rad for `(ArrangementId, BeerId)` — ADR-0011
-10. Oppdater `ResultParticipant` for denne deltakeren
-
-**GetResults handler-regler (ADR-0012, 0023):**
-
-1. Hent alle Result-rader for arrangementet
-2. Beregn rangering:
-   - Primær: `TotalRating` DESC (mean av alle ratings, avrundet 2dp)
-   - Tie-break 1: `RatingCount` DESC
-   - Tie-break 2: `StandardDeviation` ASC (uten avrunding internt)
-   - Tie-break 3: `BeerId` ASC (deterministisk)
-3. Returner rangert liste med participant-ratings per beer
-
-**Result-frysing (ADR-0011, 0019):**  
-Når arrangement går til `Completed` (via `CompleteArrangement` i Arrangement-context), fryses Result-rader. `SubmitRating`-handler blokkeres av status-sjekk i steg 1.
-
-### Tests
-
-- Unit: scoring-logikk, validering (range + steps), tie-break, upsert-semantikk, concurrency-konflikt
-- Integration: submit + get results, full flyt fra Created → Started → rating → Completed
+- bUnit for routing, guard og login-feilmelding
 
 ---
 
-## Tverrgående krav
+## Spor E — Frontend users slice
 
-### Feilkontrakt (ADR-0031)
+### UI-endringer
 
-Alle handlers kaster domenespesifikke exceptions. Global handler i `SharedLibrary.FastEndpoints` mapper til:
+1. **Users page**
+   - Søkefelt + søkeknapp.
+   - Liste over alle users med navn, e-post, rolle, status.
+   - Lenker til edit, role, status.
+   - Knapp for opprett ny user.
 
-```json
-{
-  "code": "conflict",
-  "message": "En beer med dette navnet finnes allerede for dette bryggeriet.",
-  "correlationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-}
-```
+2. **Add user page**
+   - Felter for navn og e-post.
+   - Eventuelt rollefelt hvis create-flowen skal støtte både `User` og `Admin`.
+   - Opprett-knapp.
+   - Vis backend-feil for e-postkonflikt.
 
-HTTP-koder: 400 (validation), 403 (forbidden), 404 (not_found), 409 (conflict), 500 (internal_error)
+3. **Edit user page**
+   - Endre navn og e-post.
 
-### Optimistic concurrency (ADR-0006, 0030)
+4. **Edit user role page**
+   - Velg mellom `Admin` og `User`.
+   - Håndter backend-feil når bruker er inactive eller siste aktive admin.
 
-- `Arrangement.RowVersion`: ETag/`If-Match`-header eller inlinei request body
-- `Rating.RowVersion`: Samme mønster
-- Conflict → 409 med `code: "concurrency_conflict"`
+5. **Edit user status page**
+   - Velg `Active` eller `Inactive`.
+   - Håndter backend-feil når bruker er siste aktive admin.
 
-### Autentisering (ADR-0033)
+### Tester
 
-- `IsActive=false` → 403 på alle kall (middleware/policy)
-- `Role=Admin` claim kreves for admin-operasjoner
-- Participant-validering: `sub`-claim i JWT = `UserId` i Participants-tabell
+- bUnit for søk, listing, navigasjon og feilvisning
 
 ---
 
-## Teststruktur
+## Spor F — Frontend breweries slice
 
-```
-tests/
-├── Tasting.Api.UnitTests/
-│   ├── Identity/
-│   ├── Catalog/
-│   ├── Arrangement/
-│   └── Rating/
-└── Tasting.Api.IntegrationTests/
-    ├── Identity/
-    ├── Catalog/
-    ├── Arrangement/
-    └── Rating/
-```
+### UI-endringer
 
-- Unit: xUnit + Moq/NSubstitute, in-memory DbContext
-- Integration: xUnit + `WebApplicationFactory<Program>` + Testcontainers (PostgreSQL)
+1. **Breweries page**
+   - Søkefelt på navn + søkeknapp.
+   - Liste over breweries.
+   - Lenke til beers for brewery.
+   - Knapp for add brewery.
+
+2. **Add brewery page**
+   - Felter for navn og land.
+   - Opprett-knapp.
+   - Vis backend-feil for `(Name, Country)`-konflikt.
+
+3. **Brewery beers page**
+   - Søkefelt for beer-navn + søkeknapp.
+   - Liste over beers knyttet til brewery.
+   - Knapp for add beer.
+
+4. **Add beer page**
+   - Felter for beer-opprettelse og kobling til brewery.
+   - Vis backend-feil for navnekonflikt.
+
+### Tester
+
+- bUnit for søk, listing, navigasjon og create-feil
+
+---
+
+## Spor G — Frontend arrangements slice
+
+### UI-endringer
+
+1. **Arrangements page**
+   - Liste over alle arrangementer med status.
+   - Vis kun relevante handlingslenker per status:
+     - `Edit` bare for `Created`
+     - `Add beers` bare for `Created`
+     - `Add participants` bare for `Created`
+     - `Change status` for statusene som har gyldige neste steg
+
+2. **Edit arrangement page**
+   - Felter for navn, dato, beskrivelse.
+   - Oppdater-knapp.
+   - Håndter backend-konflikt hvis arrangement ikke lenger er `Created`.
+
+3. **Add beers page**
+   - Listevisning for aktive breweries og beers.
+   - Globalt fritekstsøk på beer-navn.
+   - Multi-select på beers, inkludert beers fra flere breweries.
+   - Vis allerede tilknyttede beers som disabled eller markert.
+
+4. **Add participants page**
+   - Liste over aktive users.
+   - Fritekstsøk på navn/e-post.
+   - Multi-select på users.
+   - Eksisterende participants vises disabled/allerede lagt til.
+
+5. **Change arrangement status page**
+   - Vis current status.
+   - Vis bare gyldige neste statuser:
+     - fra `Created`: `Started`, `Canceled`
+     - fra `Canceled`: `Created`
+     - fra `Started`: `Completed`
+     - fra `Completed`: ingen
+
+### Tester
+
+- bUnit for statusstyrt rendering, søk, disabled-elementer og konfliktvisning
+
+---
+
+## Spor H — Tverrgående testing og kvalitet
+
+1. **API integration coverage**
+   - Oppdater/utvid `Tasting.Api.IntegrationTests` per slice.
+
+2. **Frontend component coverage**
+   - Oppdater/utvid `Tasting.Admin.UnitTests` per page og reusable component.
+
+3. **Contract checks**
+   - Verifiser at frontendklientene matcher faktiske API-responser for:
+     - users list/search
+     - breweries list/search
+     - beers list/search
+     - arrangement details/list/status
+
+---
+
+## Foreslått paralleliseringsrekkefølge
+
+1. **Start samtidig:** Spor A, B og C
+2. **Når A er stabilt:** Spor D og E
+3. **Når C er stabilt:** Spor F
+4. **Når A+B+C+D er stabile:** Spor G
+5. **Kontinuerlig hele veien:** Spor H
+
+---
+
+## Konkrete arbeidsoppgaver per utviklerstrøm
+
+### Strøm 1 — Identity
+- Backend auth/login
+- user search/list
+- user create/edit
+- role/status endpoints
+- identity tests
+
+### Strøm 2 — Arrangement
+- status transition updates
+- reopen semantics
+- arrangement edit rules
+- participant/beer membership guards
+- arrangement tests
+
+### Strøm 3 — Catalog
+- brewery search/create uniqueness
+- beer list/create uniqueness
+- active catalog selectors for arrangement flow
+- catalog tests
+
+### Strøm 4 — Frontend shell + users
+- routing
+- auth guard
+- login page
+- users pages + tests
+
+### Strøm 5 — Frontend breweries + arrangements
+- breweries pages + tests
+- arrangements pages + tests
+- shared admin components for list/search/form/status actions
+
+---
+
+## Ferdigdefinisjon
+
+Arbeidet er ferdig når:
+
+1. ADR-ene beskriver de nye domenereglene uten motstrid.
+2. Alle backend-regler håndheves i `IRequestHandler`-laget.
+3. Admin-frontendet kan gjennomføre alle beskrevne sider og arbeidsflyter kun via API-et.
+4. Parallelle team kan jobbe uavhengig med tydelige kontrakter mellom sporene.
