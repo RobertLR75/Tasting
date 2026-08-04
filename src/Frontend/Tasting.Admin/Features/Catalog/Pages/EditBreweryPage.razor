@@ -1,4 +1,5 @@
 @page "/breweries/{BreweryId:guid}/edit"
+@using MudBlazor
 @using Tasting.Admin.Features.Catalog.Models
 @using Tasting.Admin.Features.Catalog.Services
 @using Tasting.Admin.Shared.Components
@@ -10,7 +11,7 @@
 <FormLayout Title="Edit Brewery" ErrorMessage="@errorMessage">
     <FormField 
         Label="Brewery Name" 
-        @bind-Value="@breweryName"
+        @bind-value="@breweryName"
         ErrorMessage="@GetFieldError(nameof(breweryName))"
         Required="true" />
 

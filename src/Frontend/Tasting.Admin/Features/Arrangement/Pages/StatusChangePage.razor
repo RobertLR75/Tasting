@@ -1,4 +1,5 @@
 @page "/arrangements/{ArrangementId:guid}/status"
+@using MudBlazor
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
 @using Tasting.Admin.Shared.Components
@@ -16,7 +17,7 @@
     
     <FormField 
         Label="New Status" 
-        @bind-Value="@selectedStatus"
+        @bind-value="@selectedStatus"
         Placeholder="Select new status"
         ErrorMessage="@GetFieldError(nameof(selectedStatus))"
         Required="true">

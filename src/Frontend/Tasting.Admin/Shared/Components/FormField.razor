@@ -1,13 +1,14 @@
 @namespace Tasting.Admin.Shared.Components
+@using MudBlazor
 
 <div class="mb-4">
     <MudTextField 
-        @bind-Value="Value" 
+        @bind-value="Value" 
         Label="@Label" 
         Variant="Variant.Outlined"
         FullWidth="true"
         InputType="@InputType"
-        Error="@!string.IsNullOrEmpty(ErrorMessage)"
+        Error="@(!string.IsNullOrEmpty(ErrorMessage))"
         ErrorText="@ErrorMessage"
         Required="@Required" />
 </div>

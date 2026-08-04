@@ -1,4 +1,5 @@
 @page "/users/{UserId:int}/change-role"
+@using MudBlazor
 @using Tasting.Admin.Features.Identity.Models
 @using Tasting.Admin.Features.Identity.Services
 @using Tasting.Admin.Shared.Components
@@ -12,7 +13,7 @@
     
     <FormField 
         Label="Role" 
-        @bind-Value="@selectedRole"
+        @bind-value="@selectedRole"
         Placeholder="Select new role"
         ErrorMessage="@GetFieldError(nameof(selectedRole))"
         Required="true">

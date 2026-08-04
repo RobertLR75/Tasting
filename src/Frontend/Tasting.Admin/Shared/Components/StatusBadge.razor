@@ -1,6 +1,8 @@
 @namespace Tasting.Admin.Shared.Components
+@using MudBlazor
 
-<MudChip 
+<MudChip T="string"
+    
     Variant="Variant.Filled"
     Color="@GetColorForStatus()"
     Text="@Status"

@@ -1,10 +1,11 @@
 @namespace Tasting.Admin.Shared.Components
+@using MudBlazor
 
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
         <MudItem xs="12" sm="8">
             <MudTextField 
-                @bind-Value="SearchTerm" 
+                @bind-value="SearchTerm" 
                 Label="@Label" 
                 Variant="Variant.Outlined"
                 FullWidth="true" />

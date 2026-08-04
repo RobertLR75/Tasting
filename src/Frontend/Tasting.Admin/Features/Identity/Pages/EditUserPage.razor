@@ -1,4 +1,5 @@
 @page "/users/{UserId:int}/edit"
+@using MudBlazor
 @using Tasting.Admin.Features.Identity.Models
 @using Tasting.Admin.Features.Identity.Services
 @using Tasting.Admin.Shared.Components
@@ -10,20 +11,20 @@
 <FormLayout Title="Edit User" ErrorMessage="@errorMessage">
     <FormField 
         Label="First Name" 
-        @bind-Value="@firstName"
+        @bind-value="@firstName"
         ErrorMessage="@GetFieldError(nameof(firstName))"
         Required="true" />
     
     <FormField 
         Label="Last Name" 
-        @bind-Value="@lastName"
+        @bind-value="@lastName"
         ErrorMessage="@GetFieldError(nameof(lastName))"
         Required="true" />
     
     <FormField 
         Label="Email" 
         InputType="InputType.Email"
-        @bind-Value="@email"
+        @bind-value="@email"
         ErrorMessage="@GetFieldError(nameof(email))"
         Required="true" />
 

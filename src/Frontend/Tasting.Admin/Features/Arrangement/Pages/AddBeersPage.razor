@@ -1,4 +1,5 @@
 @page "/arrangements/{ArrangementId:guid}/beers"
+@using MudBlazor
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
 @using Tasting.Admin.Shared.Components
@@ -30,7 +31,7 @@ else
                 </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTextField @bind-Value="SearchTerm" 
+                <MudTextField @bind-value="SearchTerm" 
                              Label="Search beers" 
                              Placeholder="Enter beer name"
                              Immediate="true"

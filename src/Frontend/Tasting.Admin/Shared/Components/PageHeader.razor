@@ -1,10 +1,11 @@
 @namespace Tasting.Admin.Shared.Components
+@using MudBlazor
 
 <div class="mb-4">
     <MudText Typo="Typo.h4" GutterBottom="true">@Title</MudText>
     @if (!string.IsNullOrEmpty(Subtitle))
     {
-        <MudText Typo="Typo.body2" Color="Color.TextSecondary">@Subtitle</MudText>
+        <MudText Typo="Typo.body2">@Subtitle</MudText>
     }
     @if (BreadcrumbContent != null)
     {

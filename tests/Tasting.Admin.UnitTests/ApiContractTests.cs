@@ -53,7 +53,7 @@ public sealed class ApiContractTests
     }
 
     [Fact]
-    public void UserDtoBuilder_ShouldSupportMultipleFluent Chains()
+    public void UserDtoBuilder_ShouldSupportMultipleFluentChains()
     {
         var user = UserDtoBuilder.Default()
             .WithFirstName("Jane")

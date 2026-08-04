@@ -1,4 +1,5 @@
 @page "/breweries/{BreweryId:guid}/beers/add"
+@using MudBlazor
 @using Tasting.Admin.Features.Catalog.Models
 @using Tasting.Admin.Features.Catalog.Services
 @using Tasting.Admin.Shared.Components
@@ -16,7 +17,7 @@
     
     <FormField 
         Label="Beer Name" 
-        @bind-Value="@beerName"
+        @bind-value="@beerName"
         ErrorMessage="@GetFieldError(nameof(beerName))"
         Required="true" />
 
@@ -75,7 +76,8 @@
             var request = new CreateBeerRequest(
                 BreweryId, 
                 Guid.Empty, // BeerStyleId - would need to be selected from UI
-                Guid.Empty  // BeerTypeId - would need to be selected from UI
+                Guid.Empty, // BeerTypeId - would need to be selected from UI
+                beerName
             );
             var beer = await BeersApiClient.CreateAsync(request);
             if (beer != null)

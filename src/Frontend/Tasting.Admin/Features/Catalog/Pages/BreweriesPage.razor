@@ -1,4 +1,5 @@
 @page "/breweries"
+@using MudBlazor
 @attribute [Microsoft.AspNetCore.Components.RouteAttribute("/breweries")]
 @using Tasting.Admin.Features.Catalog.Models
 @using Tasting.Admin.Features.Catalog.Services
@@ -11,7 +12,7 @@
 <PageHeader Title="Breweries" />
 
 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudTextField @bind-Value="SearchTerm"
+    <MudTextField @bind-value="SearchTerm"
                   Label="Search breweries"
                   Placeholder="Search by name"
                   Variant="Variant.Outlined"
