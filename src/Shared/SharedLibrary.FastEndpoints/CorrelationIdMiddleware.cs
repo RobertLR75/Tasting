@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace SharedLibrary.FastEndpoints;
 
-internal sealed class CorrelationIdMiddleware(RequestDelegate next)
+public sealed class CorrelationIdMiddleware(RequestDelegate next)
 {
-    internal const string ItemKey = "CorrelationId";
-    internal const string HeaderName = "X-Correlation-Id";
+    public const string ItemKey = "CorrelationId";
+    public const string HeaderName = "X-Correlation-Id";
 
     public Task Invoke(HttpContext context)
     {
