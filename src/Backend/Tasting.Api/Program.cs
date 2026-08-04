@@ -19,19 +19,24 @@ builder.ConfigureServices();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 builder.AddRatingServices();
 
-var oidcSettings = builder.Configuration
-    .GetSection("OpenIdConnect")
-    .Get<OpenIdConnectSettings>();
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("Jwt:SecretKey is not configured");
+var key = System.Text.Encoding.UTF8.GetBytes(secretKey);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = oidcSettings?.Authority?.ToString();
-        options.Audience = oidcSettings?.ClientId;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            NameClaimType = "sub",
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidateAudience = true,
+            ValidAudience = jwtSettings["Audience"],
+            ValidateLifetime = true,
+            NameClaimType = "email",
             RoleClaimType = "role"
         };
     });
