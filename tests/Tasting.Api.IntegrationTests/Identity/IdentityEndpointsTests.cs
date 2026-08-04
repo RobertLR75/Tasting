@@ -92,7 +92,9 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var body = await response.Content.ReadFromJsonAsync<ListUsersResponse>();
         Assert.NotNull(body);
         Assert.Single(body.Users);
-        Assert.Equal("admin@tasting.no", body.Users.Single().Email);
+        var user = body.Users.Single();
+        Assert.Equal(IdentityApiFactory.AdminId, user.Id);
+        Assert.Contains("admin", user.Email, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
