@@ -1,0 +1,75 @@
+@page "/breweries/add"
+@using Tasting.Admin.Features.Catalog.Models
+@using Tasting.Admin.Features.Catalog.Services
+@using Tasting.Admin.Shared.Components
+@inject IBreweriesApiClient BreweriesApiClient
+@inject NavigationManager Navigation
+
+<FormLayout Title="Add New Brewery" ErrorMessage="@errorMessage">
+    <FormField 
+        Label="Brewery Name" 
+        @bind-Value="@name"
+        ErrorMessage="@GetFieldError(nameof(name))"
+        Required="true" />
+    
+    <FormField 
+        Label="Country" 
+        @bind-Value="@country"
+        ErrorMessage="@GetFieldError(nameof(country))"
+        Required="true" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Create" 
+            Color="Color.Success"
+            OnClick="@HandleCreateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    private string name = "";
+    private string country = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    private async Task HandleCreateAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new AddBreweryRequest(name, country);
+            var brewery = await BreweriesApiClient.CreateAsync(request);
+            if (brewery != null)
+            {
+                Navigation.NavigateTo("/breweries");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create brewery: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/breweries");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}
