@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Tasting.Api.Features.Identity.Users;
+using Tasting.Api.Features.Identity.Users.ListUsers;
 
 namespace Tasting.Api.IntegrationTests.Identity;
 
@@ -55,6 +56,102 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         using var message = new HttpRequestMessage(
             HttpMethod.Patch,
             $"/api/v1/users/{IdentityApiFactory.UserId}/deactivate");
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.UserId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.User.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task List_users_returns_ok_for_authenticated_admin()
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Get, "/api/v1/users");
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ListUsersResponse>();
+        Assert.NotNull(body);
+        Assert.NotEmpty(body.Users);
+    }
+
+    [Fact]
+    public async Task List_users_requires_admin()
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Get, "/api/v1/users");
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.UserId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.User.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Update_user_returns_ok_for_authenticated_admin()
+    {
+        var request = new
+        {
+            FirstName = "Updated",
+            LastName = "Name",
+            Email = "updated-admin@tasting.no",
+            Role = UserRole.Admin
+        };
+
+        using var message = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/users/{IdentityApiFactory.AdminId}")
+        {
+            Content = JsonContent.Create(request)
+        };
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Update_user_returns_conflict_when_email_taken()
+    {
+        var request = new
+        {
+            FirstName = "Regular",
+            LastName = "User",
+            Email = "user@tasting.no",
+            Role = UserRole.User
+        };
+
+        using var message = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/users/{IdentityApiFactory.AdminId}")
+        {
+            Content = JsonContent.Create(request)
+        };
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Update_user_requires_admin()
+    {
+        var request = new
+        {
+            FirstName = "Regular",
+            LastName = "User",
+            Email = "user@tasting.no",
+            Role = UserRole.User
+        };
+
+        using var message = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/users/{IdentityApiFactory.UserId}")
+        {
+            Content = JsonContent.Create(request)
+        };
         message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.UserId.ToString());
         message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.User.ToString());
 
