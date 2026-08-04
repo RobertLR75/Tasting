@@ -1,0 +1,20 @@
+using SharedLibrary.FastEndpoints;
+
+namespace Tasting.Api.Features.Arrangement.Beers.RemoveBeer;
+
+public sealed class RemoveBeerMapper
+    : BaseCommandMapper<RemoveBeerRequest, ArrangementResponse, RemoveBeerCommand, Domain.Arrangement>
+{
+    public override RemoveBeerCommand ToCommand(RemoveBeerRequest req)
+        => new(Guid.Empty, Guid.Empty, req.RowVersion);
+
+    public override Task<ArrangementResponse> FromEntityAsync(Domain.Arrangement entity, CancellationToken ct = default)
+        => Task.FromResult(new ArrangementResponse(
+            entity.Id,
+            entity.Name,
+            entity.Description,
+            entity.Status,
+            entity.RowVersion,
+            entity.CreatedAt,
+            entity.UpdatedAt));
+}
