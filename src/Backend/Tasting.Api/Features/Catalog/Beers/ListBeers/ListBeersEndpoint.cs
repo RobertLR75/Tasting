@@ -1,6 +1,7 @@
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
+using Tasting.Api.Features.Identity.Users;
 
 namespace Tasting.Api.Features.Catalog.Beers.ListBeers;
 
@@ -14,7 +15,7 @@ public sealed class ListBeersEndpoint(IRequestHandler<ListBeersQuery, ListBeersR
 
     public override async Task HandleAsync(ListBeersRequest req, CancellationToken ct)
     {
-        var isAdmin = HttpContext.User?.IsInRole("Admin") == true;
+        var isAdmin = HttpContext.User?.IsInRole(UserRole.Admin.ToString()) == true;
         if (req.IncludeInactive && !isAdmin)
         {
             throw new ForbiddenException("Only admins can include inactive beers.");
