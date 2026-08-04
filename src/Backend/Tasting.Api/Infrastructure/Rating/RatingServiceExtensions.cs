@@ -22,20 +22,13 @@ public static class RatingServiceExtensions
         {
             builder.Services.AddDbContext<RatingDbContext>(options =>
                 options.UseNpgsql(connectionString));
-
-            builder.Services.AddDbContext<ArrangementDbContext>(options =>
-                options.UseNpgsql(connectionString));
         }
         else
         {
             builder.Services.AddDbContext<RatingDbContext>(options =>
                 options.UseInMemoryDatabase("tasting-rating"));
-
-            builder.Services.AddDbContext<ArrangementDbContext>(options =>
-                options.UseInMemoryDatabase("tasting-arrangement"));
         }
 
-        builder.Services.AddScoped<IArrangementService, ArrangementService>();
         builder.Services.AddScoped<IRequestHandler<SubmitRatingCommand, RatingEntity>, SubmitRatingHandler>();
         builder.Services.AddScoped<IRequestHandler<GetResultsQuery, GetResultsResponse>, GetResultsHandler>();
     }
