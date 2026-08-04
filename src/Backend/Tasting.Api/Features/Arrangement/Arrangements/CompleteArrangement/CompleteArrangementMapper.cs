@@ -1,0 +1,20 @@
+using SharedLibrary.FastEndpoints;
+
+namespace Tasting.Api.Features.Arrangement.Arrangements.CompleteArrangement;
+
+public sealed class CompleteArrangementMapper
+    : BaseCommandMapper<CompleteArrangementRequest, ArrangementResponse, CompleteArrangementCommand, Domain.Arrangement>
+{
+    public override CompleteArrangementCommand ToCommand(CompleteArrangementRequest req)
+        => new(Guid.Empty, req.RowVersion);
+
+    public override Task<ArrangementResponse> FromEntityAsync(Domain.Arrangement entity, CancellationToken ct = default)
+        => Task.FromResult(new ArrangementResponse(
+            entity.Id,
+            entity.Name,
+            entity.Description,
+            entity.Status,
+            entity.RowVersion,
+            entity.CreatedAt,
+            entity.UpdatedAt));
+}

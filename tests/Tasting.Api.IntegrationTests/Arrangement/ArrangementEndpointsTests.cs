@@ -282,4 +282,435 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
+
+    // ── GetArrangement ──────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetArrangement_ReturnsOk_WhenExists()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Get Test",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/arrangements/{arrangementId}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(arrangementId, body.Id);
+        Assert.Equal("Get Test", body.Name);
+    }
+
+    [Fact]
+    public async Task GetArrangement_ReturnsNotFound_WhenMissing()
+    {
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/arrangements/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetArrangement_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        using var client = _factory.CreateClient();
+        var response = await client.GetAsync($"/api/v1/arrangements/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    // ── ListArrangements ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task ListArrangements_ReturnsOk_WithItems()
+    {
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = Guid.NewGuid(),
+                Name = "List Test",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync("/api/v1/arrangements");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    // ── UpdateArrangement ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateArrangement_ReturnsOk_WhenCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Old Name",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}",
+            new { name = "New Name", description = (string?)null, rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("New Name", body.Name);
+    }
+
+    [Fact]
+    public async Task UpdateArrangement_ReturnsConflict_WhenNotCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Started",
+                Status = ArrangementStatus.Started,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}",
+            new { name = "X", description = (string?)null, rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    // ── CancelArrangement ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CancelArrangement_TransitionsToCanceled()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "To Cancel",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/cancel",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(ArrangementStatus.Canceled, body.Status);
+    }
+
+    [Fact]
+    public async Task CancelArrangement_ReturnsConflict_WhenStarted()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Already Started",
+                Status = ArrangementStatus.Started,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/cancel",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    // ── CompleteArrangement ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CompleteArrangement_TransitionsToCompleted()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "To Complete",
+                Status = ArrangementStatus.Started,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/complete",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(ArrangementStatus.Completed, body.Status);
+    }
+
+    [Fact]
+    public async Task CompleteArrangement_ReturnsConflict_WhenCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Not Started",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/complete",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    // ── RemoveParticipant ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task RemoveParticipant_ReturnsOk_WhenCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "With Participant",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Participants.Add(new ArrangementParticipant
+            {
+                Id = Guid.NewGuid(),
+                ArrangementId = arrangementId,
+                UserId = userId,
+                FirstNameSnapshot = string.Empty,
+                LastNameSnapshot = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            db.Arrangements.Add(arrangement);
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"/api/v1/arrangements/{arrangementId}/participants/{userId}");
+        request.Content = JsonContent.Create(new { rowVersion = 0 });
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveParticipant_ReturnsConflict_WhenNotCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Started",
+                Status = ArrangementStatus.Started,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Participants.Add(new ArrangementParticipant
+            {
+                Id = Guid.NewGuid(),
+                ArrangementId = arrangementId,
+                UserId = userId,
+                FirstNameSnapshot = string.Empty,
+                LastNameSnapshot = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            db.Arrangements.Add(arrangement);
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"/api/v1/arrangements/{arrangementId}/participants/{userId}");
+        request.Content = JsonContent.Create(new { rowVersion = 0 });
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    // ── RemoveBeer ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task RemoveBeer_ReturnsOk_WhenCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        var beerId = Guid.NewGuid();
+
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "With Beer",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Beers.Add(new ArrangementBeer
+            {
+                Id = Guid.NewGuid(),
+                ArrangementId = arrangementId,
+                BeerId = beerId,
+                NameSnapshot = string.Empty,
+                BreweryNameSnapshot = string.Empty,
+                BeerStyleSnapshot = string.Empty,
+                BeerTypeSnapshot = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            db.Arrangements.Add(arrangement);
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"/api/v1/arrangements/{arrangementId}/beers/{beerId}");
+        request.Content = JsonContent.Create(new { rowVersion = 0 });
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveBeer_ReturnsConflict_WhenNotCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        var beerId = Guid.NewGuid();
+
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Started",
+                Status = ArrangementStatus.Started,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Beers.Add(new ArrangementBeer
+            {
+                Id = Guid.NewGuid(),
+                ArrangementId = arrangementId,
+                BeerId = beerId,
+                NameSnapshot = string.Empty,
+                BreweryNameSnapshot = string.Empty,
+                BeerStyleSnapshot = string.Empty,
+                BeerTypeSnapshot = string.Empty,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            db.Arrangements.Add(arrangement);
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"/api/v1/arrangements/{arrangementId}/beers/{beerId}");
+        request.Content = JsonContent.Create(new { rowVersion = 0 });
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
 }

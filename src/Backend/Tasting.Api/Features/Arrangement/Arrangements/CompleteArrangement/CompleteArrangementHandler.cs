@@ -1,0 +1,50 @@
+using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Services.Exceptions;
+using SharedLibrary.Services.Interfaces;
+using Tasting.Api.Features.Arrangement.Domain;
+using Tasting.Api.Infrastructure.Arrangement;
+
+namespace Tasting.Api.Features.Arrangement.Arrangements.CompleteArrangement;
+
+public sealed class CompleteArrangementHandler(ArrangementDbContext dbContext)
+    : IRequestHandler<CompleteArrangementCommand, Domain.Arrangement>
+{
+    public async Task<Domain.Arrangement> HandleAsync(
+        CompleteArrangementCommand request,
+        CancellationToken ct = default)
+    {
+        var arrangement = await dbContext.Arrangements
+            .Include(a => a.Participants)
+            .Include(a => a.Beers)
+            .FirstOrDefaultAsync(a => a.Id == request.ArrangementId, ct)
+            ?? throw new ServiceNotFoundException($"Arrangement '{request.ArrangementId}' was not found.");
+
+        if (arrangement.Status != ArrangementStatus.Started)
+        {
+            throw new ConflictException(
+                $"Arrangement cannot be completed from status '{arrangement.Status}'. Only 'Started' arrangements can be completed.");
+        }
+
+        if (arrangement.RowVersion != request.RowVersion)
+        {
+            throw new ConflictException(
+                "Arrangement has been modified by another request. Please reload and retry.");
+        }
+
+        arrangement.Status = ArrangementStatus.Completed;
+        arrangement.RowVersion++;
+        arrangement.UpdatedAt = DateTimeOffset.UtcNow;
+
+        try
+        {
+            await dbContext.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException(
+                "Arrangement was modified concurrently. Please reload and retry.");
+        }
+
+        return arrangement;
+    }
+}
