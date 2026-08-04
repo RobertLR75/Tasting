@@ -8,4 +8,8 @@
         <UserSecretsId>a59d3323-edab-458f-abbd-f36c8c7b5314</UserSecretsId>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Backend\Tasting.Api\Tasting.Api.csproj" />
+    </ItemGroup>
+
 </Project>

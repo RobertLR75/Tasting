@@ -1,12 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// var apiService = builder.AddProject<Projects.Tasting_ApiService>("apiservice")
-//     .WithHttpHealthCheck("/health");
-//
-// builder.AddProject<Projects.Tasting_Web>("webfrontend")
-//     .WithExternalHttpEndpoints()
-//     .WithHttpHealthCheck("/health")
-//     .WithReference(apiService)
-//     .WaitFor(apiService);
+var tastingApi = builder.AddProject<Projects.Tasting_Api>("tasting-api")
+    .WithHttpHealthCheck("/health");
 
 builder.Build().Run();
