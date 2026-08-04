@@ -1,0 +1,34 @@
+@namespace Tasting.Admin.Shared.Components
+
+<MudChip 
+    Variant="Variant.Filled"
+    Color="@GetColorForStatus()"
+    Text="@Status"
+    Icon="@GetIconForStatus()" />
+
+@code {
+    [Parameter]
+    public string Status { get; set; } = "Unknown";
+
+    private Color GetColorForStatus() => Status switch
+    {
+        "Active" => Color.Success,
+        "Inactive" => Color.Error,
+        "Created" => Color.Info,
+        "Started" => Color.Warning,
+        "Completed" => Color.Success,
+        "Canceled" => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetIconForStatus() => Status switch
+    {
+        "Active" => Icons.Material.Filled.CheckCircle,
+        "Inactive" => Icons.Material.Filled.Cancel,
+        "Created" => Icons.Material.Filled.NewReleases,
+        "Started" => Icons.Material.Filled.PlayCircle,
+        "Completed" => Icons.Material.Filled.TaskAlt,
+        "Canceled" => Icons.Material.Filled.RemoveCircle,
+        _ => Icons.Material.Filled.Help
+    };
+}

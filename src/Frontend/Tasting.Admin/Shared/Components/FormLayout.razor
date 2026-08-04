@@ -1,0 +1,25 @@
+@namespace Tasting.Admin.Shared.Components
+
+<MudPaper Class="pa-6" Elevation="1">
+    <MudText Typo="Typo.h5" GutterBottom="true">@Title</MudText>
+    
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
+    }
+    
+    <MudForm>
+        @ChildContent
+    </MudForm>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Form";
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
