@@ -9,7 +9,15 @@ internal sealed class CorrelationIdMiddleware(RequestDelegate next)
 
     public Task Invoke(HttpContext context)
     {
-        var correlationId = Guid.NewGuid().ToString();
+        var correlationId = context.Request.Headers.TryGetValue(HeaderName, out var headerValue)
+            ? headerValue.ToString().Trim()
+            : string.Empty;
+
+        if (string.IsNullOrWhiteSpace(correlationId))
+        {
+            correlationId = Guid.NewGuid().ToString();
+        }
+
         context.Items[ItemKey] = correlationId;
         context.TraceIdentifier = correlationId;
 
