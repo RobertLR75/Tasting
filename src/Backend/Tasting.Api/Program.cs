@@ -44,6 +44,17 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build());
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddCatalog(builder.Configuration);
 builder.Services.AddArrangement(builder.Configuration);
 
@@ -57,6 +68,7 @@ if (!string.IsNullOrWhiteSpace(connectionString))
     new TastingMigrationService().MigrateUp(connectionString);
 }
 
+app.UseCors();
 app.UseAuthentication();
 app.UseMiddleware<ActiveUserMiddleware>();
 app.UseAuthorization();

@@ -1,4 +1,6 @@
 using Tasting.Api.Infrastructure.Identity;
+using SharedLibrary.Services.Interfaces;
+using Tasting.Api.Features.Identity.Users;
 
 namespace Tasting.Api.Infrastructure.Migrations;
 
