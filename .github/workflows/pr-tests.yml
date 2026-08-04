@@ -1,0 +1,50 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Tasting.sln
+
+      - name: Build
+        run: dotnet build Tasting.sln --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: |
+          dotnet test Tasting.sln \
+            --no-build \
+            --configuration Release \
+            --filter "FullyQualifiedName!~IntegrationTests" \
+            --logger "trx;LogFileName=unit-results.trx" \
+            --results-directory ./test-results
+
+      - name: Run integration tests
+        run: |
+          dotnet test tests/Tasting.Api.IntegrationTests/Tasting.Api.IntegrationTests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=integration-results.trx" \
+            --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results/**/*.trx
