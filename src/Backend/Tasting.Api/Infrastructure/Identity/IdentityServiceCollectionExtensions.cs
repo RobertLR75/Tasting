@@ -4,6 +4,8 @@ using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Features.Identity.Users.CreateUser;
 using Tasting.Api.Features.Identity.Users.DeactivateUser;
 using Tasting.Api.Features.Identity.Users.GetUser;
+using Tasting.Api.Features.Identity.Users.ListUsers;
+using Tasting.Api.Features.Identity.Users.UpdateUser;
 
 namespace Tasting.Api.Infrastructure.Identity;
 
@@ -29,6 +31,8 @@ public static class IdentityServiceCollectionExtensions
         services.AddScoped<IRequestHandler<CreateUserCommand, User>, CreateUserHandler>();
         services.AddScoped<IRequestHandler<GetUserQuery, User>, GetUserHandler>();
         services.AddScoped<IRequestHandler<DeactivateUserCommand, User>, DeactivateUserHandler>();
+        services.AddScoped<IRequestHandler<ListUsersQuery, ListUsersResult>, ListUsersHandler>();
+        services.AddScoped<IRequestHandler<UpdateUserCommand, User>, UpdateUserHandler>();
 
         return services;
     }
