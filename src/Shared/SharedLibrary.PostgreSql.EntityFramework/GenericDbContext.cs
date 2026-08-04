@@ -125,8 +125,11 @@ public class GenericDbContext<TEntity>(DbContextOptions<GenericDbContext<TEntity
         var foreignKeyPropertyName = ToForeignKeyPropertyName(property.Name);
         var foreignKeyColumnName = ToForeignKeyColumnName(property.Name);
         var isNullable = IsNullable(property);
+        var foreignKeyClrType = isNullable
+            ? typeof(Nullable<>).MakeGenericType(principalKeyProperty.PropertyType)
+            : principalKeyProperty.PropertyType;
 
-        var shadowProperty = entityBuilder.Property(principalKeyProperty.PropertyType, foreignKeyPropertyName)
+        var shadowProperty = entityBuilder.Property(foreignKeyClrType, foreignKeyPropertyName)
             .HasColumnName(foreignKeyColumnName)
             .IsRequired(!isNullable);
 

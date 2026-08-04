@@ -4,6 +4,16 @@ Et system for blindtesting av øl i arrangerte smakingssessjoner. Admin forvalte
 
 ## Language
 
+### Kvalitetsstyring
+
+**Coverage gate**:
+En håndhevet minimumsterskel for line coverage per SharedLibrary-prosjekt. I denne løsningen betyr det minst 90% line coverage for hvert prosjekt under `src/Shared/`, med eksplisitte og begrunnede ekskluderinger for kode uten reell logikk.
+_Avoid_: Coverage target, global coverage, test percentage
+
+**Test strategy**:
+Valgt kombinasjon av unit tests og eventuelle integration tests for et spesifikt SharedLibrary-prosjekt, basert på bibliotekets ansvar. Unit tests er standard; integration tests brukes bare når bibliotekets verdi ligger i samspillet med eksterne rammeverk eller infrastrukturlag.
+_Avoid_: Test approach, test plan, blanket testing
+
 ### Identitet
 
 **User**:

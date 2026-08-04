@@ -4,7 +4,7 @@ using SharedLibrary.Interfaces;
 
 namespace SharedLibrary.HttpClient;
 
-internal static class SpecificationQueryStringBuilder
+public static class SpecificationQueryStringBuilder
 {
     public static string BuildQueryString<T>(IApiSpecification<T>? specification)
     {
