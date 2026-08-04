@@ -21,12 +21,19 @@ public sealed class ListBeersHandler(CatalogDbContext dbContext) : IRequestHandl
             .OrderBy(x => x.Name)
             .ToListAsync(ct);
 
+        var breweryIds = beers.Select(b => b.BreweryId).Distinct().ToList();
+        var styleIds = beers.Select(b => b.BeerStyleId).Distinct().ToList();
+        var typeIds = beers.Select(b => b.BeerTypeId).Distinct().ToList();
+
         var breweryNames = await dbContext.Breweries.AsNoTracking()
-            .ToDictionaryAsync(x => x.Id, x => x.Name, ct);
+            .Where(b => breweryIds.Contains(b.Id))
+            .ToDictionaryAsync(b => b.Id, b => b.Name, ct);
         var styleNames = await dbContext.BeerStyles.AsNoTracking()
-            .ToDictionaryAsync(x => x.Id, x => x.Name, ct);
+            .Where(s => styleIds.Contains(s.Id))
+            .ToDictionaryAsync(s => s.Id, s => s.Name, ct);
         var typeNames = await dbContext.BeerTypes.AsNoTracking()
-            .ToDictionaryAsync(x => x.Id, x => x.Name, ct);
+            .Where(t => typeIds.Contains(t.Id))
+            .ToDictionaryAsync(t => t.Id, t => t.Name, ct);
 
         var items = beers.Select(x => new ListBeersItem(
             x.Id,
