@@ -44,10 +44,7 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
         var context = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
         await context.Database.EnsureCreatedAsync();
 
-        if (await context.Users.AnyAsync())
-        {
-            return;
-        }
+        context.Users.RemoveRange(context.Users);
 
         context.Users.Add(new User
         {
