@@ -1,0 +1,26 @@
+<MudNavMenu Class="nav-menu">
+    @foreach (var item in NavigationItems)
+    {
+        <MudNavLink Href="@item.Href"
+                    Match="@item.Match"
+                    Icon="@item.Icon"
+                    Class="nav-link">
+            @item.Title
+        </MudNavLink>
+    }
+</MudNavMenu>
+
+@code {
+    private static readonly IReadOnlyList<NavigationItem> NavigationItems =
+    [
+        new("/", "Dashboard", Icons.Material.Filled.Dashboard, NavLinkMatch.All),
+        new("/arrangements", "Arrangements", Icons.Material.Filled.Event, NavLinkMatch.Prefix),
+        new("/users", "Users", Icons.Material.Filled.People, NavLinkMatch.Prefix),
+        new("/beers", "Beers", Icons.Material.Filled.SportsBar, NavLinkMatch.Prefix),
+        new("/breweries", "Breweries", Icons.Material.Filled.Factory, NavLinkMatch.Prefix),
+        new("/ratings", "Ratings", Icons.Material.Filled.StarRate, NavLinkMatch.Prefix),
+        new("/results", "Results", Icons.Material.Filled.Leaderboard, NavLinkMatch.Prefix)
+    ];
+
+    private sealed record NavigationItem(string Href, string Title, string Icon, NavLinkMatch Match);
+}
