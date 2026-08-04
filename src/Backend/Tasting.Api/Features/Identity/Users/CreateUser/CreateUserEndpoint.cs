@@ -10,7 +10,7 @@ public sealed class CreateUserEndpoint(
     public override void Configure()
     {
         Post("/users");
-        Roles(UserRole.Admin.ToString(), UserRole.User.ToString());
+        Roles(UserRole.Admin.ToString());
     }
 
     protected override CreateUserCommand ToCommand(CreateUserRequest req)
