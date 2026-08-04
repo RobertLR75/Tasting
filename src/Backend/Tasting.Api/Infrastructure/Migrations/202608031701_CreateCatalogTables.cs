@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace Tasting.Api.Infrastructure.Migrations;
 
-[Migration(202608031701)]
+[Migration(202608031702)]
 public sealed class CreateCatalogTablesMigration : Migration
 {
     public override void Up()
