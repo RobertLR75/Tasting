@@ -38,7 +38,25 @@ public static class FastEndPointsExtensions
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
-            app.MapScalarApiReference();
+            app.MapScalarApiReference(options =>
+            {
+                options
+                    .WithTitle("Tasting API")
+                    .WithTheme(ScalarTheme.Default)
+                    .AddDocument("v1", "Tasting API v1");
+            });
+        }
+        else
+        {
+            app.MapOpenApi().RequireAuthorization();
+            app.MapScalarApiReference(options =>
+                {
+                    options
+                        .WithTitle("Tasting API")
+                        .WithTheme(ScalarTheme.Default)
+                        .AddDocument("v1", "Tasting API v1");
+                })
+                .RequireAuthorization();
         }
     }
 
