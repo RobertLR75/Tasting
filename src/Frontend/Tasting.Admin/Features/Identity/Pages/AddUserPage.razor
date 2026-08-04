@@ -1,0 +1,91 @@
+@page "/users/add"
+@using Tasting.Admin.Features.Identity.Models
+@using Tasting.Admin.Features.Identity.Services
+@using Tasting.Admin.Shared.Components
+@inject IUsersApiClient UsersApiClient
+@inject NavigationManager Navigation
+
+<FormLayout Title="Add New User" ErrorMessage="@errorMessage">
+    <FormField 
+        Label="First Name" 
+        @bind-Value="@firstName"
+        ErrorMessage="@GetFieldError(nameof(firstName))"
+        Required="true" />
+    
+    <FormField 
+        Label="Last Name" 
+        @bind-Value="@lastName"
+        ErrorMessage="@GetFieldError(nameof(lastName))"
+        Required="true" />
+    
+    <FormField 
+        Label="Email" 
+        InputType="InputType.Email"
+        @bind-Value="@email"
+        ErrorMessage="@GetFieldError(nameof(email))"
+        Required="true" />
+    
+    <FormField 
+        Label="Password" 
+        InputType="InputType.Password"
+        @bind-Value="@password"
+        ErrorMessage="@GetFieldError(nameof(password))"
+        Required="true" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Create" 
+            Color="Color.Success"
+            OnClick="@HandleCreateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    private string firstName = "";
+    private string lastName = "";
+    private string email = "";
+    private string password = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    private async Task HandleCreateAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new AddUserRequest(firstName, lastName, email, password);
+            var user = await UsersApiClient.CreateAsync(request);
+            if (user != null)
+            {
+                Navigation.NavigateTo("/users");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create user: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/users");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}
