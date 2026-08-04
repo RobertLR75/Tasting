@@ -79,4 +79,46 @@ public sealed class UpdateUserHandlerTests
 
         Assert.Equal("USER@TASTING.NO".Trim(), result.Email);
     }
+
+    [Fact]
+    public async Task Should_throw_conflict_when_inactive_user_changes_role()
+    {
+        using var fixture = new HandlerTestFixture();
+        var user = UserTestData.RegularUser();
+        user.IsActive = false;
+        fixture.Context.Users.Add(user);
+        await fixture.Context.SaveChangesAsync();
+        fixture.Context.ChangeTracker.Clear();
+
+        var handler = new UpdateUserHandler(fixture.Repository);
+        var act = async () => await handler.HandleAsync(
+            new UpdateUserCommand(user.Id, "Regular", "User", "user@tasting.no", UserRole.Admin));
+
+        await Assert.ThrowsAsync<ConflictException>(act);
+    }
+
+    [Fact]
+    public async Task Should_throw_conflict_when_downgrading_last_active_admin()
+    {
+        using var fixture = new HandlerTestFixture();
+        fixture.Context.Users.Add(new User
+        {
+            Id = Guid.NewGuid(),
+            Email = "admin@tasting.no",
+            EmailNormalized = "admin@tasting.no",
+            FirstName = "Only",
+            LastName = "Admin",
+            Role = UserRole.Admin,
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+        await fixture.Context.SaveChangesAsync();
+
+        var adminId = fixture.Context.Users.Select(u => u.Id).Single();
+        var handler = new UpdateUserHandler(fixture.Repository);
+        var act = async () => await handler.HandleAsync(
+            new UpdateUserCommand(adminId, "Only", "Admin", "admin@tasting.no", UserRole.User));
+
+        await Assert.ThrowsAsync<ConflictException>(act);
+    }
 }

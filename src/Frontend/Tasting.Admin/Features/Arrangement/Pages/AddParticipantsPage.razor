@@ -1,0 +1,125 @@
+@page "/arrangements/{ArrangementId:guid}/participants"
+@using MudBlazor
+@using Tasting.Admin.Features.Arrangement.Models
+@using Tasting.Admin.Features.Arrangement.Services
+@using Tasting.Admin.Shared.Components
+@using Tasting.Admin.Features.Identity.Models
+@using Tasting.Admin.Features.Identity.Services
+@inject IArrangementsApiClient ArrangementsApiClient
+@inject IUsersApiClient UsersApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Add Participants to Arrangement</PageTitle>
+
+<PageHeader Title="Add Participants to Arrangement" />
+
+@if (ErrorMessage is not null)
+{
+    <ErrorAlert Message="@ErrorMessage" />
+}
+else if (IsLoading)
+{
+    <LoadingIndicator />
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Available Users</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField @bind-value="SearchTerm" 
+                             Label="Search users" 
+                             Placeholder="Enter name or email"
+                             Immediate="true"
+                             Variant="Variant.Outlined" />
+            </MudCardContent>
+            <MudCardActions>
+                <ActionButton Text="Search" Color="Color.Primary" OnClick="@SearchUsersAsync" />
+            </MudCardActions>
+        </MudCard>
+
+        @if (AvailableUsers.Count > 0)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudTable Items="AvailableUsers" Dense="true" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Email</MudTh>
+                            <MudTh>Action</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Name">@($"{context.FirstName} {context.LastName}")</MudTd>
+                            <MudTd DataLabel="Email">@context.Email</MudTd>
+                            <MudTd DataLabel="Action">
+                                <ActionButton Text="Add" Color="Color.Primary" 
+                                            OnClick="@(() => AddParticipantAsync(context.Id))"
+                                            Disabled="@AddingParticipantIds.Contains(context.Id)" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudCardContent>
+            </MudCard>
+        }
+
+        <ActionButton Text="Back" Color="Color.Default" OnClick="@(() => Navigation.NavigateTo("/arrangements"))" />
+    </MudStack>
+}
+
+@code {
+    [Parameter]
+    public Guid ArrangementId { get; set; }
+
+    private List<UserDto> AvailableUsers { get; set; } = new();
+    private HashSet<int> AddingParticipantIds { get; set; } = new();
+    private string SearchTerm { get; set; } = "";
+    private string? ErrorMessage { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchUsersAsync();
+    }
+
+    private async Task SearchUsersAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            var response = await UsersApiClient.ListAsync(SearchTerm);
+            AvailableUsers = response?.Users.ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load users: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task AddParticipantAsync(int userId)
+    {
+        AddingParticipantIds.Add(userId);
+        try
+        {
+            var request = new AddParticipantToArrangementRequest(Guid.Empty); // Would need proper mapping
+            await ArrangementsApiClient.AddParticipantAsync(ArrangementId, request);
+            AvailableUsers.RemoveAll(u => u.Id == userId);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to add participant: {ex.Message}";
+        }
+        finally
+        {
+            AddingParticipantIds.Remove(userId);
+        }
+    }
+}

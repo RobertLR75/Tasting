@@ -1,0 +1,84 @@
+@page "/arrangements/add"
+@using MudBlazor
+@using Tasting.Admin.Features.Arrangement.Models
+@using Tasting.Admin.Features.Arrangement.Services
+@using Tasting.Admin.Shared.Components
+@inject IArrangementsApiClient ArrangementsApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Add Arrangement</PageTitle>
+
+<FormLayout Title="Add New Arrangement" ErrorMessage="@errorMessage">
+    <FormField 
+        Label="Arrangement Name" 
+        @bind-value="@arrangementName"
+        ErrorMessage="@GetFieldError(nameof(arrangementName))"
+        Required="true" />
+    
+    <FormField 
+        Label="Description" 
+        InputType="InputType.Text"
+        @bind-value="@description"
+        ErrorMessage="@GetFieldError(nameof(description))" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Create" 
+            Color="Color.Success"
+            OnClick="@HandleCreateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    private string arrangementName = "";
+    private string description = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    private async Task HandleCreateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(arrangementName))
+        {
+            fieldErrors["arrangementName"] = "Arrangement name is required";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new CreateArrangementRequest(arrangementName, description);
+            var arrangement = await ArrangementsApiClient.CreateAsync(request);
+            if (arrangement != null)
+            {
+                Navigation.NavigateTo("/arrangements");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create arrangement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/arrangements");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}

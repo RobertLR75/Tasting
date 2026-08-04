@@ -1,0 +1,115 @@
+@page "/arrangements/{ArrangementId:guid}/edit"
+@using MudBlazor
+@using Tasting.Admin.Features.Arrangement.Models
+@using Tasting.Admin.Features.Arrangement.Services
+@using Tasting.Admin.Shared.Components
+@inject IArrangementsApiClient ArrangementsApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Arrangement</PageTitle>
+
+<FormLayout Title="Edit Arrangement" ErrorMessage="@errorMessage">
+    @if (currentArrangement != null)
+    {
+        <MudText Typo="Typo.body2" Class="mb-3">Status: @currentArrangement.Status.ToString()</MudText>
+    }
+    
+    <FormField 
+        Label="Arrangement Name" 
+        @bind-value="@arrangementName"
+        ErrorMessage="@GetFieldError(nameof(arrangementName))"
+        Required="true" />
+    
+    <FormField 
+        Label="Description" 
+        InputType="InputType.Text"
+        @bind-value="@description"
+        ErrorMessage="@GetFieldError(nameof(description))" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Update" 
+            Color="Color.Success"
+            OnClick="@HandleUpdateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public Guid ArrangementId { get; set; }
+
+    private ArrangementDto? currentArrangement;
+    private string arrangementName = "";
+    private string description = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            currentArrangement = await ArrangementsApiClient.GetAsync(ArrangementId);
+            if (currentArrangement != null)
+            {
+                arrangementName = currentArrangement.Name;
+                description = currentArrangement.Description ?? "";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load arrangement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(arrangementName))
+        {
+            fieldErrors["arrangementName"] = "Arrangement name is required";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new UpdateArrangementRequest(arrangementName, description);
+            var result = await ArrangementsApiClient.UpdateAsync(ArrangementId, request);
+            if (result != null)
+            {
+                Navigation.NavigateTo("/arrangements");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update arrangement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/arrangements");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}

@@ -1,0 +1,122 @@
+@page "/arrangements/{ArrangementId:guid}/status"
+@using MudBlazor
+@using Tasting.Admin.Features.Arrangement.Models
+@using Tasting.Admin.Features.Arrangement.Services
+@using Tasting.Admin.Shared.Components
+@inject IArrangementsApiClient ArrangementsApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Change Arrangement Status</PageTitle>
+
+<FormLayout Title="Change Arrangement Status" ErrorMessage="@errorMessage">
+    @if (currentArrangement != null)
+    {
+        <MudText Typo="Typo.body1" Class="mb-3">Name: @currentArrangement.Name</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">Current Status: <StatusBadge Status="@currentArrangement.Status.ToString()" /></MudText>
+    }
+    
+    <FormField 
+        Label="New Status" 
+        @bind-value="@selectedStatus"
+        Placeholder="Select new status"
+        ErrorMessage="@GetFieldError(nameof(selectedStatus))"
+        Required="true">
+    </FormField>
+
+    @if (!string.IsNullOrEmpty(statusWarning))
+    {
+        <MudAlert Severity="Severity.Warning">@statusWarning</MudAlert>
+    }
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Change Status" 
+            Color="Color.Success"
+            OnClick="@HandleChangeStatusAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public Guid ArrangementId { get; set; }
+
+    private ArrangementDto? currentArrangement;
+    private string selectedStatus = "";
+    private string? errorMessage;
+    private string? statusWarning;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            currentArrangement = await ArrangementsApiClient.GetAsync(ArrangementId);
+            if (currentArrangement != null)
+            {
+                selectedStatus = currentArrangement.Status.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load arrangement: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleChangeStatusAsync()
+    {
+        if (string.IsNullOrEmpty(selectedStatus))
+        {
+            errorMessage = "Please select a status";
+            return;
+        }
+
+        if (!Enum.TryParse<ArrangementStatus>(selectedStatus, out var newStatus))
+        {
+            errorMessage = "Invalid status selected";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new ChangeArrangementStatusRequest(newStatus);
+            var result = await ArrangementsApiClient.ChangeStatusAsync(ArrangementId, request);
+            if (result != null)
+            {
+                Navigation.NavigateTo("/arrangements");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to change status: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/arrangements");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}

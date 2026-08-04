@@ -1,0 +1,101 @@
+@page "/breweries/{BreweryId:guid}/edit"
+@using MudBlazor
+@using Tasting.Admin.Features.Catalog.Models
+@using Tasting.Admin.Features.Catalog.Services
+@using Tasting.Admin.Shared.Components
+@inject IBreweriesApiClient BreweriesApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Brewery</PageTitle>
+
+<FormLayout Title="Edit Brewery" ErrorMessage="@errorMessage">
+    <FormField 
+        Label="Brewery Name" 
+        @bind-value="@breweryName"
+        ErrorMessage="@GetFieldError(nameof(breweryName))"
+        Required="true" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Update" 
+            Color="Color.Success"
+            OnClick="@HandleUpdateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public Guid BreweryId { get; set; }
+
+    private string breweryName = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var brewery = await BreweriesApiClient.GetAsync(BreweryId);
+            if (brewery != null)
+            {
+                breweryName = brewery.Name;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load brewery: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(breweryName))
+        {
+            fieldErrors["breweryName"] = "Brewery name is required";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new UpdateBreweryRequest(breweryName);
+            var result = await BreweriesApiClient.UpdateAsync(BreweryId, request);
+            if (result != null)
+            {
+                Navigation.NavigateTo("/breweries");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update brewery: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/breweries");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}

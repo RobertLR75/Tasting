@@ -1,9 +1,100 @@
 @page "/users"
+@using MudBlazor
 @attribute [Microsoft.AspNetCore.Components.RouteAttribute("/users")]
+@using Tasting.Admin.Features.Identity.Models
+@using Tasting.Admin.Features.Identity.Services
+@using Tasting.Admin.Shared.Components
+@inject IUsersApiClient UsersApiClient
+@inject NavigationManager Navigation
 
 <PageTitle>Users</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Users</MudText>
-<MudText Typo="Typo.body1">
-    Placeholder page for managing users.
-</MudText>
+<PageHeader Title="Users" />
+
+<MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudTextField @bind-value="SearchTerm"
+                  Label="Search users"
+                  Placeholder="Search by name or email"
+                  Variant="Variant.Outlined"
+                  Immediate="true" />
+    <ActionButton Text="Search" Color="Color.Primary" OnClick="@SearchAsync" />
+    <ActionButton Text="Add User" Color="Color.Success" OnClick="@(() => Navigation.NavigateTo("/users/add"))" />
+</MudStack>
+
+@if (ErrorMessage is not null)
+{
+    <ErrorAlert Message="@ErrorMessage" />
+}
+else if (IsLoading)
+{
+    <LoadingIndicator />
+}
+else if (Users.Count == 0)
+{
+    <MudAlert Severity="Severity.Info" Dense="true">No users found.</MudAlert>
+}
+else
+{
+    <MudTable Items="Users" Hover="true" Dense="true">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Role</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@($"{context.FirstName} {context.LastName}")</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="Role">
+                <StatusBadge Status="@context.Role" />
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <StatusBadge Status="@context.Status" />
+            </MudTd>
+            <MudTd DataLabel="Actions">
+                <MudStack Row="true" Spacing="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditUser(context.Id))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Security" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-role"))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.ToggleOff" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-status"))" />
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<UserDto> Users { get; set; } = new();
+    private string SearchTerm { get; set; } = "";
+    private string? ErrorMessage { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchAsync();
+    }
+
+    private async Task SearchAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            var response = await UsersApiClient.ListAsync(SearchTerm);
+            Users = response?.Users.ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load users: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void EditUser(int id)
+    {
+        Navigation.NavigateTo($"/users/{id}/edit");
+    }
+}

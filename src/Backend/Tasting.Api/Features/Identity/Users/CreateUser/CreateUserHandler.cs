@@ -28,6 +28,7 @@ public sealed class CreateUserHandler(IUserRepository userRepository) : IRequest
             EmailNormalized = normalizedEmail,
             FirstName = request.FirstName.Trim(),
             LastName = request.LastName.Trim(),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Role = request.Role,
             IsActive = true
         };

@@ -6,7 +6,7 @@ public sealed class CreateUserMapper : BaseCommandMapper<CreateUserRequest, User
 {
     public override CreateUserCommand ToCommand(CreateUserRequest req)
     {
-        return new CreateUserCommand(req.Email, req.FirstName, req.LastName, req.Role, false);
+        return new CreateUserCommand(req.Email, req.FirstName, req.LastName, req.Password, req.Role, false);
     }
 
     public override Task<UserResponse> FromEntityAsync(User entity, CancellationToken ct = default)

@@ -6,7 +6,7 @@ public sealed class ListUsersMapper : BaseQueryMapper<ListUsersRequest, ListUser
 {
     public override ListUsersQuery ToQuery(ListUsersRequest req)
     {
-        return new ListUsersQuery();
+        return new ListUsersQuery(req.SearchTerm);
     }
 
     public override Task<ListUsersResponse> FromEntityAsync(ListUsersResult entity, CancellationToken ct = default)

@@ -15,7 +15,7 @@ public sealed class CreateUserHandlerTests
 
         var handler = new CreateUserHandler(fixture.Repository);
         var act = async () => await handler.HandleAsync(
-            new CreateUserCommand("USER@TASTING.NO", "Another", "User", UserRole.User, false));
+            new CreateUserCommand("USER@TASTING.NO", "Another", "User", "password123", UserRole.User, false));
 
         await Assert.ThrowsAsync<ConflictException>(act);
     }
@@ -27,7 +27,7 @@ public sealed class CreateUserHandlerTests
         var handler = new CreateUserHandler(fixture.Repository);
 
         var act = async () => await handler.HandleAsync(
-            new CreateUserCommand("admin2@tasting.no", "New", "Admin", UserRole.Admin, false));
+            new CreateUserCommand("admin2@tasting.no", "New", "Admin", "password123", UserRole.Admin, false));
 
         await Assert.ThrowsAsync<ForbiddenException>(act);
     }
