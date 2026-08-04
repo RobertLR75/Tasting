@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Backend\Tasting.Api\Tasting.Api.csproj" />
+        <ProjectReference Include="..\..\src\Frontend\Tasting.Admin\Tasting.Admin.csproj" />
     </ItemGroup>
 
 </Project>
