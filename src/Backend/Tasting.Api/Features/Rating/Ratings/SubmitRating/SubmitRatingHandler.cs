@@ -101,11 +101,12 @@ public class SubmitRatingHandler(RatingDbContext db, IArrangementService arrange
             .ToListAsync(ct);
 
         var count = allRatings.Count;
-        var mean = Math.Round(allRatings.Sum(r => r.TotalRating) / count, 2, MidpointRounding.AwayFromZero);
+        var meanRaw = allRatings.Sum(r => r.TotalRating) / count;
+        var mean = Math.Round(meanRaw, 2, MidpointRounding.AwayFromZero);
 
         // Population standard deviation — stored without rounding (ADR-0023)
         var variance = count > 1
-            ? allRatings.Sum(r => (r.TotalRating - mean) * (r.TotalRating - mean)) / count
+            ? allRatings.Sum(r => (r.TotalRating - meanRaw) * (r.TotalRating - meanRaw)) / count
             : 0m;
         var stdDev = (decimal)Math.Sqrt((double)variance);
 
