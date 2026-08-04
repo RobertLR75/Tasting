@@ -12,6 +12,7 @@ public sealed class CreateBeerStyleEndpoint(IRequestHandler<CreateBeerStyleComma
     public override void Configure()
     {
         Post("/beer-styles");
+        Description(d => d.WithTags("Beer Styles"));
         Roles(UserRole.Admin.ToString());
     }
 }

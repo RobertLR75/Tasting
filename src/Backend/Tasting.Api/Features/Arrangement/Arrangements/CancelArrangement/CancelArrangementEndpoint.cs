@@ -17,6 +17,7 @@ public sealed class CancelArrangementEndpoint(
     public override void Configure()
     {
         Post("/arrangements/{arrangementId:guid}/cancel");
+        Description(d => d.WithTags("Arrangements"));
         Roles(UserRole.Admin.ToString());
     }
 

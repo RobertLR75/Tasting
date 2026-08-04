@@ -11,6 +11,7 @@ public sealed class GetBeerStyleEndpoint(IRequestHandler<GetBeerStyleQuery, Beer
     public override void Configure()
     {
         Get("/beer-styles/{id:guid}");
+        Description(d => d.WithTags("Beer Styles"));
         Roles(UserRole.Admin.ToString(), UserRole.User.ToString());
     }
 }

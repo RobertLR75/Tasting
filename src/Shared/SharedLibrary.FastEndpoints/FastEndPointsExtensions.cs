@@ -38,7 +38,7 @@ public static class FastEndPointsExtensions
 
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            app.MapOpenApi().AllowAnonymous();
             app.MapScalarApiReference(options =>
             {
                 options

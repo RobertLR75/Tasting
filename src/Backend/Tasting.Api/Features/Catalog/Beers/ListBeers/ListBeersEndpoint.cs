@@ -11,6 +11,7 @@ public sealed class ListBeersEndpoint(IRequestHandler<ListBeersQuery, ListBeersR
     public override void Configure()
     {
         Get("/beers");
+        Description(d => d.WithTags("Beers"));
     }
 
     public override async Task HandleAsync(ListBeersRequest req, CancellationToken ct)

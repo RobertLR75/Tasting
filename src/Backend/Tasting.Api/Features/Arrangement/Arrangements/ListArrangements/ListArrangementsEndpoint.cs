@@ -12,6 +12,7 @@ public sealed class ListArrangementsEndpoint(
     public override void Configure()
     {
         Get("/arrangements");
+        Description(d => d.WithTags("Arrangements"));
         Roles(UserRole.Admin.ToString(), UserRole.User.ToString());
     }
 }

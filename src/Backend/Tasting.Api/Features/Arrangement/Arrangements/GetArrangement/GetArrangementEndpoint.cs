@@ -12,6 +12,7 @@ public sealed class GetArrangementEndpoint(
     public override void Configure()
     {
         Get("/arrangements/{arrangementId:guid}");
+        Description(d => d.WithTags("Arrangements"));
         Roles(UserRole.Admin.ToString(), UserRole.User.ToString());
     }
 }

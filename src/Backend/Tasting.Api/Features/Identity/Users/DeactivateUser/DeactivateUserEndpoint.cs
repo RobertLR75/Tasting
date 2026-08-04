@@ -10,6 +10,7 @@ public sealed class DeactivateUserEndpoint(
     public override void Configure()
     {
         Patch("/users/{id:guid}/deactivate");
+        Description(d => d.WithTags("Users"));
         Roles(UserRole.Admin.ToString());
     }
 

@@ -10,6 +10,7 @@ public sealed class GetUserEndpoint(
     public override void Configure()
     {
         Get("/users/{id:guid}");
+        Description(d => d.WithTags("Users"));
         Roles(UserRole.Admin.ToString(), UserRole.User.ToString());
     }
 }

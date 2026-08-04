@@ -13,6 +13,7 @@ public sealed class UpdateBeerEndpoint(IRequestHandler<UpdateBeerCommand, Beer> 
     public override void Configure()
     {
         Put("/beers/{id:guid}");
+        Description(d => d.WithTags("Beers"));
         Roles(UserRole.Admin.ToString());
     }
 

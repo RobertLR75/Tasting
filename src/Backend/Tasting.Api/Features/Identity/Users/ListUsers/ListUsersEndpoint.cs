@@ -10,6 +10,7 @@ public sealed class ListUsersEndpoint(IRequestHandler<ListUsersQuery, ListUsersR
     public override void Configure()
     {
         Get("/users");
+        Description(d => d.WithTags("Users"));
         Roles(UserRole.Admin.ToString());
     }
 

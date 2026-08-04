@@ -11,7 +11,7 @@ public class GetResultsEndpoint(IRequestHandler<GetResultsQuery, GetResultsRespo
     {
         Get("arrangements/{arrangementId}/results");
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
-        Description(d => d.WithTags("Rating"));
+        Description(d => d.WithTags("Arrangements"));
     }
 
     public override async Task HandleAsync(GetResultsRequest req, CancellationToken ct)

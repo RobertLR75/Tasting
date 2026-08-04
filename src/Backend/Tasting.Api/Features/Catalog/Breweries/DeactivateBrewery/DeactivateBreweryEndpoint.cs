@@ -12,6 +12,7 @@ public sealed class DeactivateBreweryEndpoint(IRequestHandler<DeactivateBreweryC
     public override void Configure()
     {
         Patch("/breweries/{id:guid}/deactivate");
+        Description(d => d.WithTags("Breweries"));
         Roles(UserRole.Admin.ToString());
     }
 

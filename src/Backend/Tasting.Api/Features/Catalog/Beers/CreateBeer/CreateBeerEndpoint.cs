@@ -11,6 +11,7 @@ public sealed class CreateBeerEndpoint(IRequestHandler<CreateBeerCommand, Beer> 
     public override void Configure()
     {
         Post("/beers");
+        Description(d => d.WithTags("Beers"));
         Roles(UserRole.Admin.ToString());
     }
 }

@@ -18,6 +18,7 @@ public sealed class RemoveParticipantEndpoint(
     public override void Configure()
     {
         Delete("/arrangements/{arrangementId:guid}/participants/{userId:guid}");
+        Description(d => d.WithTags("Participants"));
         Roles(UserRole.Admin.ToString());
     }
 

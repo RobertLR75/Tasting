@@ -18,6 +18,7 @@ public sealed class UpdateArrangementEndpoint(
     public override void Configure()
     {
         Put("/arrangements/{arrangementId:guid}");
+        Description(d => d.WithTags("Arrangements"));
         Roles(UserRole.Admin.ToString());
     }
 
