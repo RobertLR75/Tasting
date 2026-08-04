@@ -1,0 +1,105 @@
+@page "/breweries/{BreweryId:guid}/beers/add"
+@using Tasting.Admin.Features.Catalog.Models
+@using Tasting.Admin.Features.Catalog.Services
+@using Tasting.Admin.Shared.Components
+@inject IBeersApiClient BeersApiClient
+@inject IBreweriesApiClient BreweriesApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Add Beer</PageTitle>
+
+<FormLayout Title="Add New Beer" ErrorMessage="@errorMessage">
+    @if (currentBrewery != null)
+    {
+        <MudText Typo="Typo.body1" Class="mb-3">Brewery: @currentBrewery.Name</MudText>
+    }
+    
+    <FormField 
+        Label="Beer Name" 
+        @bind-Value="@beerName"
+        ErrorMessage="@GetFieldError(nameof(beerName))"
+        Required="true" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Create" 
+            Color="Color.Success"
+            OnClick="@HandleCreateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public Guid BreweryId { get; set; }
+
+    private BreweryDto? currentBrewery;
+    private string beerName = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (BreweryId != Guid.Empty)
+        {
+            try
+            {
+                currentBrewery = await BreweriesApiClient.GetAsync(BreweryId);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Failed to load brewery: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task HandleCreateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(beerName))
+        {
+            fieldErrors["beerName"] = "Beer name is required";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new CreateBeerRequest(
+                BreweryId, 
+                Guid.Empty, // BeerStyleId - would need to be selected from UI
+                Guid.Empty  // BeerTypeId - would need to be selected from UI
+            );
+            var beer = await BeersApiClient.CreateAsync(request);
+            if (beer != null)
+            {
+                Navigation.NavigateTo($"/breweries/{BreweryId}/beers");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create beer: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo($"/breweries/{BreweryId}/beers");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}
