@@ -12,10 +12,11 @@ public sealed class UpdateUserEndpoint(IRequestHandler<UpdateUserCommand, User> 
         Roles(UserRole.Admin.ToString());
     }
 
-    protected override UpdateUserCommand ToCommand(UpdateUserRequest req)
-    {
-        return new UpdateUserCommand(req.Id, req.FirstName, req.LastName, req.Email, req.Role);
-    }
+protected override UpdateUserCommand ToCommand(UpdateUserRequest req)
+{
+    var id = Route<Guid>("id");
+    return new UpdateUserCommand(id, req.FirstName, req.LastName, req.Email, req.Role);
+}
 
     protected override async Task HandleResponseAsync(UserResponse response, CancellationToken ct)
     {
