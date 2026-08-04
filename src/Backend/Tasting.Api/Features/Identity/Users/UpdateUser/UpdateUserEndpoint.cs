@@ -9,6 +9,7 @@ public sealed class UpdateUserEndpoint(IRequestHandler<UpdateUserCommand, User> 
     public override void Configure()
     {
         Put("/users/{id:guid}");
+        Description(d => d.WithTags("Users"));
         Roles(UserRole.Admin.ToString());
     }
 

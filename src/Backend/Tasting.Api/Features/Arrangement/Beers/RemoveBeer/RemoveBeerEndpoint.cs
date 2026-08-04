@@ -18,6 +18,7 @@ public sealed class RemoveBeerEndpoint(
     public override void Configure()
     {
         Delete("/arrangements/{arrangementId:guid}/beers/{beerId:guid}");
+        Description(d => d.WithTags("Arrangement Beers"));
         Roles(UserRole.Admin.ToString());
     }
 

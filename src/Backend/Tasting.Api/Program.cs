@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using SharedLibrary.Configuration;
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Configuration;
@@ -55,6 +56,8 @@ app.UseAuthentication();
 app.UseMiddleware<ActiveUserMiddleware>();
 app.UseAuthorization();
 app.UseEndpoints(routePrefix: "api/v1");
+
+app.MapScalarApiReference("/scalar/v1").AllowAnonymous();
 
 app.MapDefaultEndpoints();
 

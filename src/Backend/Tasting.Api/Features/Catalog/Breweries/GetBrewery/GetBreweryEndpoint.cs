@@ -11,6 +11,7 @@ public sealed class GetBreweryEndpoint(IRequestHandler<GetBreweryQuery, BreweryR
     public override void Configure()
     {
         Get("/breweries/{id:guid}");
+        Description(d => d.WithTags("Breweries"));
         Roles(UserRole.Admin.ToString(), UserRole.User.ToString());
     }
 }

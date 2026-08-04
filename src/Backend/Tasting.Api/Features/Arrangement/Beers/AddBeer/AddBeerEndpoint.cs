@@ -17,6 +17,7 @@ public sealed class AddBeerEndpoint(
     public override void Configure()
     {
         Post("/arrangements/{arrangementId}/beers");
+        Description(d => d.WithTags("Arrangement Beers"));
         Roles(UserRole.Admin.ToString());
     }
 

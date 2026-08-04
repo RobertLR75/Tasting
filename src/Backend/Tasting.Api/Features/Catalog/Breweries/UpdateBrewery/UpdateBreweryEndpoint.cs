@@ -13,6 +13,7 @@ public sealed class UpdateBreweryEndpoint(IRequestHandler<UpdateBreweryCommand, 
     public override void Configure()
     {
         Put("/breweries/{id:guid}");
+        Description(d => d.WithTags("Breweries"));
         Roles(UserRole.Admin.ToString());
     }
 

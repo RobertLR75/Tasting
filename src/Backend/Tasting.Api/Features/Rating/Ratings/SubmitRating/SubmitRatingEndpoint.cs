@@ -13,7 +13,7 @@ public class SubmitRatingEndpoint(IRequestHandler<SubmitRatingCommand, RatingEnt
     {
         Post("arrangements/{arrangementId}/ratings");
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
-        Description(d => d.WithTags("Rating"));
+        Description(d => d.WithTags("Arrangements"));
     }
 
     public override async Task HandleAsync(SubmitRatingRequest req, CancellationToken ct)

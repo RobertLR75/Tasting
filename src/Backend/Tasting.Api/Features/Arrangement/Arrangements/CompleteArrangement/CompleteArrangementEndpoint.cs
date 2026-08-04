@@ -17,6 +17,7 @@ public sealed class CompleteArrangementEndpoint(
     public override void Configure()
     {
         Post("/arrangements/{arrangementId:guid}/complete");
+        Description(d => d.WithTags("Arrangements"));
         Roles(UserRole.Admin.ToString());
     }
 

@@ -18,6 +18,7 @@ public sealed class AddParticipantEndpoint(
     public override void Configure()
     {
         Post("/arrangements/{arrangementId}/participants");
+        Description(d => d.WithTags("Participants"));
         Roles(UserRole.Admin.ToString());
     }
 

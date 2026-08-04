@@ -12,6 +12,7 @@ public sealed class DeactivateBeerEndpoint(IRequestHandler<DeactivateBeerCommand
     public override void Configure()
     {
         Patch("/beers/{id:guid}/deactivate");
+        Description(d => d.WithTags("Beers"));
         Roles(UserRole.Admin.ToString());
     }
 

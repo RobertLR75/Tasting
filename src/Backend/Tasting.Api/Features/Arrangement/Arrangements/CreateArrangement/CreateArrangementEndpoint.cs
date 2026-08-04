@@ -18,6 +18,7 @@ public sealed class CreateArrangementEndpoint(
     public override void Configure()
     {
         Post("/arrangements");
+        Description(d => d.WithTags("Arrangements"));
         Roles(UserRole.Admin.ToString());
     }
 

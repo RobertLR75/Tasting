@@ -10,6 +10,7 @@ public sealed class CreateUserEndpoint(
     public override void Configure()
     {
         Post("/users");
+        Description(d => d.WithTags("Users"));
         Roles(UserRole.Admin.ToString());
     }
 
