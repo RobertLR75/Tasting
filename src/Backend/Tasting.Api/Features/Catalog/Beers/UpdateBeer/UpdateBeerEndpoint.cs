@@ -1,3 +1,4 @@
+using FastEndpoints;
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Catalog.Beers;
@@ -13,6 +14,12 @@ public sealed class UpdateBeerEndpoint(IRequestHandler<UpdateBeerCommand, Beer> 
     {
         Put("/beers/{id:guid}");
         Roles(UserRole.Admin.ToString());
+    }
+
+    protected override UpdateBeerCommand ToCommand(UpdateBeerRequest req)
+    {
+        var id = Route<Guid>("id");
+        return new UpdateBeerCommand(id, req.BreweryId, req.BeerStyleId, req.BeerTypeId, req.Name, req.IsActive);
     }
 
     protected override Task HandleResponseAsync(BeerResponse response, CancellationToken ct)
