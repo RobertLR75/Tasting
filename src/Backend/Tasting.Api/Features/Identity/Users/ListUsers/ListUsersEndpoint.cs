@@ -5,7 +5,7 @@ using SharedLibrary.Services.Interfaces;
 namespace Tasting.Api.Features.Identity.Users.ListUsers;
 
 public sealed class ListUsersEndpoint(IRequestHandler<ListUsersQuery, ListUsersResult> handler)
-    : EndpointWithoutRequest<ListUsersResponse>
+    : Endpoint<ListUsersRequest, ListUsersResponse>
 {
     public override void Configure()
     {
@@ -14,9 +14,9 @@ public sealed class ListUsersEndpoint(IRequestHandler<ListUsersQuery, ListUsersR
         Roles(UserRole.Admin.ToString());
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(ListUsersRequest req, CancellationToken ct)
     {
-        var result = await handler.HandleAsync(new ListUsersQuery(), ct);
+        var result = await handler.HandleAsync(new ListUsersQuery(req.SearchTerm), ct);
 
         var users = result.Users
             .Select(u => new UserResponse(

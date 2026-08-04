@@ -80,6 +80,22 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
     }
 
     [Fact]
+    public async Task List_users_supports_search_by_name_or_email()
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Get, "/api/v1/users?searchTerm=admin");
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ListUsersResponse>();
+        Assert.NotNull(body);
+        Assert.Single(body.Users);
+        Assert.Equal("admin@tasting.no", body.Users.Single().Email);
+    }
+
+    [Fact]
     public async Task List_users_requires_admin()
     {
         using var message = new HttpRequestMessage(HttpMethod.Get, "/api/v1/users");

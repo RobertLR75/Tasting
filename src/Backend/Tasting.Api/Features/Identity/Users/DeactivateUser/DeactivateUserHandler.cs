@@ -19,7 +19,14 @@ public sealed class DeactivateUserHandler(IUserRepository userRepository) : IReq
             return user;
         }
 
+        if (user.Role == UserRole.Admin &&
+            await userRepository.CountActiveAdminsAsync(ct) == 1)
+        {
+            throw new ConflictException("The last active admin cannot be deactivated.");
+        }
+
         user.IsActive = false;
+        user.UpdatedAt = DateTimeOffset.UtcNow;
         await userRepository.UpdateAsync(user, ct);
         return user;
     }

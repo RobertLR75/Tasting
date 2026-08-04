@@ -1,0 +1,111 @@
+@page "/users/{UserId:int}/edit"
+@using Tasting.Admin.Features.Identity.Models
+@using Tasting.Admin.Features.Identity.Services
+@using Tasting.Admin.Shared.Components
+@inject IUsersApiClient UsersApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Edit User</PageTitle>
+
+<FormLayout Title="Edit User" ErrorMessage="@errorMessage">
+    <FormField 
+        Label="First Name" 
+        @bind-Value="@firstName"
+        ErrorMessage="@GetFieldError(nameof(firstName))"
+        Required="true" />
+    
+    <FormField 
+        Label="Last Name" 
+        @bind-Value="@lastName"
+        ErrorMessage="@GetFieldError(nameof(lastName))"
+        Required="true" />
+    
+    <FormField 
+        Label="Email" 
+        InputType="InputType.Email"
+        @bind-Value="@email"
+        ErrorMessage="@GetFieldError(nameof(email))"
+        Required="true" />
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Update" 
+            Color="Color.Success"
+            OnClick="@HandleUpdateAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    private string firstName = "";
+    private string lastName = "";
+    private string email = "";
+    private string? errorMessage;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var user = await UsersApiClient.GetAsync(UserId);
+            if (user != null)
+            {
+                firstName = user.FirstName;
+                lastName = user.LastName;
+                email = user.Email;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load user: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdateAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new UpdateUserRequest(firstName, lastName, email);
+            var result = await UsersApiClient.UpdateAsync(UserId, request);
+            if (result != null)
+            {
+                Navigation.NavigateTo("/users");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update user: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/users");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}

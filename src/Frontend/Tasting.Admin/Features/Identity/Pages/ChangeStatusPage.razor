@@ -1,0 +1,111 @@
+@page "/users/{UserId:int}/change-status"
+@using Tasting.Admin.Features.Identity.Models
+@using Tasting.Admin.Features.Identity.Services
+@using Tasting.Admin.Shared.Components
+@inject IUsersApiClient UsersApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Change User Status</PageTitle>
+
+<FormLayout Title="Change User Status" ErrorMessage="@errorMessage">
+    <MudText Typo="Typo.body1" Class="mb-3">User: @($"{currentUser?.FirstName} {currentUser?.LastName}")</MudText>
+    
+    <FormField 
+        Label="Status" 
+        @bind-Value="@selectedStatus"
+        Placeholder="Select new status"
+        ErrorMessage="@GetFieldError(nameof(selectedStatus))"
+        Required="true">
+    </FormField>
+
+    @if (!string.IsNullOrEmpty(statusInfo))
+    {
+        <MudAlert Severity="Severity.Warning">@statusInfo</MudAlert>
+    }
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Update Status" 
+            Color="Color.Success"
+            OnClick="@HandleChangeStatusAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    private UserDto? currentUser;
+    private string selectedStatus = "";
+    private string? errorMessage;
+    private string? statusInfo;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            currentUser = await UsersApiClient.GetAsync(UserId);
+            if (currentUser != null)
+            {
+                selectedStatus = currentUser.Status;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load user: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleChangeStatusAsync()
+    {
+        if (string.IsNullOrEmpty(selectedStatus))
+        {
+            errorMessage = "Please select a status";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new ChangeStatusRequest(selectedStatus);
+            var result = await UsersApiClient.ChangeStatusAsync(UserId, request);
+            if (result != null)
+            {
+                Navigation.NavigateTo("/users");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to change status: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/users");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}
