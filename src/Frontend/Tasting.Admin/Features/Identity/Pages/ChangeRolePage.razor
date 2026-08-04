@@ -1,0 +1,111 @@
+@page "/users/{UserId:int}/change-role"
+@using Tasting.Admin.Features.Identity.Models
+@using Tasting.Admin.Features.Identity.Services
+@using Tasting.Admin.Shared.Components
+@inject IUsersApiClient UsersApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Change User Role</PageTitle>
+
+<FormLayout Title="Change User Role" ErrorMessage="@errorMessage">
+    <MudText Typo="Typo.body1" Class="mb-3">User: @($"{currentUser?.FirstName} {currentUser?.LastName}")</MudText>
+    
+    <FormField 
+        Label="Role" 
+        @bind-Value="@selectedRole"
+        Placeholder="Select new role"
+        ErrorMessage="@GetFieldError(nameof(selectedRole))"
+        Required="true">
+    </FormField>
+
+    @if (!string.IsNullOrEmpty(roleInfo))
+    {
+        <MudAlert Severity="Severity.Info">@roleInfo</MudAlert>
+    }
+
+    <MudStack Row="true" Spacing="2">
+        <ActionButton 
+            Text="Update Role" 
+            Color="Color.Success"
+            OnClick="@HandleChangeRoleAsync"
+            Disabled="@isLoading" />
+        <ActionButton 
+            Text="Cancel" 
+            Color="Color.Default"
+            OnClick="@HandleCancel" />
+    </MudStack>
+</FormLayout>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    private UserDto? currentUser;
+    private string selectedRole = "";
+    private string? errorMessage;
+    private string? roleInfo;
+    private bool isLoading = false;
+    private Dictionary<string, string> fieldErrors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        try
+        {
+            currentUser = await UsersApiClient.GetAsync(UserId);
+            if (currentUser != null)
+            {
+                selectedRole = currentUser.Role;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load user: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleChangeRoleAsync()
+    {
+        if (string.IsNullOrEmpty(selectedRole))
+        {
+            errorMessage = "Please select a role";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        fieldErrors.Clear();
+        
+        try
+        {
+            var request = new ChangeRoleRequest(selectedRole);
+            var result = await UsersApiClient.ChangeRoleAsync(UserId, request);
+            if (result != null)
+            {
+                Navigation.NavigateTo("/users");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to change role: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/users");
+    }
+
+    private string? GetFieldError(string fieldName)
+    {
+        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+}
