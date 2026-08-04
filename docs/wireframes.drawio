@@ -1,0 +1,928 @@
+<mxfile host="app.diagrams.net" modified="2026-08-04T00:00:00.000Z" agent="Copilot" version="21.0.0">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 1 — Login
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="1. Login" id="login">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <!-- Card -->
+        <mxCell id="2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="380" y="160" width="400" height="420" as="geometry"/>
+        </mxCell>
+        <!-- Title -->
+        <mxCell id="3" value="Tasting Admin" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="200" width="400" height="40" as="geometry"/>
+        </mxCell>
+        <!-- E-post label -->
+        <mxCell id="4" value="E-post *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="260" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <!-- E-post input -->
+        <mxCell id="5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="420" y="285" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Passord label -->
+        <mxCell id="6" value="Passord *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="335" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <!-- Passord input -->
+        <mxCell id="7" value="••••••••" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="420" y="360" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Login button -->
+        <mxCell id="8" value="Logg inn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="420" width="320" height="40" as="geometry"/>
+        </mxCell>
+        <!-- Error note -->
+        <mxCell id="9" value="⚠ Ugyldig e-post eller passord." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="420" y="475" width="300" height="24" as="geometry"/>
+        </mxCell>
+        <!-- Annotation -->
+        <mxCell id="10" value="Alle avvisninger vises som én generisk feil (ukjent e-post, feil passord, ikke-admin, inaktiv bruker)." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="420" y="510" width="320" height="40" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 2 — Shell pattern
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="2. Shell" id="shell">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <!-- AppBar -->
+        <mxCell id="2" value="Tasting Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=none;fontSize=14;fontStyle=1;align=left;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="1000" height="48" as="geometry"/>
+        </mxCell>
+        <!-- Left nav -->
+        <mxCell id="3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="108" width="200" height="540" as="geometry"/>
+        </mxCell>
+        <!-- Nav items -->
+        <mxCell id="4" value="📊  Dashboard" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="📅  Arrangements" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="156" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="👥  Users" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="192" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="🏭  Breweries" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="228" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="🍺  Beers" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="264" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="⭐  Ratings" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="300" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="🏆  Results" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;spacingLeft=16;" vertex="1" parent="1">
+          <mxGeometry x="80" y="336" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Main content area -->
+        <mxCell id="11" value="[Innholdsområde]" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontColor=#aaaaaa;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="108" width="800" height="540" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="280" y="108" width="800" height="540" as="geometry"/>
+        </mxCell>
+        <!-- Annotation -->
+        <mxCell id="13" value="Aktiv nav-lenke er highlighted (blå bakgrunn). Login er eneste skjerm uten shell." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="665" width="600" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 3 — Arrangements liste
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="3. Arrangements liste" id="arrangements-list">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <!-- Page title -->
+        <mxCell id="2" value="Arrangements" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="700" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Add button -->
+        <mxCell id="3" value="+ Nytt arrangement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="60" width="180" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Table header -->
+        <mxCell id="4" value="Navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="260" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Dato" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="340" y="120" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Status" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="480" y="120" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Handlinger" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="120" width="480" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 1 — Created -->
+        <mxCell id="8" value="Høsttasting 2025" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="156" width="260" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="2025-10-12" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="340" y="156" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Created" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="480" y="156" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="[Edit]  [Beers]  [Participants]  [Status]" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="156" width="480" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 2 — Started -->
+        <mxCell id="12" value="Vintertasting" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="192" width="260" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="2025-12-01" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="340" y="192" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="14" value="Started" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;fontColor=#d6b600;" vertex="1" parent="1">
+          <mxGeometry x="480" y="192" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="[Status]" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="192" width="480" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 3 — Completed -->
+        <mxCell id="16" value="Vår 2025" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="228" width="260" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="2025-04-05" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="340" y="228" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="Completed" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;fontColor=#107c10;" vertex="1" parent="1">
+          <mxGeometry x="480" y="228" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="—" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="600" y="228" width="480" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 4 — Canceled -->
+        <mxCell id="20" value="Avlyst runde" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="264" width="260" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="2025-06-01" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="340" y="264" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="22" value="Canceled" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="480" y="264" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="23" value="[Status]" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="264" width="480" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Annotation -->
+        <mxCell id="24" value="Tilstandsregler: Created → Edit+Beers+Participants+Status | Started → Status | Completed → ingen | Canceled → Status" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="320" width="900" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 4 — Arrangement edit
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="4. Arrangement edit" id="arrangement-edit">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Rediger arrangement" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Navn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Høsttasting 2025" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Dato *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="196" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="2025-10-12" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Beskrivelse" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="272" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="296" width="500" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="400" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Lagre endringer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="344" y="400" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="⚠ Arrangementet kan ikke lenger redigeres (status er ikke Created)." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="455" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Bare tilgjengelig fra listen når status = Created. Lagre-knapp disabled under kall." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="490" width="500" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 5 — Arrangement add beers
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="5. Arrangement add beers" id="arrangement-beers">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Legg til beers — Høsttasting 2025" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="700" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Search -->
+        <mxCell id="3" value="Søk på beer-navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="360" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Søk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="452" y="144" width="80" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Table header -->
+        <mxCell id="6" value="" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="204" width="40" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Beer" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="120" y="204" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Bryggeri" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="400" y="204" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Type" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="640" y="204" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 1 -->
+        <mxCell id="10" value="☐" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="40" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="Urquell Pilsner" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="240" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Pilsner Urquell" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="240" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="Lager" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="640" y="240" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 2 — already added (disabled) -->
+        <mxCell id="14" value="☑" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#cccccc;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="276" width="40" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="Punk IPA  (allerede lagt til)" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="120" y="276" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="BrewDog" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="400" y="276" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="Ale" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="640" y="276" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Footer -->
+        <mxCell id="18" value="Valgte: 1" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="336" width="200" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="376" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="Legg til valgte" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="548" y="376" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="Kun aktive beers fra aktive breweries. Allerede tilknyttede beers er disabled. Knapp disabled hvis ingen er valgt." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="428" width="700" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 6 — Arrangement add participants
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="6. Arrangement add participants" id="arrangement-participants">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Legg til participants — Høsttasting 2025" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="800" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Søk på navn eller e-post" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="200" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="360" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Søk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="452" y="144" width="80" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Header -->
+        <mxCell id="6" value="" style="fillColor=#f0f0f0;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="204" width="40" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="204" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="E-post" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="360" y="204" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Rolle" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="640" y="204" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 1 -->
+        <mxCell id="10" value="☐" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="40" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="Ola Nordmann" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="120" y="240" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="ola@example.com" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="360" y="240" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="User" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="640" y="240" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 2 — already participant (disabled) -->
+        <mxCell id="14" value="☑" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;strokeColor=#cccccc;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="276" width="40" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="Kari Hansen  (allerede participant)" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="120" y="276" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="kari@example.com" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="360" y="276" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="Admin" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="640" y="276" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Footer -->
+        <mxCell id="18" value="Valgte: 1" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="336" width="200" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="376" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="Legg til valgte" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="548" y="376" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="Kun aktive users. Eksisterende participants er disabled. Søk er case-insensitivt deltreff på navn og e-post." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="428" width="700" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 7 — Arrangement change status
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="7. Arrangement change status" id="arrangement-status">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <!-- State machine diagram -->
+        <mxCell id="2" value="Statusovergangsmatrise" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="40" width="400" height="36" as="geometry"/>
+        </mxCell>
+        <!-- States -->
+        <mxCell id="3" value="Created" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="120" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Started" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="120" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Completed" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="280" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Canceled" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="280" width="120" height="60" as="geometry"/>
+        </mxCell>
+        <!-- Arrows -->
+        <mxCell id="7" value="→ Started" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" source="3" target="4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="→ Canceled" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="3" target="6" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="→ Completed" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="4" target="5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="→ Created (beholder beers + participants)" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" source="6" target="3" parent="1">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="260" y="240"/><mxPoint x="260" y="200"/></Array></mxGeometry>
+        </mxCell>
+        <!-- UI panels for each state -->
+        <mxCell id="11" value="Fra Created — velg Started eller Canceled" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="400" width="400" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="○ Started — Start arrangement. Beer-metadata fryses." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="430" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="○ Canceled — Kanseller. Kan gjenåpnes til Created." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="14" value="Fra Started — velg Completed" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="500" width="400" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="○ Completed — Fullfør. Ratings fryses. Irreversibelt." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="530" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="Fra Canceled — velg Created" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="570" width="400" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="○ Created — Gjenåpne. Beers og participants beholdes." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="600" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="Fra Completed — ingen videre handlinger mulig." style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontColor=#aaaaaa;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="640" width="500" height="24" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 8 — Breweries liste
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="8. Breweries liste" id="breweries-list">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Breweries" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="700" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="+ Nytt bryggeri" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="60" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Søk på navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="120" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Søk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="412" y="144" width="80" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Table header -->
+        <mxCell id="7" value="Navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="204" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Land" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="204" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Status" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="204" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Beers" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="760" y="204" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 1 -->
+        <mxCell id="11" value="Pilsner Urquell" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Tsjekkia" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="240" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="Active" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#107c10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="240" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="14" value="[Beers]" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="760" y="240" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 2 — Inactive -->
+        <mxCell id="15" value="Gamle Bryggeriet" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="276" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="Norge" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="400" y="276" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="Inactive" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="600" y="276" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="[Beers]" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="760" y="276" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="Søk bare på navn (ikke land/status). Viser aktive og inactive." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="330" width="700" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 9 — Brewery add
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="9. Brewery add" id="brewery-add">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Nytt bryggeri" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Navn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Land *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="196" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="284" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Opprett" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="444" y="284" width="136" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="⚠ Et bryggeri med dette navnet og landet finnes allerede." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="340" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Unik kombinasjon (Name, Country) — case-insensitivt. Begge felter påkrevd." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="375" width="500" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 10 — Brewery beers liste
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="10. Brewery beers liste" id="brewery-beers-list">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Beers — Pilsner Urquell" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="700" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="+ Ny beer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="60" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Søk på beer-navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="160" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Søk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="412" y="144" width="80" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Header -->
+        <mxCell id="7" value="Navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="204" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Stil" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="204" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Type" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="204" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Status" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="760" y="204" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 1 -->
+        <mxCell id="11" value="Pilsner Urquell" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Bohemian Pilsner" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="400" y="240" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="Lager" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="240" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="14" value="Active" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#107c10;" vertex="1" parent="1">
+          <mxGeometry x="760" y="240" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 2 — Inactive -->
+        <mxCell id="15" value="Gammel Rezak" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="276" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="Pale Lager" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="400" y="276" width="200" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="Lager" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="600" y="276" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="Inactive" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="760" y="276" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="Viser alle beers for bryggeriet (aktive og inactive). Søk på beer-navn." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="330" width="700" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 11 — Brewery add beer
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="11. Brewery add beer" id="brewery-add-beer">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Ny beer — Pilsner Urquell" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Navn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="80" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="BeerStyle *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="196" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="[Velg stil]  ▼" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="BeerType *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="272" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="[Velg type]  ▼" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="296" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Opprett" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="444" y="360" width="136" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="⚠ En beer med dette navnet finnes allerede for dette bryggeriet." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="416" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Brewery er forhåndsvalgt (fra URL). Duplikatsjekk også mot inactive beers." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="452" width="500" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 12 — Users liste
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="12. Users liste" id="users-list">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Users" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="700" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="+ Ny bruker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="940" y="60" width="140" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Søk på navn eller e-post" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="200" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="320" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Søk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="412" y="144" width="80" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Header -->
+        <mxCell id="7" value="Navn" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="204" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="E-post" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="204" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Rolle" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="204" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Status" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="720" y="204" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="Handlinger" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fillColor=#f0f0f0;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="840" y="204" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 1 — Active User -->
+        <mxCell id="12" value="Ola Nordmann" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="ola@example.com" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="240" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="14" value="User" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="600" y="240" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="Active" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#107c10;" vertex="1" parent="1">
+          <mxGeometry x="720" y="240" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="16" value="[Edit]  [Rolle]  [Status]" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;strokeColor=#cccccc;spacingLeft=8;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="840" y="240" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 2 — Active Admin -->
+        <mxCell id="17" value="Kari Hansen" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="276" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="18" value="kari@example.com" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="276" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="Admin" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="600" y="276" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="Active" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#107c10;" vertex="1" parent="1">
+          <mxGeometry x="720" y="276" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="[Edit]  [Rolle]  [Status]" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;strokeColor=#cccccc;spacingLeft=8;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="840" y="276" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Row 3 — Inactive -->
+        <mxCell id="22" value="Per Olsen" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="80" y="312" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="23" value="per@example.com" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="320" y="312" width="280" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="24" value="User" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#aaaaaa;" vertex="1" parent="1">
+          <mxGeometry x="600" y="312" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="25" value="Inactive" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;strokeColor=#cccccc;spacingLeft=8;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="720" y="312" width="120" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="26" value="[Edit]  [Rolle]  [Status]" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;strokeColor=#cccccc;spacingLeft=8;fontColor=#1ba1e2;" vertex="1" parent="1">
+          <mxGeometry x="840" y="312" width="240" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="27" value="Viser aktive og inactive. Søk: case-insensitivt deltreff på navn og e-post." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="366" width="700" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 13 — User add
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="13. User add" id="user-add">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Ny bruker" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="400" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Fornavn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Etternavn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="196" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="E-post *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="272" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;" vertex="1" parent="1">
+          <mxGeometry x="80" y="296" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Opprett" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="444" y="360" width="136" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="⚠ En bruker med denne e-postadressen finnes allerede." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="416" width="500" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Ny bruker opprettes som IsActive=true og rolle User (server-side default). E-postunikhet også mot inactive." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="452" width="600" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 14 — User edit
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="14. User edit" id="user-edit">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Rediger bruker — Ola Nordmann" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="600" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Fornavn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Ola" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="144" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="Etternavn *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="196" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Nordmann" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="E-post *" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="272" width="100" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="ola@example.com" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="296" width="500" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Lagre endringer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="360" width="160" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="⚠ E-postadressen er allerede i bruk." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="416" width="400" height="24" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 15 — User edit role
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="15. User edit role" id="user-edit-role">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Endre rolle — Kari Hansen" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="600" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Nåværende rolle: Admin" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="300" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Velg ny rolle:" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="164" width="200" height="24" as="geometry"/>
+        </mxCell>
+        <!-- Radio Admin -->
+        <mxCell id="5" value="○  Admin" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="200" width="300" height="36" as="geometry"/>
+        </mxCell>
+        <!-- Radio User (selected) -->
+        <mxCell id="6" value="●  User" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="300" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="304" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Lagre rolle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="304" width="136" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="⚠ Kan ikke endre rollen til en inaktiv bruker." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="440" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="⚠ Kan ikke nedgradere siste aktive admin." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="390" width="440" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="Lagre-knapp disabled hvis valgt rolle = nåværende rolle, eller mens kallet pågår." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="430" width="500" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PAGE 16 — User edit status
+  ════════════════════════════════════════════════════════════════════ -->
+  <diagram name="16. User edit status" id="user-edit-status">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Endre status — Kari Hansen" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="600" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Nåværende status: Active" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="300" height="28" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Velg ny status:" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="164" width="200" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="○  Active" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="200" width="300" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="●  Inactive" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="300" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Avbryt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="304" width="100" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="Lagre status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#1ba1e2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="304" width="136" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="⚠ Kan ikke deaktivere siste aktive admin." style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#cc0000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="360" width="440" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="Lagre-knapp disabled hvis valgt status = nåværende status, eller mens kallet pågår." style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="400" width="500" height="20" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+</mxfile>
