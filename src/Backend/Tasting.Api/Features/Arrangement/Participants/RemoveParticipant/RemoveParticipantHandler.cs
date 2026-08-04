@@ -15,7 +15,6 @@ public sealed class RemoveParticipantHandler(ArrangementDbContext dbContext)
     {
         var arrangement = await dbContext.Arrangements
             .Include(a => a.Participants)
-            .Include(a => a.Beers)
             .FirstOrDefaultAsync(a => a.Id == request.ArrangementId, ct)
             ?? throw new ServiceNotFoundException($"Arrangement '{request.ArrangementId}' was not found.");
 
