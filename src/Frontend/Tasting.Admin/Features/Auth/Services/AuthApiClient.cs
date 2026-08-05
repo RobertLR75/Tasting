@@ -17,4 +17,5 @@ public sealed class AuthApiClient(HttpClient httpClient) : IAuthApiClient
 
         var payload = await response.Content.ReadFromJsonAsync<LoginResponse>();
         return payload ?? throw new InvalidOperationException("Login succeeded but the response payload was empty.");
+    }
 }
