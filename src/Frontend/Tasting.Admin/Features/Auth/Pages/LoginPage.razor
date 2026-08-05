@@ -92,10 +92,9 @@
             Console.WriteLine("API returned 401/403");
             errorMessage = "Invalid email or password.";
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine($"API Error: {ex}");
-            errorMessage = $"Error: {ex.GetType().Name} – {ex.Message}";
+            errorMessage = "An unexpected error occurred while signing in.";
         }
         finally
         {
