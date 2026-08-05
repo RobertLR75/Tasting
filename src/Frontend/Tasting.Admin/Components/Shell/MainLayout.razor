@@ -1,23 +1,61 @@
 @inherits LayoutComponentBase
+@using Tasting.Admin.Features.Auth.Services
+@inject TastingAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
-<MudLayout>
-    <MudAppBar Elevation="1">
-        <MudText Typo="Typo.h6">Tasting Admin</MudText>
-    </MudAppBar>
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-    <MudDrawer Open="true" Elevation="1" Variant="DrawerVariant.Responsive">
-        <NavMenu />
-    </MudDrawer>
+<RequireAuth>
+    <MudLayout>
+        <MudAppBar Elevation="1">
+            <MudText Typo="Typo.h6">Tasting Admin</MudText>
+            <MudSpacer />
+            @if (_isAuthenticated)
+            {
+                <MudText Typo="Typo.body2" Class="mr-4">@_userName</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Logout"
+                               Color="Color.Inherit"
+                               aria-label="Sign out"
+                               OnClick="@HandleLogout" />
+            }
+        </MudAppBar>
 
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.False" Class="main-content">
-            @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+        <MudDrawer Open="_isAuthenticated" Elevation="1" Variant="DrawerVariant.Responsive">
+            <NavMenu />
+        </MudDrawer>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.False" Class="main-content">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+</RequireAuth>
+
+@code {
+    private bool _isAuthenticated;
+    private string? _userName;
+
+    protected override void OnInitialized()
+    {
+        var state = AuthStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
+        _isAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+        _userName = state.User.Identity?.Name;
+    }
+
+    private void HandleLogout()
+    {
+        AuthStateProvider.NotifyLogout();
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}
+

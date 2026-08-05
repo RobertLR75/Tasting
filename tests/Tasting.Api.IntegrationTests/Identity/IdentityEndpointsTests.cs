@@ -23,6 +23,7 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
             Email = "new-user@tasting.no",
             FirstName = "New",
             LastName = "User",
+            Password = "password123",
             Role = UserRole.User
         };
 
@@ -176,5 +177,28 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var response = await _client.SendAsync(message);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("not-an-email", "Valid", "User", "password123")]
+    [InlineData("", "Valid", "User", "password123")]
+    [InlineData("valid@test.no", "", "User", "password123")]
+    [InlineData("valid@test.no", "Valid", "", "password123")]
+    [InlineData("valid@test.no", "Valid", "User", "short")]
+    public async Task Create_user_returns_bad_request_for_invalid_input(
+        string email, string firstName, string lastName, string password)
+    {
+        var request = new { Email = email, FirstName = firstName, LastName = lastName, Password = password, Role = UserRole.User };
+
+        using var message = new HttpRequestMessage(HttpMethod.Post, "/api/v1/users")
+        {
+            Content = JsonContent.Create(request)
+        };
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

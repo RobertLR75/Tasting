@@ -1,3 +1,4 @@
+using FastEndpoints;
 using SharedLibrary.FastEndpoints;
 using SharedLibrary.Services.Interfaces;
 
@@ -23,5 +24,11 @@ public sealed class CreateUserEndpoint(
             req.Password,
             req.Role,
             User.IsInRole(UserRole.Admin.ToString()));
+    }
+
+    public override async Task HandleAsync(CreateUserRequest req, CancellationToken ct)
+    {
+        ThrowIfAnyErrors();
+        await base.HandleAsync(req, ct);
     }
 }
