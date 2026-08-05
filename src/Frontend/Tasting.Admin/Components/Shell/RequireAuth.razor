@@ -9,23 +9,23 @@
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
-        RedirectIfNotAuthenticated();
+        await RedirectIfNotAuthenticatedAsync();
     }
 
     private void OnAuthStateChanged(Task<AuthenticationState> task)
     {
-        InvokeAsync(() =>
-        {
-            RedirectIfNotAuthenticated();
-        });
+        _ = InvokeAsync(async () => await RedirectIfNotAuthenticatedAsync(task));
     }
 
-    private void RedirectIfNotAuthenticated()
+    private async Task RedirectIfNotAuthenticatedAsync(Task<AuthenticationState>? stateTask = null)
     {
-        var state = AuthStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
+        var state = stateTask is null
+            ? await AuthStateProvider.GetAuthenticationStateAsync()
+            : await stateTask;
+
         if (!(state.User.Identity?.IsAuthenticated ?? false))
         {
             Navigation.NavigateTo("/login", forceLoad: false, replace: true);
