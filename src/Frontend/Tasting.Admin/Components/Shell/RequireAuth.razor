@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Tasting.Admin.Features.Auth.Services
+@inject TastingAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
+        RedirectIfNotAuthenticated();
+    }
+
+    private void OnAuthStateChanged(Task<AuthenticationState> task)
+    {
+        InvokeAsync(() =>
+        {
+            RedirectIfNotAuthenticated();
+        });
+    }
+
+    private void RedirectIfNotAuthenticated()
+    {
+        var state = AuthStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
+        if (!(state.User.Identity?.IsAuthenticated ?? false))
+        {
+            Navigation.NavigateTo("/login", forceLoad: false, replace: true);
+        }
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthStateChanged;
+    }
+}

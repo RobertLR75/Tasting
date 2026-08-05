@@ -23,6 +23,7 @@ public sealed class UsersDbContext(DbContextOptions<UsersDbContext> options) : D
         userBuilder.Property(user => user.EmailNormalized).HasColumnName("email_normalized").HasMaxLength(200).IsRequired();
         userBuilder.Property(user => user.FirstName).HasColumnName("first_name").HasMaxLength(200).IsRequired();
         userBuilder.Property(user => user.LastName).HasColumnName("last_name").HasMaxLength(200).IsRequired();
+        userBuilder.Property(user => user.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
         userBuilder.Property(user => user.Role).HasColumnName("role").HasMaxLength(20).HasConversion<string>().IsRequired();
         userBuilder.Property(user => user.IsActive).HasColumnName("is_active").IsRequired();
         userBuilder.Property(user => user.CreatedAt).HasColumnName("created_at_utc").IsRequired();

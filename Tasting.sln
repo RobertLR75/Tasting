@@ -34,12 +34,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.Services", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}"
 	ProjectSection(SolutionItems) = preProject
+		docs\tasting-handoff.md = docs\tasting-handoff.md
 		docs\glossary.md = docs\glossary.md
 		docs\architecture.md = docs\architecture.md
 		docs\implementation-plan.md = docs\implementation-plan.md
 		docs\wireframes.drawio = docs\wireframes.drawio
 		docs\wireframes.md = docs\wireframes.md
 		docs\wireframes-implementation-plan.md = docs\wireframes-implementation-plan.md
+		docs\BACKEND-AUTH-TESTING.md = docs\BACKEND-AUTH-TESTING.md
+		docs\BACKEND-API-REFERENCE.md = docs\BACKEND-API-REFERENCE.md
+		docs\IMPLEMENTATION-COMPLETION-SUMMARY.md = docs\IMPLEMENTATION-COMPLETION-SUMMARY.md
+		docs\INTEGRATION-CHECKLIST.md = docs\INTEGRATION-CHECKLIST.md
+		docs\IMPLEMENTATION-PLAN-STATUS.md = docs\IMPLEMENTATION-PLAN-STATUS.md
+		docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md = docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-6909-4332-BE19-0DDE9B97EED7}"
@@ -77,6 +84,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-690
 		docs\adr\0017-server-calculates-totalrating-and-score-scale.md = docs\adr\0017-server-calculates-totalrating-and-score-scale.md
 		docs\adr\0020-taxonomy-uses-concrete-models-and-id-references.md = docs\adr\0020-taxonomy-uses-concrete-models-and-id-references.md
 		docs\adr\0014-fastendpoints-mongodb-and-shared-service-pattern.md = docs\adr\0014-fastendpoints-mongodb-and-shared-service-pattern.md
+		docs\adr\0034-postgresql-replaces-mongodb.md = docs\adr\0034-postgresql-replaces-mongodb.md
+		docs\adr\0039-scalar-documents-all-endpoints.md = docs\adr\0039-scalar-documents-all-endpoints.md
+		docs\adr\0042-admin-backoffice-operational-rules.md = docs\adr\0042-admin-backoffice-operational-rules.md
+		docs\adr\0035-admin-frontend-is-admin-only-backoffice.md = docs\adr\0035-admin-frontend-is-admin-only-backoffice.md
+		docs\adr\0040-protect-internal-api-docs-outside-development.md = docs\adr\0040-protect-internal-api-docs-outside-development.md
+		docs\adr\0041-admin-backoffice-rules-live-in-backend-handlers.md = docs\adr\0041-admin-backoffice-rules-live-in-backend-handlers.md
+		docs\adr\0044-admin-wireframes-live-in-one-annotated-document.md = docs\adr\0044-admin-wireframes-live-in-one-annotated-document.md
+		docs\adr\0045-test-data-seeding-in-development.md = docs\adr\0045-test-data-seeding-in-development.md
+		docs\adr\0038-admin-frontend-starts-with-bunit-component-tests.md = docs\adr\0038-admin-frontend-starts-with-bunit-component-tests.md
+		docs\adr\0037-admin-frontend-uses-feature-first-vertical-slices.md = docs\adr\0037-admin-frontend-uses-feature-first-vertical-slices.md
+		docs\adr\0036-admin-page-starts-as-blank-blazor-web-app-in-aspire.md = docs\adr\0036-admin-page-starts-as-blank-blazor-web-app-in-aspire.md
+		docs\adr\0043-admin-wireframes-follow-the-shell-and-domain-states.md = docs\adr\0043-admin-wireframes-follow-the-shell-and-domain-states.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.EntityFramework", "src\Shared\SharedLibrary.EntityFramework\SharedLibrary.EntityFramework.csproj", "{B3513A36-702E-48AF-83C7-B062F3A4731D}"

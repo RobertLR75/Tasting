@@ -1,4 +1,5 @@
 using Tasting.Admin.Components;
+using Tasting.Admin.Features.Auth.Services;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,10 +9,15 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
+
+builder.Services.AddScoped<TastingAuthStateProvider>();
+builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
+
 builder.Services.AddHttpClient("Tasting.Api", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7001/");
-});
+    var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7100/";
+    client.BaseAddress = new Uri(baseUrl);
+}).AddServiceDiscovery();
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Tasting.Api"));
 
 var app = builder.Build();
@@ -27,6 +33,9 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
+
+// Needed for _content/ and _framework/ files in development/when not pre-built
+app.UseStaticFiles();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()

@@ -1,0 +1,113 @@
+@page "/login"
+@rendermode InteractiveServer
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@using Tasting.Admin.Features.Auth.Models
+@using Tasting.Admin.Features.Auth.Services
+@using Tasting.Admin.Components.Shell
+@inject IAuthApiClient AuthApiClient
+@inject TastingAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Login – Tasting Admin</PageTitle>
+
+<MudGrid Justify="Justify.Center" Style="min-height:100vh; align-items:center;">
+    <MudItem xs="12" sm="8" md="4">
+        <MudPaper Class="pa-8" Elevation="3">
+            <MudStack AlignItems="AlignItems.Center" Class="mb-6">
+                <MudIcon Icon="@Icons.Material.Filled.SportsBar" Size="Size.Large" Color="Color.Primary" />
+                <MudText Typo="Typo.h5">Tasting Admin</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Sign in to continue</MudText>
+            </MudStack>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">@errorMessage</MudAlert>
+            }
+
+            <MudTextField @bind-Value="email"
+                          Label="Email"
+                          InputType="InputType.Email"
+                          Variant="Variant.Outlined"
+                          FullWidth="true"
+                          Class="mb-4"
+                          Disabled="@isLoading" />
+
+            <MudTextField @bind-Value="password"
+                          Label="Password"
+                          InputType="InputType.Password"
+                          Variant="Variant.Outlined"
+                          FullWidth="true"
+                          Class="mb-6"
+                          Disabled="@isLoading"
+                          OnKeyDown="@HandleKeyDownAsync" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Size="Size.Large"
+                       OnClick="@HandleLoginAsync"
+                       Disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Signing in...</span>
+                }
+                else
+                {
+                    <span>Sign in</span>
+                }
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private string email = "";
+    private string password = "";
+    private string? errorMessage;
+    private bool isLoading;
+
+    private async Task HandleLoginAsync()
+    {
+        Console.WriteLine("===== LOGIN BUTTON CLICKED =====");
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Email and password are required.";
+            Console.WriteLine("Missing credentials");
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            Console.WriteLine($"Calling API for {email}...");
+            var response = await AuthApiClient.LoginAsync(new LoginRequest(email, password));
+            Console.WriteLine("API returned success!");
+            AuthStateProvider.NotifyLogin(response);
+            Navigation.NavigateTo("/");
+        }
+        catch (HttpRequestException ex) when ((int?)ex.StatusCode == 401 || (int?)ex.StatusCode == 403)
+        {
+            Console.WriteLine("API returned 401/403");
+            errorMessage = "Invalid email or password.";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"API Error: {ex}");
+            errorMessage = $"Error: {ex.GetType().Name} – {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await HandleLoginAsync();
+    }
+}
