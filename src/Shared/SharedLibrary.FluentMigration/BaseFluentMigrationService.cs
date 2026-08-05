@@ -1,6 +1,7 @@
 using System.Reflection;
 using FluentMigrator;
 using FluentMigrator.Runner;
+using FluentMigrator.Runner.Initialization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SharedLibrary.FluentMigration;
@@ -15,7 +16,7 @@ public abstract class BaseFluentMigrationService
     {
     }
 
-    public ServiceProvider BuildServiceProvider(string connectionString)
+    public ServiceProvider BuildServiceProvider(string connectionString, params string[] tags)
     {
         var services = new ServiceCollection();
 
@@ -32,14 +33,19 @@ public abstract class BaseFluentMigrationService
                 }
             });
 
+        if (tags != null && tags.Length > 0)
+        {
+            services.Configure<RunnerOptions>(opt => opt.Tags = tags);
+        }
+
         ConfigureServices(services);
 
         return services.BuildServiceProvider();
     }
 
-    public virtual void MigrateUp(string connectionString)
+    public virtual void MigrateUp(string connectionString, params string[] tags)
     {
-        using var provider = BuildServiceProvider(connectionString);
+        using var provider = BuildServiceProvider(connectionString, tags);
         using var scope = provider.CreateScope();
 
         var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();

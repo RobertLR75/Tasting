@@ -65,7 +65,8 @@ app.UseExceptionHandler(errorApp => errorApp.Run(FastEndPointsExtensions.WriteEr
 var connectionString = app.Configuration.GetConnectionString("TastingDb");
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
-    new TastingMigrationService().MigrateUp(connectionString);
+    var tags = app.Environment.IsDevelopment() ? new[] { "Development" } : Array.Empty<string>();
+    new TastingMigrationService().MigrateUp(connectionString, tags);
 }
 
 app.UseCors();
