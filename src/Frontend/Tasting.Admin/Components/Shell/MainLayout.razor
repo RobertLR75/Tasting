@@ -45,9 +45,9 @@
     private bool _isAuthenticated;
     private string? _userName;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        var state = AuthStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
         _isAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
         _userName = state.User.Identity?.Name;
     }
