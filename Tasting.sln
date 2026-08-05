@@ -34,6 +34,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.Services", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}"
 	ProjectSection(SolutionItems) = preProject
+		docs\tasting-handoff.md = docs\tasting-handoff.md
 		docs\glossary.md = docs\glossary.md
 		docs\architecture.md = docs\architecture.md
 		docs\implementation-plan.md = docs\implementation-plan.md
@@ -90,6 +91,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-690
 		docs\adr\0040-protect-internal-api-docs-outside-development.md = docs\adr\0040-protect-internal-api-docs-outside-development.md
 		docs\adr\0041-admin-backoffice-rules-live-in-backend-handlers.md = docs\adr\0041-admin-backoffice-rules-live-in-backend-handlers.md
 		docs\adr\0044-admin-wireframes-live-in-one-annotated-document.md = docs\adr\0044-admin-wireframes-live-in-one-annotated-document.md
+		docs\adr\0045-test-data-seeding-in-development.md = docs\adr\0045-test-data-seeding-in-development.md
 		docs\adr\0038-admin-frontend-starts-with-bunit-component-tests.md = docs\adr\0038-admin-frontend-starts-with-bunit-component-tests.md
 		docs\adr\0037-admin-frontend-uses-feature-first-vertical-slices.md = docs\adr\0037-admin-frontend-uses-feature-first-vertical-slices.md
 		docs\adr\0036-admin-page-starts-as-blank-blazor-web-app-in-aspire.md = docs\adr\0036-admin-page-starts-as-blank-blazor-web-app-in-aspire.md
