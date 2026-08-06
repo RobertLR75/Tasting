@@ -286,7 +286,7 @@ Hvert wireframe følger dette mønsteret:
 |---|---|
 | Fremdriftsindikator | «Øl X av N» — viser gjeldende øl-indeks og totalt antall |
 | Ølbilde | Vises kun hvis tilgjengelig; utelates ellers |
-| Innhold | Navn, Beskrivelse, Bryggeri, Stil, Type fra beer snapshot |
+| Innhold | Navn, Beskrivelse, Bryggeri (`Brewery`), Stil (`BeerStyle`), Type (`BeerType`) fra beer snapshot |
 | «Neste»-knapp | Alltid aktivert |
 | «Neste»-knapp | Navigerer til Screen 6 (Rating for samme øl) |
 
