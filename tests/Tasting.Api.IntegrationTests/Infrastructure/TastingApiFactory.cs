@@ -1,37 +1,47 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
 
 namespace Tasting.Api.IntegrationTests.Infrastructure;
 
-public sealed class TastingApiFactory : WebApplicationFactory<Program>
+public sealed class TastingApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly string _dbSuffix = Guid.NewGuid().ToString("N");
+    private readonly PostgresContainerFixture _postgres = new();
+    private string? _previousConnectionString;
+
+    public async Task InitializeAsync()
+    {
+        await _postgres.StartAsync();
+        _previousConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__TastingDb");
+        Environment.SetEnvironmentVariable("ConnectionStrings__TastingDb", _postgres.ConnectionString);
+    }
+
+    public new async Task DisposeAsync()
+    {
+        Environment.SetEnvironmentVariable("ConnectionStrings__TastingDb", _previousConnectionString);
+        await _postgres.DisposeAsync();
+        await base.DisposeAsync();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:TastingDb"] = _postgres.ConnectionString
+            });
+        });
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll<DbContextOptions<CatalogDbContext>>();
-            services.RemoveAll<CatalogDbContext>();
-            services.RemoveAll<DbContextOptions<UsersDbContext>>();
-            services.RemoveAll<UsersDbContext>();
-
-            services.AddDbContext<CatalogDbContext>(options =>
-                options.UseInMemoryDatabase($"catalog-int-{_dbSuffix}")
-                    .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
-            services.AddDbContext<UsersDbContext>(options =>
-                options.UseInMemoryDatabase($"users-int-{_dbSuffix}"));
-
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = "Test";
@@ -53,13 +63,9 @@ public sealed class TastingApiFactory : WebApplicationFactory<Program>
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-        if (await db.Users.AnyAsync())
+        if (!await db.Users.AnyAsync(user => user.Id == TestAuthHandler.AdminUserId))
         {
-            return;
-        }
-
-        db.Users.AddRange(
-            new User
+            db.Users.Add(new User
             {
                 Id = TestAuthHandler.AdminUserId,
                 Email = "admin@test.no",
@@ -69,8 +75,12 @@ public sealed class TastingApiFactory : WebApplicationFactory<Program>
                 IsActive = true,
                 Role = UserRole.Admin,
                 CreatedAt = DateTimeOffset.UtcNow
-            },
-            new User
+            });
+        }
+
+        if (!await db.Users.AnyAsync(user => user.Id == TestAuthHandler.RegularUserId))
+        {
+            db.Users.Add(new User
             {
                 Id = TestAuthHandler.RegularUserId,
                 Email = "user@test.no",
@@ -81,6 +91,8 @@ public sealed class TastingApiFactory : WebApplicationFactory<Program>
                 Role = UserRole.User,
                 CreatedAt = DateTimeOffset.UtcNow
             });
+        }
+
         await db.SaveChangesAsync();
     }
 

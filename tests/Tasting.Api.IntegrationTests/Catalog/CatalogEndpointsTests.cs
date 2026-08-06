@@ -78,6 +78,26 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>, IA
     }
 
     [Fact]
+    public async Task CreateBrewery_CreatesBrewery_ForAdmin()
+    {
+        var name = $"Created Brewery {Guid.NewGuid():N}";
+
+        using var client = CreateAuthorizedClient("admin");
+        var response = await client.PostAsJsonAsync("/api/v1/breweries", new
+        {
+            name,
+            isActive = true
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var payload = await response.Content.ReadFromJsonAsync<BreweryResponse>();
+        Assert.NotNull(payload);
+        Assert.Equal(name, payload.Name);
+        Assert.True(payload.IsActive);
+        Assert.NotEqual(Guid.Empty, payload.Id);
+    }
+
+    [Fact]
     public async Task UpdateBrewery_UpdatesBrewery_ForAdmin()
     {
         var breweryId = Guid.NewGuid();
@@ -148,6 +168,67 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>, IA
         var payload = await response.Content.ReadFromJsonAsync<BeerResponse>();
         Assert.NotNull(payload);
         Assert.Equal(beerId, payload.Id);
+    }
+
+    [Fact]
+    public async Task ListBeers_ReturnsActiveBeers_ForAuthenticatedUser()
+    {
+        var beerName = $"List Beer {Guid.NewGuid():N}";
+        var inactiveBeerName = $"Inactive Beer {Guid.NewGuid():N}";
+        var styleId = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        var breweryId = Guid.NewGuid();
+        await _factory.SeedAsync(db =>
+        {
+            db.BeerStyles.Add(new BeerStyle { Id = styleId, Name = $"Style {Guid.NewGuid():N}", CreatedAt = DateTimeOffset.UtcNow });
+            db.BeerTypes.Add(new BeerType { Id = typeId, Name = $"Type {Guid.NewGuid():N}", CreatedAt = DateTimeOffset.UtcNow });
+            db.Breweries.Add(new Brewery { Id = breweryId, Name = $"Brewery {Guid.NewGuid():N}", IsActive = true, CreatedAt = DateTimeOffset.UtcNow });
+            db.Beers.AddRange(
+                new Beer { Id = Guid.NewGuid(), BreweryId = breweryId, BeerStyleId = styleId, BeerTypeId = typeId, Name = beerName, IsActive = true, CreatedAt = DateTimeOffset.UtcNow },
+                new Beer { Id = Guid.NewGuid(), BreweryId = breweryId, BeerStyleId = styleId, BeerTypeId = typeId, Name = inactiveBeerName, IsActive = false, CreatedAt = DateTimeOffset.UtcNow });
+        });
+
+        using var client = CreateAuthorizedClient("user");
+        var response = await client.GetAsync("/api/v1/beers");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var payload = await response.Content.ReadFromJsonAsync<ListBeersResponse>();
+        Assert.NotNull(payload);
+        Assert.Contains(payload.Beers, x => x.Name == beerName);
+        Assert.DoesNotContain(payload.Beers, x => x.Name == inactiveBeerName);
+    }
+
+    [Fact]
+    public async Task CreateBeer_CreatesBeer_ForAdmin()
+    {
+        var beerName = $"Created Beer {Guid.NewGuid():N}";
+        var styleId = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        var breweryId = Guid.NewGuid();
+        await _factory.SeedAsync(db =>
+        {
+            db.BeerStyles.Add(new BeerStyle { Id = styleId, Name = $"Create Style {Guid.NewGuid():N}", CreatedAt = DateTimeOffset.UtcNow });
+            db.BeerTypes.Add(new BeerType { Id = typeId, Name = $"Create Type {Guid.NewGuid():N}", CreatedAt = DateTimeOffset.UtcNow });
+            db.Breweries.Add(new Brewery { Id = breweryId, Name = $"Create Brewery {Guid.NewGuid():N}", IsActive = true, CreatedAt = DateTimeOffset.UtcNow });
+        });
+
+        using var client = CreateAuthorizedClient("admin");
+        var response = await client.PostAsJsonAsync("/api/v1/beers", new
+        {
+            breweryId,
+            beerStyleId = styleId,
+            beerTypeId = typeId,
+            name = beerName,
+            isActive = true
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var payload = await response.Content.ReadFromJsonAsync<BeerResponse>();
+        Assert.NotNull(payload);
+        Assert.Equal(beerName, payload.Name);
+        Assert.Equal(breweryId, payload.BreweryId);
+        Assert.True(payload.IsActive);
+        Assert.NotEqual(Guid.Empty, payload.Id);
     }
 
     [Fact]

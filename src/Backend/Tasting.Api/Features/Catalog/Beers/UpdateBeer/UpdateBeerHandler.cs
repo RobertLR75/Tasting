@@ -42,7 +42,7 @@ public sealed class UpdateBeerHandler(CatalogDbContext dbContext) : IRequestHand
             .AnyAsync(
                 x => x.Id != request.Id &&
                      x.BreweryId == request.BreweryId &&
-                     x.Name.ToLowerInvariant() == normalizedName,
+                     x.Name.ToLower() == normalizedName,
                 ct);
 
         if (duplicateExists)
