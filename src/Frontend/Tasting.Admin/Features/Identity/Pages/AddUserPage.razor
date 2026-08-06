@@ -9,27 +9,27 @@
 <FormLayout Title="Add New User" ErrorMessage="@errorMessage">
     <FormField 
         Label="First Name" 
-        @bind-value="@firstName"
+        @bind-Value="@firstName"
         ErrorMessage="@GetFieldError(nameof(firstName))"
         Required="true" />
     
     <FormField 
         Label="Last Name" 
-        @bind-value="@lastName"
+        @bind-Value="@lastName"
         ErrorMessage="@GetFieldError(nameof(lastName))"
         Required="true" />
     
     <FormField 
         Label="Email" 
         InputType="InputType.Email"
-        @bind-value="@email"
+        @bind-Value="@email"
         ErrorMessage="@GetFieldError(nameof(email))"
         Required="true" />
     
     <FormField 
         Label="Password" 
         InputType="InputType.Password"
-        @bind-value="@password"
+        @bind-Value="@password"
         ErrorMessage="@GetFieldError(nameof(password))"
         Required="true" />
 

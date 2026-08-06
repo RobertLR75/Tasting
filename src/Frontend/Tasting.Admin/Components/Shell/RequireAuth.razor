@@ -8,16 +8,34 @@
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    private bool _redirectPending;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthStateChanged;
-        await RedirectIfNotAuthenticatedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RedirectIfNotAuthenticatedAsync();
+        }
+
+        if (_redirectPending)
+        {
+            _redirectPending = false;
+            Navigation.NavigateTo("/login", forceLoad: false, replace: true);
+        }
     }
 
     private void OnAuthStateChanged(Task<AuthenticationState> task)
     {
-        _ = InvokeAsync(async () => await RedirectIfNotAuthenticatedAsync(task));
+        _ = InvokeAsync(async () =>
+        {
+            await RedirectIfNotAuthenticatedAsync(task);
+            StateHasChanged();
+        });
     }
 
     private async Task RedirectIfNotAuthenticatedAsync(Task<AuthenticationState>? stateTask = null)
@@ -28,7 +46,7 @@
 
         if (!(state.User.Identity?.IsAuthenticated ?? false))
         {
-            Navigation.NavigateTo("/login", forceLoad: false, replace: true);
+            _redirectPending = true;
         }
     }
 

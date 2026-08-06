@@ -13,6 +13,7 @@ public record ArrangementDto(
     string Name,
     string? Description,
     ArrangementStatus Status,
+    uint RowVersion,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt
 );
@@ -24,7 +25,8 @@ public record CreateArrangementRequest(
 
 public record UpdateArrangementRequest(
     string Name,
-    string? Description = null
+    string? Description,
+    uint RowVersion
 );
 
 public record ChangeArrangementStatusRequest(
@@ -32,8 +34,7 @@ public record ChangeArrangementStatusRequest(
 );
 
 public record ListArrangementsResponse(
-    IEnumerable<ArrangementDto> Arrangements,
-    int Total
+    IEnumerable<ArrangementDto> Items
 );
 
 public record ArrangementBeerDto(

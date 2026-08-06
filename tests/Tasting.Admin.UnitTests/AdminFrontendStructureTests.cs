@@ -7,6 +7,7 @@ public sealed class AdminFrontendStructureTests
     {
         var markup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Components/Shell/NavMenu.razor"));
 
+        Assert.Contains("new(\"/\", \"Dashboard\"", markup);
         Assert.Contains("\"Dashboard\"", markup);
         Assert.Contains("\"Arrangements\"", markup);
         Assert.Contains("\"Users\"", markup);
@@ -17,7 +18,6 @@ public sealed class AdminFrontendStructureTests
     }
 
     [Theory]
-    [InlineData("src/Frontend/Tasting.Admin/Features/Dashboard/Pages/DashboardPage.razor", "Admin Dashboard")]
     [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Arrangements")]
     [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Users")]
     [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BeersPage.razor", "Beers")]
@@ -29,6 +29,18 @@ public sealed class AdminFrontendStructureTests
         var markup = File.ReadAllText(GetProjectFile(relativePath));
 
         Assert.Contains(expectedHeading, markup);
+    }
+
+    [Fact]
+    public void FormField_ShouldPropagateValueChangesToParentBinding()
+    {
+        var markup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Shared/Components/FormField.razor"));
+
+        Assert.Contains("T=\"string\"", markup);
+        Assert.Contains("Value=\"@Value\"", markup);
+        Assert.Contains("ValueChanged=\"@HandleValueChanged\"", markup);
+        Assert.Contains("ValueChanged.InvokeAsync(value)", markup);
+        Assert.DoesNotContain("@bind-value=\"Value\"", markup);
     }
 
     private static string GetProjectFile(string relativePath)

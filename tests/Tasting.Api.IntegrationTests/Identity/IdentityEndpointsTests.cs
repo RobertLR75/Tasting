@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
 using Tasting.Api.Features.Identity.Users;
@@ -59,6 +60,10 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         Assert.False(string.IsNullOrWhiteSpace(body.Token));
         Assert.Equal("admin@tasting.no", body.Email);
         Assert.Equal(UserRole.Admin.ToString(), body.Role);
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(body.Token);
+        Assert.Contains(jwt.Claims, claim => claim.Type == JwtRegisteredClaimNames.Sub && claim.Value == IdentityApiFactory.AdminId.ToString());
+        Assert.Contains(jwt.Claims, claim => claim.Type == "role" && claim.Value == UserRole.Admin.ToString());
     }
 
     [Fact]

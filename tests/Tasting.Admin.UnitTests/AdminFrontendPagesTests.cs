@@ -62,6 +62,19 @@ public sealed class AdminFrontendPagesTests
         Assert.Contains("IArrangementsApiClient", arrangementsPageMarkup);
     }
 
+    [Fact]
+    public void RootPage_ShouldShowArrangementsList()
+    {
+        var arrangementsPageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor"));
+        var dashboardPagePath = GetProjectFile("src/Frontend/Tasting.Admin/Features/Dashboard/Pages/DashboardPage.razor");
+
+        Assert.Contains("@page \"/\"", arrangementsPageMarkup);
+        Assert.Contains("@page \"/arrangements\"", arrangementsPageMarkup);
+        Assert.False(File.Exists(dashboardPagePath), "The old placeholder dashboard must not own the root route.");
+        Assert.DoesNotContain("Admin Dashboard", arrangementsPageMarkup);
+        Assert.DoesNotContain("Blank admin shell", arrangementsPageMarkup);
+    }
+
     private static string GetProjectFile(string relativePath)
         => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", relativePath));
 }

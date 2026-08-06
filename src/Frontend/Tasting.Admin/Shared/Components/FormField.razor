@@ -3,7 +3,9 @@
 
 <div class="mb-4">
     <MudTextField 
-        @bind-value="Value" 
+        T="string"
+        Value="@Value"
+        ValueChanged="@HandleValueChanged"
         Label="@Label" 
         Variant="Variant.Outlined"
         FullWidth="true"
