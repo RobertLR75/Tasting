@@ -4,6 +4,7 @@
 @using Tasting.Admin.Features.Auth.Models
 @using Tasting.Admin.Features.Auth.Services
 @using Tasting.Admin.Components.Shell
+@using Microsoft.AspNetCore.Components.Forms
 @inject IAuthApiClient AuthApiClient
 @inject TastingAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
@@ -24,7 +25,7 @@
                 <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">@errorMessage</MudAlert>
             }
 
-            <EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
+            <EditForm EditContext="_editContext" OnValidSubmit="HandleLoginAsync">
                 <DataAnnotationsValidator />
 
                 <MudTextField @bind-Value="_model.Email"
@@ -34,7 +35,8 @@
                               Variant="Variant.Outlined"
                               FullWidth="true"
                               Class="mb-4"
-                              Disabled="@isLoading" />
+                              Disabled="@isLoading"
+                              OnKeyDown="@HandleKeyDownAsync" />
 
                 <MudTextField @bind-Value="_model.Password"
                               For="() => _model.Password"
@@ -43,13 +45,14 @@
                               Variant="Variant.Outlined"
                               FullWidth="true"
                               Class="mb-6"
-                              Disabled="@isLoading" />
+                              Disabled="@isLoading"
+                              OnKeyDown="@HandleKeyDownAsync" />
 
-                <MudButton ButtonType="ButtonType.Submit"
-                           Variant="Variant.Filled"
+                <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            FullWidth="true"
                            Size="Size.Large"
+                           OnClick="@HandleButtonClickAsync"
                            Disabled="@isLoading">
                     @if (isLoading)
                     {
@@ -68,8 +71,22 @@
 
 @code {
     private readonly LoginFormModel _model = new();
+    private EditContext _editContext = default!;
     private string? errorMessage;
     private bool isLoading;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+    }
+
+    private async Task HandleButtonClickAsync()
+    {
+        if (!_editContext.Validate())
+            return;
+
+        await HandleLoginAsync();
+    }
 
     private async Task HandleLoginAsync()
     {
@@ -94,5 +111,11 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task HandleKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await HandleButtonClickAsync();
     }
 }
