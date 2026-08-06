@@ -10,7 +10,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddMudServices();
 
+builder.Services.AddScoped<IAdminSessionStore, SessionStorageAdminSessionStore>();
 builder.Services.AddScoped<TastingAuthStateProvider>();
+builder.Services.AddScoped<AuthorizationMessageHandler>();
 builder.Services.AddScoped<IAuthApiClient, AuthApiClient>();
 builder.Services.AddScoped<Tasting.Admin.Features.Identity.Services.IUsersApiClient, Tasting.Admin.Features.Identity.Services.UsersApiClient>();
 builder.Services.AddScoped<Tasting.Admin.Features.Arrangement.Services.IArrangementsApiClient, Tasting.Admin.Features.Arrangement.Services.ArrangementsApiClient>();
@@ -20,7 +22,8 @@ builder.Services.AddHttpClient("Tasting.Api", client =>
 {
     var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7100/";
     client.BaseAddress = new Uri(baseUrl);
-}).AddServiceDiscovery();
+}).AddServiceDiscovery()
+  .AddHttpMessageHandler<AuthorizationMessageHandler>();
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Tasting.Api"));
 
 var app = builder.Build();

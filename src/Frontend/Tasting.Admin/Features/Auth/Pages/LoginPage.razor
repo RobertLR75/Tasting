@@ -84,7 +84,7 @@
             Console.WriteLine($"Calling API for {email}...");
             var response = await AuthApiClient.LoginAsync(new LoginRequest(email, password));
             Console.WriteLine("API returned success!");
-            AuthStateProvider.NotifyLogin(response);
+            await AuthStateProvider.NotifyLoginAsync(response);
             Navigation.NavigateTo("/");
         }
         catch (HttpRequestException ex) when ((int?)ex.StatusCode == 401 || (int?)ex.StatusCode == 403)
