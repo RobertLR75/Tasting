@@ -35,6 +35,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}"
 	ProjectSection(SolutionItems) = preProject
 		docs\tasting-handoff.md = docs\tasting-handoff.md
+		docs\handoff\issue-30-breweries-beers-page.md = docs\handoff\issue-30-breweries-beers-page.md
 		docs\glossary.md = docs\glossary.md
 		docs\architecture.md = docs\architecture.md
 		docs\implementation-plan.md = docs\implementation-plan.md
