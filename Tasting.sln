@@ -53,6 +53,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E
 		docs\handoff\issue-26-arrangements-page.md = docs\handoff\issue-26-arrangements-page.md
 		docs\handoff\issue-27-add-beers-to-arrangement-page.md = docs\handoff\issue-27-add-beers-to-arrangement-page.md
 		docs\handoff\issue-29-arrangement-status-action.md = docs\handoff\issue-29-arrangement-status-action.md
+		docs\handoff\issue-42-wireframe-for-frontend.md = docs\handoff\issue-42-wireframe-for-frontend.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-6909-4332-BE19-0DDE9B97EED7}"
