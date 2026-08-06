@@ -52,10 +52,18 @@ else
             <MudTd DataLabel="Created">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
             <MudTd DataLabel="Actions">
                 <MudStack Row="true" Spacing="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/edit"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/beers"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/participants"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/status"))" />
+                    <MudTooltip Text="Edit arrangement">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit arrangement" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/edit"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Manage beers">
+                        <MudIconButton Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Small" aria-label="Manage beers" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/beers"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Manage participants">
+                        <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" aria-label="Manage participants" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/participants"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Change status">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" aria-label="Change status" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/status"))" />
+                    </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>

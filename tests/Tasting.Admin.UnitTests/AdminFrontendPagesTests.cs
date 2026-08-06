@@ -75,6 +75,17 @@ public sealed class AdminFrontendPagesTests
         Assert.DoesNotContain("Blank admin shell", arrangementsPageMarkup);
     }
 
+    [Theory]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BreweriesPage.razor")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BeersPage.razor")]
+    public void ListPages_ActionButtons_ShouldHaveTooltips(string relativePath)
+    {
+        var markup = File.ReadAllText(GetProjectFile(relativePath));
+        Assert.Contains("MudTooltip", markup);
+    }
+
     private static string GetProjectFile(string relativePath)
         => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", relativePath));
 }
