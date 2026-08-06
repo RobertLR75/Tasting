@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -9,32 +10,41 @@ using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
+using Tasting.Api.IntegrationTests.Infrastructure;
 
 namespace Tasting.Api.IntegrationTests.Arrangement;
 
-public sealed class ArrangementApiFactory : WebApplicationFactory<Program>
+public sealed class ArrangementApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly string _dbSuffix = Guid.NewGuid().ToString("N");
+    private readonly PostgresContainerFixture _postgres = new();
+    private string? _previousConnectionString;
+
+    public async Task InitializeAsync()
+    {
+        await _postgres.StartAsync();
+        _previousConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__TastingDb");
+        Environment.SetEnvironmentVariable("ConnectionStrings__TastingDb", _postgres.ConnectionString);
+    }
+
+    public new async Task DisposeAsync()
+    {
+        Environment.SetEnvironmentVariable("ConnectionStrings__TastingDb", _previousConnectionString);
+        await _postgres.DisposeAsync();
+        await base.DisposeAsync();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:TastingDb"] = _postgres.ConnectionString
+            });
+        });
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll<DbContextOptions<ArrangementDbContext>>();
-            services.RemoveAll<ArrangementDbContext>();
-            services.RemoveAll<DbContextOptions<CatalogDbContext>>();
-            services.RemoveAll<CatalogDbContext>();
-            services.RemoveAll<DbContextOptions<UsersDbContext>>();
-            services.RemoveAll<UsersDbContext>();
-
-            services.AddDbContext<ArrangementDbContext>(o =>
-                o.UseInMemoryDatabase($"arrangement-int-{_dbSuffix}"));
-            services.AddDbContext<CatalogDbContext>(o =>
-                o.UseInMemoryDatabase($"catalog-int-{_dbSuffix}"));
-            services.AddDbContext<UsersDbContext>(o =>
-                o.UseInMemoryDatabase($"users-int-{_dbSuffix}"));
-
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = ArrangementTestAuthHandler.SchemeName;
@@ -57,13 +67,9 @@ public sealed class ArrangementApiFactory : WebApplicationFactory<Program>
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-        if (await db.Users.AnyAsync())
+        if (!await db.Users.AnyAsync(user => user.Id == ArrangementTestAuthHandler.AdminUserId))
         {
-            return;
-        }
-
-        db.Users.AddRange(
-            new User
+            db.Users.Add(new User
             {
                 Id = ArrangementTestAuthHandler.AdminUserId,
                 Email = "admin@test.no",
@@ -73,8 +79,12 @@ public sealed class ArrangementApiFactory : WebApplicationFactory<Program>
                 IsActive = true,
                 Role = UserRole.Admin,
                 CreatedAt = DateTimeOffset.UtcNow
-            },
-            new User
+            });
+        }
+
+        if (!await db.Users.AnyAsync(user => user.Id == ArrangementTestAuthHandler.RegularUserId))
+        {
+            db.Users.Add(new User
             {
                 Id = ArrangementTestAuthHandler.RegularUserId,
                 Email = "user@test.no",
@@ -85,6 +95,8 @@ public sealed class ArrangementApiFactory : WebApplicationFactory<Program>
                 Role = UserRole.User,
                 CreatedAt = DateTimeOffset.UtcNow
             });
+        }
+
         await db.SaveChangesAsync();
     }
 

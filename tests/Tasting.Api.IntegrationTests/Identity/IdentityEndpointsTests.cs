@@ -1,6 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
 using Tasting.Api.Features.Identity.Users;
+using Tasting.Api.Features.Identity.Users.Login;
 using Tasting.Api.Features.Identity.Users.ListUsers;
 
 namespace Tasting.Api.IntegrationTests.Identity;
@@ -8,9 +10,11 @@ namespace Tasting.Api.IntegrationTests.Identity;
 public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
 {
     private readonly HttpClient _client;
+    private readonly IdentityApiFactory _factory;
 
     public IdentityEndpointsTests(IdentityApiFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
         factory.EnsureSeededAsync().GetAwaiter().GetResult();
     }
@@ -40,6 +44,29 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
     }
 
     [Fact]
+    public async Task Login_returns_token_for_active_admin_with_valid_password()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/users/login",
+            new
+            {
+                email = "admin@tasting.no",
+                password = "password123"
+            });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.NotNull(body);
+        Assert.False(string.IsNullOrWhiteSpace(body.Token));
+        Assert.Equal("admin@tasting.no", body.Email);
+        Assert.Equal(UserRole.Admin.ToString(), body.Role);
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(body.Token);
+        Assert.Contains(jwt.Claims, claim => claim.Type == JwtRegisteredClaimNames.Sub && claim.Value == IdentityApiFactory.AdminId.ToString());
+        Assert.Contains(jwt.Claims, claim => claim.Type == "role" && claim.Value == UserRole.Admin.ToString());
+    }
+
+    [Fact]
     public async Task Get_user_returns_ok_for_authenticated_user()
     {
         using var message = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/users/{IdentityApiFactory.UserId}");
@@ -63,6 +90,40 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var response = await _client.SendAsync(message);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Deactivate_user_returns_ok_for_authenticated_admin()
+    {
+        var userId = Guid.NewGuid();
+        await _factory.SeedUserAsync(new User
+        {
+            Id = userId,
+            Email = "deactivate-me@tasting.no",
+            EmailNormalized = "deactivate-me@tasting.no",
+            FirstName = "Deactivate",
+            LastName = "Me",
+            Role = UserRole.User,
+            IsActive = true,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        using var message = new HttpRequestMessage(
+            HttpMethod.Patch,
+            $"/api/v1/users/{userId}/deactivate")
+        {
+            Content = JsonContent.Create(new { id = userId })
+        };
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<UserResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(userId, body.Id);
+        Assert.False(body.IsActive);
     }
 
     [Fact]

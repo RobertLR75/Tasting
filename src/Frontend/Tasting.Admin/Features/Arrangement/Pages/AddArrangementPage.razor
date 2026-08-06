@@ -10,15 +10,15 @@
 
 <FormLayout Title="Add New Arrangement" ErrorMessage="@errorMessage">
     <FormField 
-        Label="Arrangement Name" 
-        @bind-value="@arrangementName"
+        Label="Arrangement Name"
+        @bind-Value="@arrangementName"
         ErrorMessage="@GetFieldError(nameof(arrangementName))"
         Required="true" />
     
     <FormField 
-        Label="Description" 
+        Label="Description"
         InputType="InputType.Text"
-        @bind-value="@description"
+        @bind-Value="@description"
         ErrorMessage="@GetFieldError(nameof(description))" />
 
     <MudStack Row="true" Spacing="2">

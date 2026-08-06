@@ -18,13 +18,21 @@ builder.Services.AddScoped<Tasting.Admin.Features.Identity.Services.IUsersApiCli
 builder.Services.AddScoped<Tasting.Admin.Features.Arrangement.Services.IArrangementsApiClient, Tasting.Admin.Features.Arrangement.Services.ArrangementsApiClient>();
 builder.Services.AddScoped<Tasting.Admin.Features.Catalog.Services.IBreweriesApiClient, Tasting.Admin.Features.Catalog.Services.BreweriesApiClient>();
 builder.Services.AddScoped<Tasting.Admin.Features.Catalog.Services.IBeersApiClient, Tasting.Admin.Features.Catalog.Services.BeersApiClient>();
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7100/";
 builder.Services.AddHttpClient("Tasting.Api", client =>
 {
-    var baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7100/";
-    client.BaseAddress = new Uri(baseUrl);
-}).AddServiceDiscovery()
-  .AddHttpMessageHandler<AuthorizationMessageHandler>();
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Tasting.Api"));
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+builder.Services.AddScoped(sp =>
+{
+    var authHandler = sp.GetRequiredService<AuthorizationMessageHandler>();
+    authHandler.InnerHandler = sp.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler("Tasting.Api");
+
+    return new HttpClient(authHandler)
+    {
+        BaseAddress = new Uri(apiBaseUrl)
+    };
+});
 
 var app = builder.Build();
 

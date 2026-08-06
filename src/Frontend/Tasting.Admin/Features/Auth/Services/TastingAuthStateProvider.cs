@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Tasting.Admin.Features.Auth.Models;
 
@@ -10,6 +11,7 @@ public sealed class TastingAuthStateProvider : AuthenticationStateProvider
         new(new ClaimsPrincipal(new ClaimsIdentity()));
 
     private readonly IAdminSessionStore? _sessionStore;
+    private readonly TimeProvider _timeProvider;
     private AuthenticationState _current = Anonymous;
     private string? _token;
     private bool _hasLoadedSession;
@@ -18,11 +20,13 @@ public sealed class TastingAuthStateProvider : AuthenticationStateProvider
 
     public TastingAuthStateProvider()
     {
+        _timeProvider = TimeProvider.System;
     }
 
-    public TastingAuthStateProvider(IAdminSessionStore sessionStore)
+    public TastingAuthStateProvider(IAdminSessionStore sessionStore, TimeProvider? timeProvider = null)
     {
         _sessionStore = sessionStore;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async Task NotifyLoginAsync(LoginResponse response, CancellationToken cancellationToken = default)
@@ -93,10 +97,19 @@ public sealed class TastingAuthStateProvider : AuthenticationStateProvider
         }
 
         _hasLoadedSession = true;
-        if (session is not null)
+        if (session is null)
         {
-            SetSession(session);
+            return;
         }
+
+        if (IsExpired(session.Token))
+        {
+            await _sessionStore.ClearAsync(cancellationToken);
+            return;
+        }
+
+        SetSession(session);
+        NotifyAuthenticationStateChanged(Task.FromResult(_current));
     }
 
     private void SetSession(StoredAdminSession session)
@@ -110,6 +123,49 @@ public sealed class TastingAuthStateProvider : AuthenticationStateProvider
         ], authenticationType: "jwt");
 
         _current = new AuthenticationState(new ClaimsPrincipal(identity));
+    }
+
+    private bool IsExpired(string token)
+    {
+        var expiresAt = ReadJwtExpiration(token);
+        return expiresAt is not null && expiresAt <= _timeProvider.GetUtcNow();
+    }
+
+    private static DateTimeOffset? ReadJwtExpiration(string token)
+    {
+        var parts = token.Split('.');
+        if (parts.Length < 2)
+        {
+            return null;
+        }
+
+        try
+        {
+            var payload = Base64UrlDecode(parts[1]);
+            using var document = JsonDocument.Parse(payload);
+            if (!document.RootElement.TryGetProperty("exp", out var expElement) ||
+                !expElement.TryGetInt64(out var exp))
+            {
+                return null;
+            }
+
+            return DateTimeOffset.FromUnixTimeSeconds(exp);
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static byte[] Base64UrlDecode(string value)
+    {
+        var padded = value.Replace('-', '+').Replace('_', '/');
+        padded = padded.PadRight(padded.Length + (4 - padded.Length % 4) % 4, '=');
+        return Convert.FromBase64String(padded);
     }
 
     private void ClearSession()
