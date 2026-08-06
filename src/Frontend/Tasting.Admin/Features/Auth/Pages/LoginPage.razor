@@ -24,7 +24,7 @@
                 <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">@errorMessage</MudAlert>
             }
 
-            <EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
+            <EditForm Model="_model" OnValidSubmit="HandleLoginAsync" OnInvalidSubmit="@(_ => errorMessage = null)">
                 <DataAnnotationsValidator />
 
                 <MudTextField @bind-Value="_model.Email"
