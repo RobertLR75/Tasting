@@ -4,6 +4,7 @@
 @using Tasting.Admin.Features.Auth.Models
 @using Tasting.Admin.Features.Auth.Services
 @using Tasting.Admin.Components.Shell
+@using Microsoft.AspNetCore.Components.Forms
 @inject IAuthApiClient AuthApiClient
 @inject TastingAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
@@ -24,71 +25,82 @@
                 <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">@errorMessage</MudAlert>
             }
 
-            <MudTextField @bind-Value="email"
-                          Label="Email"
-                          InputType="InputType.Email"
-                          Variant="Variant.Outlined"
-                          FullWidth="true"
-                          Class="mb-4"
-                          Disabled="@isLoading" />
+            <EditForm EditContext="_editContext" OnValidSubmit="HandleLoginAsync">
+                <DataAnnotationsValidator />
 
-            <MudTextField @bind-Value="password"
-                          Label="Password"
-                          InputType="InputType.Password"
-                          Variant="Variant.Outlined"
-                          FullWidth="true"
-                          Class="mb-6"
-                          Disabled="@isLoading"
-                          OnKeyDown="@HandleKeyDownAsync" />
+                <MudTextField @bind-Value="_model.Email"
+                              For="() => _model.Email"
+                              Label="Email"
+                              InputType="InputType.Email"
+                              Variant="Variant.Outlined"
+                              FullWidth="true"
+                              Class="mb-4"
+                              Disabled="@isLoading"
+                              OnKeyDown="@HandleKeyDownAsync" />
 
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Size="Size.Large"
-                       OnClick="@HandleLoginAsync"
-                       Disabled="@isLoading">
-                @if (isLoading)
-                {
-                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                    <span>Signing in...</span>
-                }
-                else
-                {
-                    <span>Sign in</span>
-                }
-            </MudButton>
+                <MudTextField @bind-Value="_model.Password"
+                              For="() => _model.Password"
+                              Label="Password"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              FullWidth="true"
+                              Class="mb-6"
+                              Disabled="@isLoading"
+                              OnKeyDown="@HandleKeyDownAsync" />
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Size="Size.Large"
+                           OnClick="@HandleButtonClickAsync"
+                           Disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Signing in...</span>
+                    }
+                    else
+                    {
+                        <span>Sign in</span>
+                    }
+                </MudButton>
+            </EditForm>
         </MudPaper>
     </MudItem>
 </MudGrid>
 
 @code {
-    private string email = "";
-    private string password = "";
+    private readonly LoginFormModel _model = new();
+    private EditContext _editContext = default!;
     private string? errorMessage;
     private bool isLoading;
 
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+    }
+
+    private async Task HandleButtonClickAsync()
+    {
+        if (!_editContext.Validate())
+            return;
+
+        await HandleLoginAsync();
+    }
+
     private async Task HandleLoginAsync()
     {
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-        {
-            errorMessage = "Email and password are required.";
-            return;
-        }
-
         isLoading = true;
         errorMessage = null;
 
         try
         {
-            Console.WriteLine($"Calling API for {email}...");
-            var response = await AuthApiClient.LoginAsync(new LoginRequest(email, password));
-            Console.WriteLine("API returned success!");
+            var response = await AuthApiClient.LoginAsync(new LoginRequest(_model.Email, _model.Password));
             await AuthStateProvider.NotifyLoginAsync(response);
             Navigation.NavigateTo("/");
         }
         catch (HttpRequestException ex) when ((int?)ex.StatusCode == 401 || (int?)ex.StatusCode == 403)
         {
-            Console.WriteLine("API returned 401/403");
             errorMessage = "Invalid email or password.";
         }
         catch (Exception)
@@ -104,6 +116,6 @@
     private async Task HandleKeyDownAsync(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
-            await HandleLoginAsync();
+            await HandleButtonClickAsync();
     }
 }
