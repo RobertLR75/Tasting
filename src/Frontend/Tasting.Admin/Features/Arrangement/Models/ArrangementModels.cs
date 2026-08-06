@@ -8,6 +8,8 @@ public enum ArrangementStatus
     Canceled = 3
 }
 
+public record ArrangementBeerItem(Guid Id, Guid BeerId, string BeerName);
+
 public record ArrangementDto(
     Guid Id,
     string Name,
@@ -15,7 +17,8 @@ public record ArrangementDto(
     ArrangementStatus Status,
     uint RowVersion,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt
+    DateTimeOffset? UpdatedAt,
+    IReadOnlyList<ArrangementBeerItem> Beers
 );
 
 public record CreateArrangementRequest(
@@ -45,7 +48,8 @@ public record ArrangementBeerDto(
 );
 
 public record AddBeerToArrangementRequest(
-    Guid BeerId
+    Guid BeerId,
+    uint RowVersion
 );
 
 public record ArrangementParticipantDto(

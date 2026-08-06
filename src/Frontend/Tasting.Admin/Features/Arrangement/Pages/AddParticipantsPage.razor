@@ -75,7 +75,7 @@ else
     public Guid ArrangementId { get; set; }
 
     private List<UserDto> AvailableUsers { get; set; } = new();
-    private HashSet<int> AddingParticipantIds { get; set; } = new();
+    private HashSet<Guid> AddingParticipantIds { get; set; } = new();
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
@@ -104,12 +104,12 @@ else
         }
     }
 
-    private async Task AddParticipantAsync(int userId)
+    private async Task AddParticipantAsync(Guid userId)
     {
         AddingParticipantIds.Add(userId);
         try
         {
-            var request = new AddParticipantToArrangementRequest(Guid.Empty); // Would need proper mapping
+            var request = new AddParticipantToArrangementRequest(userId);
             await ArrangementsApiClient.AddParticipantAsync(ArrangementId, request);
             AvailableUsers.RemoveAll(u => u.Id == userId);
         }

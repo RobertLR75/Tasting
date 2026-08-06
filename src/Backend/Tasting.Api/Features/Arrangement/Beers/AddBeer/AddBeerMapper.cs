@@ -18,5 +18,6 @@ public sealed class AddBeerMapper
             entity.Status,
             entity.RowVersion,
             entity.CreatedAt,
-            entity.UpdatedAt));
+            entity.UpdatedAt,
+            entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList()));
 }

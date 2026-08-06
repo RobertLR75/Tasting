@@ -56,7 +56,8 @@ public class ArrangementDtoBuilder
 
     public ArrangementDto Build()
     {
-        return new ArrangementDto(_id, _name, _description, _status, _rowVersion, _createdAt, _updatedAt);
+        return new ArrangementDto(_id, _name, _description, _status, _rowVersion, _createdAt, _updatedAt,
+            new List<ArrangementBeerItem>());
     }
 
     public static ArrangementDtoBuilder Default()
