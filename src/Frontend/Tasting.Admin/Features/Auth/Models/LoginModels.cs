@@ -11,6 +11,7 @@ public sealed class LoginFormModel
     public string Email { get; set; } = "";
 
     [Required(ErrorMessage = "Password is required.")]
+    [RegularExpression(@".*\S.*", ErrorMessage = "Password is required.")]
     public string Password { get; set; } = "";
 }
 
