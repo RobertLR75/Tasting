@@ -247,7 +247,7 @@ Hvert wireframe følger dette mønsteret:
 
 | Event | Handling |
 |---|---|
-| `ArrangementStatusChanged` → `Started` | Naviger automatisk til Screen 5 for beer[0] |
+| `ArrangementStatusChanged` → `Started` | Naviger automatisk til Screen 5 for beerIndex = 1 |
 
 ---
 
