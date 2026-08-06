@@ -3,6 +3,7 @@
 @using Tasting.Admin.Features.Identity.Models
 @using Tasting.Admin.Features.Identity.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IUsersApiClient UsersApiClient
 @inject NavigationManager Navigation
 
@@ -67,6 +68,7 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,6 +84,9 @@ else
             var response = await UsersApiClient.ListAsync(SearchTerm);
             Users = response?.Users.ToList() ?? new();
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to load users: {ex.Message}";
@@ -95,5 +100,11 @@ else
     private void EditUser(int id)
     {
         Navigation.NavigateTo($"/users/{id}/edit");
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

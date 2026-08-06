@@ -3,6 +3,7 @@
 @using Tasting.Admin.Features.Catalog.Models
 @using Tasting.Admin.Features.Catalog.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IBeersApiClient BeersApiClient
 @inject NavigationManager Navigation
 
@@ -68,6 +69,7 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,6 +87,9 @@ else
                 SearchTerm);
             Beers = response?.Beers.ToList() ?? new();
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to load beers: {ex.Message}";
@@ -93,6 +98,12 @@ else
         {
             IsLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }
 

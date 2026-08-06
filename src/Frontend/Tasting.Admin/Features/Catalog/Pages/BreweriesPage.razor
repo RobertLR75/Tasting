@@ -3,6 +3,7 @@
 @using Tasting.Admin.Features.Catalog.Models
 @using Tasting.Admin.Features.Catalog.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IBreweriesApiClient BreweriesApiClient
 @inject NavigationManager Navigation
 
@@ -62,6 +63,7 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,6 +79,9 @@ else
             var response = await BreweriesApiClient.ListAsync(SearchTerm);
             Breweries = response?.Breweries.ToList() ?? new();
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to load breweries: {ex.Message}";
@@ -85,6 +90,12 @@ else
         {
             IsLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }
 
