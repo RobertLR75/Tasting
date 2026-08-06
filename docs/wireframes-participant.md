@@ -347,7 +347,7 @@ Hvert wireframe følger dette mønsteret:
 | Smak | Glider 0–10, steg 0.5; viser gjeldende verdi |
 | Skål | Glider 0–10, steg 0.5; viser gjeldende verdi |
 | «Neste»-knapp | **Deaktivert** inntil alle 4 gliders er eksplisitt satt av bruker |
-| «Neste»-knapp | Aktivert når alle 4 gliders har en verdi ulik null/default-tilstand |
+| «Neste»-knapp | Aktivert når alle 4 gliders er eksplisitt satt (0.0 er en gyldig verdi) |
 | «Neste»-knapp | Sender inn Rating ved klikk, deretter navigerer til Screen 7 |
 
 **Backend-feil:**
