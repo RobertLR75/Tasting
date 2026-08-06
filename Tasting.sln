@@ -50,6 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E
 		docs\IMPLEMENTATION-PLAN-STATUS.md = docs\IMPLEMENTATION-PLAN-STATUS.md
 		docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md = docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md
 		docs\handoff\issue-26-arrangements-page.md = docs\handoff\issue-26-arrangements-page.md
+		docs\handoff\issue-29-arrangement-status-action.md = docs\handoff\issue-29-arrangement-status-action.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-6909-4332-BE19-0DDE9B97EED7}"
