@@ -66,7 +66,7 @@ else
     private List<ArrangementDto> Arrangements { get; set; } = new();
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
-    private bool IsLoading { get; set; }
+    private bool IsLoading { get; set; } = true;
     private bool _hasLoaded;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
