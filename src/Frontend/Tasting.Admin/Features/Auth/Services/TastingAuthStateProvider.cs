@@ -110,6 +110,7 @@ public sealed class TastingAuthStateProvider : AuthenticationStateProvider
 
         SetSession(session);
         NotifyAuthenticationStateChanged(Task.FromResult(_current));
+    }
 
     private void SetSession(StoredAdminSession session)
     {

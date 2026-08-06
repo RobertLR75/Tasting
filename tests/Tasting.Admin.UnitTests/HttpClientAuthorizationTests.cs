@@ -64,6 +64,27 @@ public sealed class HttpClientAuthorizationTests
     }
 
     [Fact]
+    public async Task AuthStateProvider_RestoresAuthenticationStateFromStoredAdminSession()
+    {
+        var sessionStore = new InMemoryAdminSessionStore
+        {
+            Session = new StoredAdminSession(
+                Token: "stored-token",
+                Email: "admin@example.test",
+                FirstName: "Ada",
+                LastName: "Admin",
+                Role: "Admin")
+        };
+        var authState = new TastingAuthStateProvider(sessionStore);
+
+        var state = await authState.GetAuthenticationStateAsync();
+
+        Assert.True(state.User.Identity?.IsAuthenticated);
+        Assert.Equal("Ada Admin", state.User.Identity?.Name);
+        Assert.Equal("stored-token", await authState.GetTokenAsync());
+    }
+
+    [Fact]
     public async Task ArrangementsApiClient_UpdateAsync_SendsRowVersion()
     {
         var innerHandler = new CapturingHandler(HttpStatusCode.OK)
