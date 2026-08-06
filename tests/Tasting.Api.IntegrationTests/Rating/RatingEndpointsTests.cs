@@ -8,6 +8,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -17,6 +18,7 @@ using Tasting.Api.Contracts;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Identity;
 using Tasting.Api.Infrastructure.Rating;
+using Tasting.Api.IntegrationTests.Infrastructure;
 
 namespace Tasting.Api.IntegrationTests.Rating;
 
@@ -144,13 +146,29 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
 /// - Overrides JWT validation to accept tokens signed by a test key
 /// - Exposes a controllable IArrangementService stub
 /// </summary>
-public class RatingTestWebFactory : WebApplicationFactory<Program>
+public class RatingTestWebFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private static readonly Guid DefaultUserId = Guid.Parse("A7D3E5F1-1111-4444-8888-123456789ABC");
     private static readonly byte[] TestKeyBytes = Encoding.UTF8.GetBytes(
         "integration-test-secret-key-that-is-at-least-32-bytes");
+    private readonly PostgresContainerFixture _postgres = new();
+    private string? _previousConnectionString;
 
     public IArrangementService ArrangementServiceStub { get; } = Substitute.For<IArrangementService>();
+
+    public async Task InitializeAsync()
+    {
+        await _postgres.StartAsync();
+        _previousConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__TastingDb");
+        Environment.SetEnvironmentVariable("ConnectionStrings__TastingDb", _postgres.ConnectionString);
+    }
+
+    public new async Task DisposeAsync()
+    {
+        Environment.SetEnvironmentVariable("ConnectionStrings__TastingDb", _previousConnectionString);
+        await _postgres.DisposeAsync();
+        await base.DisposeAsync();
+    }
 
     public void ResetStubDefaults()
     {
@@ -203,22 +221,15 @@ public class RatingTestWebFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:TastingDb"] = _postgres.ConnectionString
+            });
+        });
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll<DbContextOptions<RatingDbContext>>();
-            services.RemoveAll<RatingDbContext>();
-            services.RemoveAll<DbContextOptions<UsersDbContext>>();
-            services.RemoveAll<UsersDbContext>();
-
-            // IMPORTANT: capture the DB name outside the lambda so all request scopes share the same InMemory store.
-            // AddDbContext registers DbContextOptions as Scoped, so a lambda with Guid.NewGuid() inside would
-            // create a fresh empty database per request.
-            var dbName = "IntegrationTestDb_" + Guid.NewGuid().ToString();
-            services.AddDbContext<RatingDbContext>(options =>
-                options.UseInMemoryDatabase(dbName));
-            services.AddDbContext<UsersDbContext>(options =>
-                options.UseInMemoryDatabase(dbName));
-
             services.RemoveAll<IArrangementService>();
             services.AddSingleton(ArrangementServiceStub);
 
