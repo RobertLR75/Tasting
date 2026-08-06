@@ -34,7 +34,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.Services", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}"
 	ProjectSection(SolutionItems) = preProject
+		docs\handoff\issue-28-add-participants-to-arrangement-page.md = docs\handoff\issue-28-add-participants-to-arrangement-page.md
 		docs\tasting-handoff.md = docs\tasting-handoff.md
+		docs\handoff\issue-30-breweries-beers-page.md = docs\handoff\issue-30-breweries-beers-page.md
 		docs\glossary.md = docs\glossary.md
 		docs\architecture.md = docs\architecture.md
 		docs\implementation-plan.md = docs\implementation-plan.md
@@ -47,6 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E
 		docs\INTEGRATION-CHECKLIST.md = docs\INTEGRATION-CHECKLIST.md
 		docs\IMPLEMENTATION-PLAN-STATUS.md = docs\IMPLEMENTATION-PLAN-STATUS.md
 		docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md = docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md
+		docs\handoff\issue-26-arrangements-page.md = docs\handoff\issue-26-arrangements-page.md
 		docs\handoff\issue-27-add-beers-to-arrangement-page.md = docs\handoff\issue-27-add-beers-to-arrangement-page.md
 	EndProjectSection
 EndProject
