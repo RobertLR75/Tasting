@@ -5,6 +5,8 @@
 @using Tasting.Admin.Shared.Components
 @inject IBeersApiClient BeersApiClient
 @inject IBreweriesApiClient BreweriesApiClient
+@inject IBeerStylesApiClient BeerStylesApiClient
+@inject IBeerTypesApiClient BeerTypesApiClient
 @inject NavigationManager Navigation
 
 <PageTitle>Add Beer</PageTitle>
@@ -20,6 +22,26 @@
         @bind-Value="@beerName"
         ErrorMessage="@GetFieldError(nameof(beerName))"
         Required="true" />
+
+    <MudSelect T="Guid" Label="Beer Style" @bind-Value="selectedBeerStyleId"
+               Variant="Variant.Outlined" Required="true"
+               Error="@(GetFieldError(nameof(selectedBeerStyleId)) is not null)"
+               ErrorText="@GetFieldError(nameof(selectedBeerStyleId))">
+        @foreach (var style in beerStyles)
+        {
+            <MudSelectItem T="Guid" Value="@style.Id">@style.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSelect T="Guid" Label="Beer Type" @bind-Value="selectedBeerTypeId"
+               Variant="Variant.Outlined" Required="true"
+               Error="@(GetFieldError(nameof(selectedBeerTypeId)) is not null)"
+               ErrorText="@GetFieldError(nameof(selectedBeerTypeId))">
+        @foreach (var type in beerTypes)
+        {
+            <MudSelectItem T="Guid" Value="@type.Id">@type.Name</MudSelectItem>
+        }
+    </MudSelect>
 
     <MudStack Row="true" Spacing="2">
         <ActionButton 
@@ -40,45 +62,58 @@
 
     private BreweryDto? currentBrewery;
     private string beerName = "";
+    private Guid selectedBeerStyleId;
+    private Guid selectedBeerTypeId;
+    private List<BeerStyleDto> beerStyles = new();
+    private List<BeerTypeDto> beerTypes = new();
     private string? errorMessage;
     private bool isLoading = false;
     private Dictionary<string, string> fieldErrors = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (BreweryId != Guid.Empty)
+        var loadBrewery = BreweryId != Guid.Empty
+            ? BreweriesApiClient.GetAsync(BreweryId)
+            : Task.FromResult<BreweryDto?>(null);
+
+        var loadStyles = BeerStylesApiClient.ListAsync();
+        var loadTypes = BeerTypesApiClient.ListAsync();
+
+        try
         {
-            try
-            {
-                currentBrewery = await BreweriesApiClient.GetAsync(BreweryId);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"Failed to load brewery: {ex.Message}";
-            }
+            await Task.WhenAll(loadBrewery, loadStyles, loadTypes);
+            currentBrewery = loadBrewery.Result;
+            beerStyles = loadStyles.Result?.BeerStyles.ToList() ?? new();
+            beerTypes = loadTypes.Result?.BeerTypes.ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load data: {ex.Message}";
         }
     }
 
     private async Task HandleCreateAsync()
     {
+        fieldErrors.Clear();
+
         if (string.IsNullOrWhiteSpace(beerName))
-        {
             fieldErrors["beerName"] = "Beer name is required";
+
+        if (selectedBeerStyleId == Guid.Empty)
+            fieldErrors["selectedBeerStyleId"] = "Beer style is required";
+
+        if (selectedBeerTypeId == Guid.Empty)
+            fieldErrors["selectedBeerTypeId"] = "Beer type is required";
+
+        if (fieldErrors.Count > 0)
             return;
-        }
 
         isLoading = true;
         errorMessage = null;
-        fieldErrors.Clear();
-        
+
         try
         {
-            var request = new CreateBeerRequest(
-                BreweryId, 
-                Guid.Empty, // BeerStyleId - would need to be selected from UI
-                Guid.Empty, // BeerTypeId - would need to be selected from UI
-                beerName
-            );
+            var request = new CreateBeerRequest(BreweryId, selectedBeerStyleId, selectedBeerTypeId, beerName);
             var beer = await BeersApiClient.CreateAsync(request);
             if (beer != null)
             {
