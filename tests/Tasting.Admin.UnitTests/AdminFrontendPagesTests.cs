@@ -76,14 +76,21 @@ public sealed class AdminFrontendPagesTests
     }
 
     [Theory]
-    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor")]
-    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor")]
-    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BreweriesPage.razor")]
-    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BeersPage.razor")]
-    public void ListPages_ActionButtons_ShouldHaveTooltips(string relativePath)
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Edit arrangement")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Manage beers")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Manage participants")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Change status")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Edit user")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Change role")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Change status")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BreweriesPage.razor", "Edit brewery")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BreweriesPage.razor", "Manage beers")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BeersPage.razor", "Edit beer")]
+    public void ListPages_ActionButtons_ShouldHaveTooltipsAndAriaLabels(string relativePath, string expectedLabel)
     {
         var markup = File.ReadAllText(GetProjectFile(relativePath));
-        Assert.Contains("MudTooltip", markup);
+        Assert.Contains($"MudTooltip Text=\"{expectedLabel}\"", markup);
+        Assert.Contains($"aria-label=\"{expectedLabel}\"", markup);
     }
 
     private static string GetProjectFile(string relativePath)
