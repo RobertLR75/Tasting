@@ -34,21 +34,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.Services", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}"
 	ProjectSection(SolutionItems) = preProject
-		docs\tasting-handoff.md = docs\tasting-handoff.md
 		docs\glossary.md = docs\glossary.md
-		docs\architecture.md = docs\architecture.md
-		docs\implementation-plan.md = docs\implementation-plan.md
-		docs\wireframes.drawio = docs\wireframes.drawio
-		docs\wireframes.md = docs\wireframes.md
-		docs\wireframes-implementation-plan.md = docs\wireframes-implementation-plan.md
-		docs\BACKEND-AUTH-TESTING.md = docs\BACKEND-AUTH-TESTING.md
-		docs\BACKEND-API-REFERENCE.md = docs\BACKEND-API-REFERENCE.md
-		docs\IMPLEMENTATION-COMPLETION-SUMMARY.md = docs\IMPLEMENTATION-COMPLETION-SUMMARY.md
-		docs\INTEGRATION-CHECKLIST.md = docs\INTEGRATION-CHECKLIST.md
-		docs\IMPLEMENTATION-PLAN-STATUS.md = docs\IMPLEMENTATION-PLAN-STATUS.md
-		docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md = docs\IMPLEMENTATION-PLAN-FINAL-SUMMARY.md
-		docs\wireframes-participant.drawio = docs\wireframes-participant.drawio
-		docs\wireframes-participant.md = docs\wireframes-participant.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-6909-4332-BE19-0DDE9B97EED7}"
@@ -130,6 +116,22 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tasting.Admin", "src\Frontend\Tasting.Admin\Tasting.Admin.csproj", "{87A081E9-454B-4255-A5C8-6CF239993953}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tasting.Admin.UnitTests", "tests\Tasting.Admin.UnitTests\Tasting.Admin.UnitTests.csproj", "{D2751CE9-6B64-408B-98BD-56BF825990A4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Wireframes", "Wireframes", "{86CDEFEF-B81F-47EB-AB3E-AFA693D5F82F}"
+	ProjectSection(SolutionItems) = preProject
+		docs\wireframes.drawio = docs\wireframes.drawio
+		docs\wireframes.md = docs\wireframes.md
+		docs\wireframes-implementation-plan.md = docs\wireframes-implementation-plan.md
+		docs\wireframes-participant.drawio = docs\wireframes-participant.drawio
+		docs\wireframes-participant.md = docs\wireframes-participant.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Arcitecture", "Arcitecture", "{0BC372A4-036E-4627-8D84-41D6655FF9CB}"
+	ProjectSection(SolutionItems) = preProject
+		docs\architecture.md = docs\architecture.md
+		docs\BACKEND-API-REFERENCE.md = docs\BACKEND-API-REFERENCE.md
+		docs\BACKEND-AUTH-TESTING.md = docs\BACKEND-AUTH-TESTING.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -475,5 +477,7 @@ Global
 		{2B027C07-2258-44A5-94A0-3B053EAED62A} = {AE5ACEFE-D7E0-4DB6-860B-9510ED19EF45}
 		{87A081E9-454B-4255-A5C8-6CF239993953} = {A8753D48-8F27-472A-ACC0-F9F2615D0228}
 		{D2751CE9-6B64-408B-98BD-56BF825990A4} = {AE5ACEFE-D7E0-4DB6-860B-9510ED19EF45}
+		{86CDEFEF-B81F-47EB-AB3E-AFA693D5F82F} = {537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}
+		{0BC372A4-036E-4627-8D84-41D6655FF9CB} = {537AEF9C-E0F6-4AA8-A916-FF2AFF8B3846}
 	EndGlobalSection
 EndGlobal
