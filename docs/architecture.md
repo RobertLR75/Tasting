@@ -2,10 +2,12 @@
 
 ```mermaid
 graph TD
-    User(["👤 Bruker\n(Admin / Deltaker)"])
+    Admin(["👤 Admin"])
+    Participant(["👤 Deltaker"])
 
     subgraph ACA["☁️ Azure Container Apps"]
-        Frontend["🖥️ Frontend\nTBD · SPA"]
+        AdminFrontend["🖥️ Admin Frontend\nBlazor"]
+        ParticipantFrontend["📱 Deltaker Frontend\nTBD · SPA"]
         API["⚙️ Tasting API\nC# .NET 9 · FastEndpoints\nVertical Slice Architecture\nJWT Auth"]
         PostgreSQL[("🗄️ PostgreSQL\nArrangements · Ratings · Results\nUsers · Breweries · Beers · Taxonomy")]
         Redis[("⚡ Redis\nCaching")]
@@ -14,8 +16,10 @@ graph TD
     KeyVault["🔑 Azure Key Vault\nHemmeligheter"]
     Monitor["📊 Azure Monitor\nApplication Insights\nOpenTelemetry OTLP"]
 
-    User -->|HTTPS| Frontend
-    Frontend -->|REST / JSON| API
+    Admin -->|HTTPS| AdminFrontend
+    Participant -->|HTTPS| ParticipantFrontend
+    AdminFrontend -->|REST / JSON| API
+    ParticipantFrontend -->|REST / JSON| API
     API -->|EF Core + SQL| PostgreSQL
     API -->|StackExchange.Redis| Redis
     API -->|Azure SDK – oppstart| KeyVault
@@ -26,7 +30,8 @@ graph TD
 
 | Container | Teknologi | Ansvar |
 |---|---|---|
-| **Frontend** | TBD (SPA) | Brukergrensesnitt |
+| **Admin Frontend** | Blazor | Administrasjon av arrangementer, brukere og katalogdata |
+| **Deltaker Frontend** | TBD (SPA) | Deltakergrensesnitt for tasting-flyt og vurderinger |
 | **Tasting API** | C# .NET 9, FastEndpoints, Vertical Slice | REST API, JWT auth, domenelogikk |
 | **PostgreSQL** | Azure Database for PostgreSQL, EF Core, FluentMigration | All persistent domenedata |
 | **Redis** | Azure Cache for Redis | Caching |
