@@ -57,7 +57,7 @@ En tasting-sesjon med navn, beskrivelse og livssyklus. Eier et sett med beers og
 _Avoid_: Event, Session, Round
 
 **Arrangement status**:
-Livssyklusverdi som bestemmer tillatte operasjoner: `Created → Started → Completed`, eller `Created → Canceled`. Ingen andre overganger er gyldige.
+Livssyklusverdi som bestemmer tillatte operasjoner: `Created → Active → Started → Completed`, eller `Created → Canceled` (reversibel til `Created`). `Active` er bekreftelsessteg der innhold (beers, participants) er låst og arrangement er forpliktet til gjennomføring, men rating-vinduet er ennå ikke åpnet. Ingen andre overganger er gyldige — spesielt er `Active` enveis (ingen rollback til `Created`) og kan ikke kanselleres.
 _Avoid_: State, Phase
 
 **Participant**:
