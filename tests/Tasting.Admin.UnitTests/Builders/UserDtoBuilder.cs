@@ -4,14 +4,14 @@ namespace Tasting.Admin.UnitTests.Builders;
 
 public class UserDtoBuilder
 {
-    private int _id = 1;
+    private Guid _id = Guid.NewGuid();
     private string _firstName = "John";
     private string _lastName = "Doe";
     private string _email = "john.doe@example.com";
     private string _role = "User";
     private string _status = "Active";
 
-    public UserDtoBuilder WithId(int id)
+    public UserDtoBuilder WithId(Guid id)
     {
         _id = id;
         return this;

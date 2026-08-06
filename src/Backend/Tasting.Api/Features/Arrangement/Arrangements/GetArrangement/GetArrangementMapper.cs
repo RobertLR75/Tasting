@@ -9,12 +9,22 @@ public sealed class GetArrangementMapper
         => new(req.ArrangementId);
 
     public override Task<ArrangementResponse> FromEntityAsync(Domain.Arrangement entity, CancellationToken ct = default)
-        => Task.FromResult(new ArrangementResponse(
+    {
+        var participants = entity.Participants
+            .Select(p => new ArrangementParticipantResponse(
+                p.Id,
+                p.UserId,
+                $"{p.FirstNameSnapshot} {p.LastNameSnapshot}".Trim()))
+            .ToList();
+
+        return Task.FromResult(new ArrangementResponse(
             entity.Id,
             entity.Name,
             entity.Description,
             entity.Status,
             entity.RowVersion,
             entity.CreatedAt,
-            entity.UpdatedAt));
+            entity.UpdatedAt,
+            participants));
+    }
 }
