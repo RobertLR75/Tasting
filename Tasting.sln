@@ -55,6 +55,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{537AEF9C-E
 		docs\handoff\issue-29-arrangement-status-action.md = docs\handoff\issue-29-arrangement-status-action.md
 		docs\handoff\issue-42-wireframe-for-frontend.md = docs\handoff\issue-42-wireframe-for-frontend.md
 		docs\handoff\issue-44-arrangement-status.md = docs\handoff\issue-44-arrangement-status.md
+		docs\wireframes-participant.md = docs\wireframes-participant.md
+		docs\wireframes-participant.drawio = docs\wireframes-participant.drawio
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-6909-4332-BE19-0DDE9B97EED7}"
@@ -100,6 +102,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "adr", "adr", "{D2F5F26F-690
 		docs\adr\0041-admin-backoffice-rules-live-in-backend-handlers.md = docs\adr\0041-admin-backoffice-rules-live-in-backend-handlers.md
 		docs\adr\0044-admin-wireframes-live-in-one-annotated-document.md = docs\adr\0044-admin-wireframes-live-in-one-annotated-document.md
 		docs\adr\0045-test-data-seeding-in-development.md = docs\adr\0045-test-data-seeding-in-development.md
+		docs\adr\0046-participant-wireframes-live-in-separate-document.md = docs\adr\0046-participant-wireframes-live-in-separate-document.md
 		docs\adr\0038-admin-frontend-starts-with-bunit-component-tests.md = docs\adr\0038-admin-frontend-starts-with-bunit-component-tests.md
 		docs\adr\0037-admin-frontend-uses-feature-first-vertical-slices.md = docs\adr\0037-admin-frontend-uses-feature-first-vertical-slices.md
 		docs\adr\0036-admin-page-starts-as-blank-blazor-web-app-in-aspire.md = docs\adr\0036-admin-page-starts-as-blank-blazor-web-app-in-aspire.md
