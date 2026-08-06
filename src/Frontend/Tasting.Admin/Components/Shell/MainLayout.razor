@@ -52,10 +52,9 @@
         _userName = state.User.Identity?.Name;
     }
 
-    private void HandleLogout()
+    private async Task HandleLogout()
     {
-        AuthStateProvider.NotifyLogout();
+        await AuthStateProvider.NotifyLogoutAsync();
         Navigation.NavigateTo("/login", forceLoad: true);
     }
 }
-

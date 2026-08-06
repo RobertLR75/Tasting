@@ -16,14 +16,14 @@
     
     <FormField 
         Label="Arrangement Name" 
-        @bind-value="@arrangementName"
+        @bind-Value="@arrangementName"
         ErrorMessage="@GetFieldError(nameof(arrangementName))"
         Required="true" />
     
     <FormField 
         Label="Description" 
         InputType="InputType.Text"
-        @bind-value="@description"
+        @bind-Value="@description"
         ErrorMessage="@GetFieldError(nameof(description))" />
 
     <MudStack Row="true" Spacing="2">
@@ -86,7 +86,16 @@
         
         try
         {
-            var request = new UpdateArrangementRequest(arrangementName, description);
+            if (currentArrangement is null)
+            {
+                errorMessage = "Arrangement must be loaded before it can be updated.";
+                return;
+            }
+
+            var request = new UpdateArrangementRequest(
+                arrangementName,
+                description,
+                currentArrangement.RowVersion);
             var result = await ArrangementsApiClient.UpdateAsync(ArrangementId, request);
             if (result != null)
             {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using Scalar.AspNetCore;
 using SharedLibrary.Configuration;
 using SharedLibrary.FastEndpoints;
@@ -38,6 +39,32 @@ builder.Services
             ValidateLifetime = true,
             NameClaimType = "email",
             RoleClaimType = "role"
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                if (context.Principal?.Identity is not ClaimsIdentity identity)
+                {
+                    return Task.CompletedTask;
+                }
+
+                var userId = identity.FindFirst("sub")?.Value
+                    ?? identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrWhiteSpace(userId) && !identity.HasClaim(claim => claim.Type == "sub"))
+                {
+                    identity.AddClaim(new Claim("sub", userId));
+                }
+
+                var role = identity.FindFirst("role")?.Value
+                    ?? identity.FindFirst(ClaimTypes.Role)?.Value;
+                if (!string.IsNullOrWhiteSpace(role) && !identity.HasClaim(claim => claim.Type == "role"))
+                {
+                    identity.AddClaim(new Claim("role", role));
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 builder.Services.AddAuthorizationBuilder()

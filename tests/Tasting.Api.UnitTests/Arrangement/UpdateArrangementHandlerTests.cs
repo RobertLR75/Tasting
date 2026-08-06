@@ -26,6 +26,20 @@ public sealed class UpdateArrangementHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_Updates_WhenRequestRowVersionMatchesCurrentValue()
+    {
+        await using var db = CreateDb();
+        var arrangement = await SeedAsync(db, ArrangementStatus.Created, rowVersion: 3u);
+
+        var handler = new UpdateArrangementHandler(db);
+        var result = await handler.HandleAsync(
+            new UpdateArrangementCommand(arrangement.Id, "Fresh Name", null, 3u));
+
+        Assert.Equal("Fresh Name", result.Name);
+        Assert.Equal(4u, result.RowVersion);
+    }
+
+    [Fact]
     public async Task HandleAsync_ThrowsConflict_WhenNotCreated()
     {
         await using var db = CreateDb();
@@ -59,14 +73,17 @@ public sealed class UpdateArrangementHandlerTests
             handler.HandleAsync(new UpdateArrangementCommand(Guid.NewGuid(), "X", null, 0u)));
     }
 
-    private static async Task<ArrangementEntity> SeedAsync(ArrangementDbContext db, ArrangementStatus status)
+    private static async Task<ArrangementEntity> SeedAsync(
+        ArrangementDbContext db,
+        ArrangementStatus status,
+        uint rowVersion = 0)
     {
         var a = new ArrangementEntity
         {
             Id = Guid.NewGuid(),
             Name = "Original",
             Status = status,
-            RowVersion = 0,
+            RowVersion = rowVersion,
             CreatedAt = DateTimeOffset.UtcNow
         };
         db.Arrangements.Add(a);

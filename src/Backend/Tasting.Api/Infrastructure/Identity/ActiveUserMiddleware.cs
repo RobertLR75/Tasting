@@ -13,10 +13,11 @@ public sealed class ActiveUserMiddleware(RequestDelegate next)
             return;
         }
 
-        var userIdClaim = context.User.FindFirstValue("sub");
+        var userIdClaim = context.User.FindFirstValue("sub")
+            ?? context.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            throw new ForbiddenException("Authenticated user mangler gyldig sub-claim.");
+            throw new ForbiddenException("Authenticated user mangler gyldig user id-claim.");
         }
 
         var user = await userRepository.GetAsync(userId, context.RequestAborted);
