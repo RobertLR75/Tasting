@@ -3,9 +3,10 @@ namespace Tasting.Admin.Features.Arrangement.Models;
 public enum ArrangementStatus
 {
     Created = 0,
-    Started = 1,
-    Completed = 2,
-    Canceled = 3
+    Active = 1,
+    Started = 2,
+    Canceled = 3,
+    Completed = 4
 }
 
 public record ArrangementBeerItem(Guid Id, Guid BeerId, string BeerName);
@@ -33,8 +34,8 @@ public record UpdateArrangementRequest(
     uint RowVersion
 );
 
-public record ChangeArrangementStatusRequest(
-    ArrangementStatus NewStatus
+public record ArrangementLifecycleRequest(
+    uint RowVersion
 );
 
 public record ListArrangementsResponse(
