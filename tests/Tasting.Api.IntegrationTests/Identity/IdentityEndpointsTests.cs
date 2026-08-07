@@ -123,7 +123,7 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var body = await response.Content.ReadFromJsonAsync<UserResponse>();
         Assert.NotNull(body);
         Assert.Equal(userId, body.Id);
-        Assert.False(body.IsActive);
+        Assert.Equal("Inactive", body.Status);
     }
 
     [Fact]

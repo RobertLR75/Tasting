@@ -16,8 +16,8 @@ public sealed class DeactivateUserMapper : BaseCommandMapper<DeactivateUserReque
             entity.Email,
             entity.FirstName,
             entity.LastName,
-            entity.IsActive,
-            entity.Role,
+            entity.IsActive ? "Active" : "Inactive",
+            entity.Role.ToString(),
             entity.CreatedAt,
             entity.UpdatedAt));
     }
