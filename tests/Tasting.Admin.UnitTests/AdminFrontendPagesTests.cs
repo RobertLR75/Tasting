@@ -63,6 +63,43 @@ public sealed class AdminFrontendPagesTests
     }
 
     [Fact]
+    public void StatusChangePage_ShouldUseMudSelect_NotMudTextField_ForStatusField()
+    {
+        var statusChangePageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/StatusChangePage.razor"));
+
+        Assert.Contains("MudSelect T=\"ArrangementStatus\"", statusChangePageMarkup);
+        Assert.Contains("MudSelectItem", statusChangePageMarkup);
+        Assert.Contains("@bind-Value=\"@selectedNewStatus\"", statusChangePageMarkup);
+        Assert.DoesNotContain("<FormField", statusChangePageMarkup);
+        Assert.DoesNotContain("selectedStatus", statusChangePageMarkup);
+        Assert.DoesNotContain("Enum.TryParse", statusChangePageMarkup);
+    }
+
+    [Fact]
+    public void StatusChangePage_ShouldPopulateOnlyValidTransitions()
+    {
+        var statusChangePageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/StatusChangePage.razor"));
+
+        Assert.Contains("GetValidTransitions", statusChangePageMarkup);
+        Assert.Contains("ArrangementStatus.Created => [ArrangementStatus.Active, ArrangementStatus.Canceled]", statusChangePageMarkup);
+        Assert.Contains("ArrangementStatus.Active => [ArrangementStatus.Started]", statusChangePageMarkup);
+        Assert.Contains("ArrangementStatus.Started => [ArrangementStatus.Completed]", statusChangePageMarkup);
+        Assert.Contains("ArrangementStatus.Canceled => []", statusChangePageMarkup);
+        Assert.Contains("ArrangementStatus.Completed => []", statusChangePageMarkup);
+    }
+
+    [Fact]
+    public void StatusChangePage_ShouldShowCompletedGuard()
+    {
+        var statusChangePageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/StatusChangePage.razor"));
+
+        Assert.Contains("validTransitions.Count == 0", statusChangePageMarkup);
+        Assert.Contains("Severity=\"Severity.Info\"", statusChangePageMarkup);
+        Assert.Contains("No further status transitions are available", statusChangePageMarkup);
+        Assert.Contains("There are no further transitions possible", statusChangePageMarkup);
+    }
+
+    [Fact]
     public void RootPage_ShouldShowArrangementsList()
     {
         var arrangementsPageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor"));
