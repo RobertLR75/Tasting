@@ -53,7 +53,9 @@ else
             <MudTd DataLabel="Created">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
             <MudTd DataLabel="Actions">
                 <MudStack Row="true" Spacing="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/beers/{context.Id}/edit"))" />
+                    <MudTooltip Text="Edit beer">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit beer" OnClick="@(() => Navigation.NavigateTo($"/beers/{context.Id}/edit"))" />
+                    </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>
