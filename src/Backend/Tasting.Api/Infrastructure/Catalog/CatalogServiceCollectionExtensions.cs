@@ -20,6 +20,7 @@ using Tasting.Api.Features.Catalog.Breweries.DeactivateBrewery;
 using Tasting.Api.Features.Catalog.Breweries.GetBrewery;
 using Tasting.Api.Features.Catalog.Breweries.ListBreweries;
 using Tasting.Api.Features.Catalog.Breweries.UpdateBrewery;
+using Tasting.Api.Features.Catalog.Breweries.Beers.ListBreweryBeers;
 using Tasting.Api.Features.Catalog.Domain;
 
 namespace Tasting.Api.Infrastructure.Catalog;
@@ -56,6 +57,7 @@ public static class CatalogServiceCollectionExtensions
         services.AddScoped<IRequestHandler<CreateBeerTypeCommand, BeerType>, CreateBeerTypeHandler>();
         services.AddScoped<IRequestHandler<GetBeerTypeQuery, BeerTypeResponse>, GetBeerTypeHandler>();
         services.AddScoped<IRequestHandler<ListBeerTypesQuery, ListBeerTypesResponse>, ListBeerTypesHandler>();
+        services.AddScoped<IRequestHandler<ListBreweryBeersQuery, ListBreweryBeersResult>, ListBreweryBeersHandler>();
 
         return services;
     }
