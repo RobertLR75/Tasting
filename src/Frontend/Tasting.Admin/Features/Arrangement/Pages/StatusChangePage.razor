@@ -140,8 +140,14 @@
             ArrangementStatus.Started => ArrangementsApiClient.StartAsync(ArrangementId, currentArrangement!.RowVersion),
             ArrangementStatus.Canceled => ArrangementsApiClient.CancelAsync(ArrangementId, currentArrangement!.RowVersion),
             ArrangementStatus.Completed => ArrangementsApiClient.CompleteAsync(ArrangementId, currentArrangement!.RowVersion),
-            _ => throw new InvalidOperationException($"Arrangement cannot be changed to status '{newStatus}' from this page.")
+            _ => UnsupportedStatus(newStatus)
         };
+
+    private Task<ArrangementDto?> UnsupportedStatus(ArrangementStatus newStatus)
+    {
+        errorMessage = $"Status '{newStatus}' is not supported from this page.";
+        return Task.FromResult<ArrangementDto?>(null);
+    }
 
     private static IReadOnlyList<ArrangementStatus> GetValidTransitions(ArrangementStatus current)
         => current switch
