@@ -88,11 +88,13 @@ else
         }
         catch (Exception ex)
         {
+            if (_cts.IsCancellationRequested) return;
             ErrorMessage = $"Failed to load breweries: {ex.Message}";
         }
         finally
         {
-            IsLoading = false;
+            if (!_cts.IsCancellationRequested)
+                IsLoading = false;
         }
     }
 
