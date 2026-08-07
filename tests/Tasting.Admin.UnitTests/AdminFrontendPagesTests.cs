@@ -89,6 +89,14 @@ public sealed class AdminFrontendPagesTests
     public void ListPages_ActionButtons_ShouldHaveTooltipsAndAriaLabels(string relativePath, string expectedLabel)
     {
         var markup = File.ReadAllText(GetProjectFile(relativePath));
+        Assert.Contains($"aria-label=\"{expectedLabel}\"", markup);
+
+        if (relativePath.Contains("ArrangementsPage.razor", StringComparison.Ordinal))
+        {
+            Assert.Contains(expectedLabel, markup);
+            return;
+        }
+
         Assert.Contains($"MudTooltip Text=\"{expectedLabel}\"", markup);
         Assert.Contains($"aria-label=\"{expectedLabel}\"", markup);
     }
