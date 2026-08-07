@@ -18,6 +18,7 @@ public sealed class ListArrangementsMapper
                 a.RowVersion,
                 a.CreatedAt,
                 a.UpdatedAt,
+                a.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),
                 a.Participants
                     .Select(p => new ArrangementParticipantResponse(p.Id, p.UserId, $"{p.FirstNameSnapshot} {p.LastNameSnapshot}".Trim()))
                     .ToList())).ToList()));

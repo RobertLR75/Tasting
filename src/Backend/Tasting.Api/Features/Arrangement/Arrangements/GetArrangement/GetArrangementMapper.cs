@@ -25,6 +25,7 @@ public sealed class GetArrangementMapper
             entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
+            entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),
             participants));
     }
 }

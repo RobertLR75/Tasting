@@ -130,6 +130,7 @@ else
     private bool IsUserDisabled(Guid userId)
         => AddingParticipantIds.Contains(userId) || AddedUserIds.Contains(userId);
 
+
     private async Task AddParticipantAsync(Guid userId)
     {
         AddingParticipantIds.Add(userId);
