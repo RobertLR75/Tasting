@@ -16,8 +16,8 @@ public sealed class CreateUserMapper : BaseCommandMapper<CreateUserRequest, User
             entity.Email,
             entity.FirstName,
             entity.LastName,
-            entity.IsActive,
-            entity.Role,
+            entity.IsActive ? "Active" : "Inactive",
+            entity.Role.ToString(),
             entity.CreatedAt,
             entity.UpdatedAt));
     }

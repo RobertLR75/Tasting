@@ -6,11 +6,11 @@ namespace Tasting.Admin.Features.Identity.Services;
 public interface IUsersApiClient
 {
     Task<ListUsersResponse?> ListAsync(string? searchTerm = null);
-    Task<UserDto?> GetAsync(int id);
+    Task<UserDto?> GetAsync(Guid id);
     Task<UserDto?> CreateAsync(AddUserRequest request);
-    Task<UserDto?> UpdateAsync(int id, UpdateUserRequest request);
-    Task<UserDto?> ChangeRoleAsync(int id, ChangeRoleRequest request);
-    Task<UserDto?> ChangeStatusAsync(int id, ChangeStatusRequest request);
+    Task<UserDto?> UpdateAsync(Guid id, UpdateUserRequest request);
+    Task<UserDto?> ChangeRoleAsync(Guid id, ChangeRoleRequest request);
+    Task<UserDto?> ChangeStatusAsync(Guid id, ChangeStatusRequest request);
 }
 
 public class UsersApiClient : IUsersApiClient
@@ -39,7 +39,7 @@ public class UsersApiClient : IUsersApiClient
         }
     }
 
-    public async Task<UserDto?> GetAsync(int id)
+    public async Task<UserDto?> GetAsync(Guid id)
     {
         try
         {
@@ -65,7 +65,7 @@ public class UsersApiClient : IUsersApiClient
         }
     }
 
-    public async Task<UserDto?> UpdateAsync(int id, UpdateUserRequest request)
+    public async Task<UserDto?> UpdateAsync(Guid id, UpdateUserRequest request)
     {
         try
         {
@@ -79,7 +79,7 @@ public class UsersApiClient : IUsersApiClient
         }
     }
 
-    public async Task<UserDto?> ChangeRoleAsync(int id, ChangeRoleRequest request)
+    public async Task<UserDto?> ChangeRoleAsync(Guid id, ChangeRoleRequest request)
     {
         try
         {
@@ -93,7 +93,7 @@ public class UsersApiClient : IUsersApiClient
         }
     }
 
-    public async Task<UserDto?> ChangeStatusAsync(int id, ChangeStatusRequest request)
+    public async Task<UserDto?> ChangeStatusAsync(Guid id, ChangeStatusRequest request)
     {
         try
         {

@@ -3,6 +3,7 @@
 @using Tasting.Admin.Features.Identity.Models
 @using Tasting.Admin.Features.Identity.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IUsersApiClient UsersApiClient
 @inject NavigationManager Navigation
 
@@ -53,9 +54,15 @@ else
             </MudTd>
             <MudTd DataLabel="Actions">
                 <MudStack Row="true" Spacing="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditUser(context.Id))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Security" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-role"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.ToggleOff" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-status"))" />
+                    <MudTooltip Text="Edit user">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit user" OnClick="@(() => EditUser(context.Id))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Change role">
+                        <MudIconButton Icon="@Icons.Material.Filled.Security" Size="Size.Small" aria-label="Change role" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-role"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Change status">
+                        <MudIconButton Icon="@Icons.Material.Filled.ToggleOff" Size="Size.Small" aria-label="Change status" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-status"))" />
+                    </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>
@@ -67,6 +74,7 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,18 +90,29 @@ else
             var response = await UsersApiClient.ListAsync(SearchTerm);
             Users = response?.Users.ToList() ?? new();
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
+            if (_cts.IsCancellationRequested) return;
             ErrorMessage = $"Failed to load users: {ex.Message}";
         }
         finally
         {
-            IsLoading = false;
+            if (!_cts.IsCancellationRequested)
+                IsLoading = false;
         }
     }
 
-    private void EditUser(int id)
+    private void EditUser(Guid id)
     {
         Navigation.NavigateTo($"/users/{id}/edit");
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

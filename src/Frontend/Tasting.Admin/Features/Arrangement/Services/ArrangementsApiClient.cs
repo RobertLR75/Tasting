@@ -10,7 +10,7 @@ public interface IArrangementsApiClient
     Task<ArrangementDto?> CreateAsync(CreateArrangementRequest request);
     Task<ArrangementDto?> UpdateAsync(Guid id, UpdateArrangementRequest request);
     Task<ArrangementDto?> ChangeStatusAsync(Guid id, ChangeArrangementStatusRequest request);
-    Task<ArrangementBeerDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request);
+    Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request);
     Task<bool> RemoveBeerAsync(Guid id, Guid beerId);
     Task<ArrangementParticipantDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request);
     Task<bool> RemoveParticipantAsync(Guid id, Guid userId);
@@ -96,13 +96,13 @@ public class ArrangementsApiClient : IArrangementsApiClient
         }
     }
 
-    public async Task<ArrangementBeerDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request)
+    public async Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request)
     {
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/beers", request);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<ArrangementBeerDto>();
+            return await response.Content.ReadFromJsonAsync<ArrangementDto>();
         }
         catch (Exception ex)
         {

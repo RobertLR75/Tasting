@@ -3,6 +3,7 @@
 @using Tasting.Admin.Features.Catalog.Models
 @using Tasting.Admin.Features.Catalog.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IBreweriesApiClient BreweriesApiClient
 @inject NavigationManager Navigation
 
@@ -49,8 +50,12 @@ else
             <MudTd DataLabel="Created">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
             <MudTd DataLabel="Actions">
                 <MudStack Row="true" Spacing="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/breweries/{context.Id}/edit"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/breweries/{context.Id}/beers"))" />
+                    <MudTooltip Text="Edit brewery">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit brewery" OnClick="@(() => Navigation.NavigateTo($"/breweries/{context.Id}/edit"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Manage beers">
+                        <MudIconButton Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Small" aria-label="Manage beers" OnClick="@(() => Navigation.NavigateTo($"/breweries/{context.Id}/beers"))" />
+                    </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>
@@ -62,6 +67,7 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,14 +83,25 @@ else
             var response = await BreweriesApiClient.ListAsync(SearchTerm);
             Breweries = response?.Breweries.ToList() ?? new();
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
+            if (_cts.IsCancellationRequested) return;
             ErrorMessage = $"Failed to load breweries: {ex.Message}";
         }
         finally
         {
-            IsLoading = false;
+            if (!_cts.IsCancellationRequested)
+                IsLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }
 

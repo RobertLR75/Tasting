@@ -1,0 +1,3 @@
+# Participant wireframes live in a separate document
+
+Wireframes for the participant-facing `Tasting.App` frontend are kept in `docs/wireframes-participant.md` and `docs/wireframes-participant.drawio`, separate from the admin backoffice wireframes in `docs/wireframes.md` and `docs/wireframes.drawio`. We choose this because the participant flow (login → join → rate → results) targets a different audience, uses a different shell, and will be implemented by a different team from the admin backoffice. A shared document would conflate two unrelated navigational contexts and make both harder to maintain as the UIs diverge.
