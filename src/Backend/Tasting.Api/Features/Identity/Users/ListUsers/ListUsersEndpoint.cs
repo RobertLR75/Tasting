@@ -24,8 +24,8 @@ public sealed class ListUsersEndpoint(IRequestHandler<ListUsersQuery, ListUsersR
                 u.Email,
                 u.FirstName,
                 u.LastName,
-                u.IsActive,
-                u.Role,
+                u.IsActive ? "Active" : "Inactive",
+                u.Role.ToString(),
                 u.CreatedAt,
                 u.UpdatedAt))
             .ToList();

@@ -17,5 +17,8 @@ public sealed class CompleteArrangementMapper
             entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
-            entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList()));
+            entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),
+            entity.Participants
+                .Select(p => new ArrangementParticipantResponse(p.Id, p.UserId, $"{p.FirstNameSnapshot} {p.LastNameSnapshot}".Trim()))
+                .ToList()));
 }

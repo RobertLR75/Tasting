@@ -18,7 +18,8 @@ public record ArrangementDto(
     uint RowVersion,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
-    IReadOnlyList<ArrangementBeerItem> Beers
+    IReadOnlyList<ArrangementBeerItem> Beers,
+    IEnumerable<ArrangementParticipantDto> Participants
 );
 
 public record CreateArrangementRequest(
@@ -60,5 +61,6 @@ public record ArrangementParticipantDto(
 );
 
 public record AddParticipantToArrangementRequest(
-    Guid UserId
+    Guid UserId,
+    uint RowVersion
 );

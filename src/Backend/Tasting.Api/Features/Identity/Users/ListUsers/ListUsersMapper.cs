@@ -17,8 +17,8 @@ public sealed class ListUsersMapper : BaseQueryMapper<ListUsersRequest, ListUser
                 u.Email,
                 u.FirstName,
                 u.LastName,
-                u.IsActive,
-                u.Role,
+                u.IsActive ? "Active" : "Inactive",
+                u.Role.ToString(),
                 u.CreatedAt,
                 u.UpdatedAt))
             .ToList();
