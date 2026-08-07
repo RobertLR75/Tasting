@@ -136,6 +136,7 @@
     private Task<ArrangementDto?> ChangeStatusAsync(ArrangementStatus newStatus)
         => newStatus switch
         {
+            ArrangementStatus.Created when currentArrangement!.Status == ArrangementStatus.Canceled => ArrangementsApiClient.ReopenAsync(ArrangementId, currentArrangement!.RowVersion),
             ArrangementStatus.Active => ArrangementsApiClient.ActivateAsync(ArrangementId, currentArrangement!.RowVersion),
             ArrangementStatus.Started => ArrangementsApiClient.StartAsync(ArrangementId, currentArrangement!.RowVersion),
             ArrangementStatus.Canceled => ArrangementsApiClient.CancelAsync(ArrangementId, currentArrangement!.RowVersion),
@@ -155,7 +156,7 @@
             ArrangementStatus.Created => [ArrangementStatus.Active, ArrangementStatus.Canceled],
             ArrangementStatus.Active => [ArrangementStatus.Started],
             ArrangementStatus.Started => [ArrangementStatus.Completed],
-            ArrangementStatus.Canceled => [],
+            ArrangementStatus.Canceled => [ArrangementStatus.Created],
             ArrangementStatus.Completed => [],
             _ => []
         };

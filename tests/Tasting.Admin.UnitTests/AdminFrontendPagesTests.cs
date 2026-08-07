@@ -75,17 +75,27 @@ public sealed class AdminFrontendPagesTests
         Assert.DoesNotContain("Enum.TryParse", statusChangePageMarkup);
     }
 
-    [Fact]
-    public void StatusChangePage_ShouldPopulateOnlyValidTransitions()
+    [Theory]
+    [InlineData("ArrangementStatus.Created => [ArrangementStatus.Active, ArrangementStatus.Canceled]")]
+    [InlineData("ArrangementStatus.Active => [ArrangementStatus.Started]")]
+    [InlineData("ArrangementStatus.Started => [ArrangementStatus.Completed]")]
+    [InlineData("ArrangementStatus.Canceled => [ArrangementStatus.Created]")]
+    [InlineData("ArrangementStatus.Completed => []")]
+    public void StatusChangePage_ShouldPopulateOnlyValidTransitions(string expectedTransition)
     {
         var statusChangePageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/StatusChangePage.razor"));
 
         Assert.Contains("GetValidTransitions", statusChangePageMarkup);
-        Assert.Contains("ArrangementStatus.Created => [ArrangementStatus.Active, ArrangementStatus.Canceled]", statusChangePageMarkup);
-        Assert.Contains("ArrangementStatus.Active => [ArrangementStatus.Started]", statusChangePageMarkup);
-        Assert.Contains("ArrangementStatus.Started => [ArrangementStatus.Completed]", statusChangePageMarkup);
-        Assert.Contains("ArrangementStatus.Canceled => []", statusChangePageMarkup);
-        Assert.Contains("ArrangementStatus.Completed => []", statusChangePageMarkup);
+        Assert.Contains(expectedTransition, statusChangePageMarkup);
+    }
+
+    [Fact]
+    public void StatusChangePage_ShouldUseReopenActionForCanceledToCreated()
+    {
+        var statusChangePageMarkup = File.ReadAllText(GetProjectFile("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/StatusChangePage.razor"));
+
+        Assert.Contains("ArrangementStatus.Created when currentArrangement!.Status == ArrangementStatus.Canceled => ArrangementsApiClient.ReopenAsync", statusChangePageMarkup);
+        Assert.Contains("_ => UnsupportedStatus(newStatus)", statusChangePageMarkup);
     }
 
     [Fact]
