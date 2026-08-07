@@ -58,7 +58,7 @@ else
                             <MudTd DataLabel="Action">
                                 <ActionButton Text="Add" Color="Color.Primary" 
                                             OnClick="@(() => AddParticipantAsync(context.Id))"
-                                            Disabled="@AddingParticipantIds.Contains(context.Id)" />
+                                            Disabled="@IsUserDisabled(context.Id)" />
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -74,15 +74,38 @@ else
     [Parameter]
     public Guid ArrangementId { get; set; }
 
+    private ArrangementDto? _arrangement;
     private List<UserDto> AvailableUsers { get; set; } = new();
-    private HashSet<int> AddingParticipantIds { get; set; } = new();
+    private HashSet<Guid> AddingParticipantIds { get; set; } = new();
+    private HashSet<Guid> AddedUserIds { get; set; } = new();
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
+    private uint _rowVersion;
 
     protected override async Task OnInitializedAsync()
     {
-        await SearchUsersAsync();
+        IsLoading = true;
+        ErrorMessage = null;
+        try
+        {
+            _arrangement = await ArrangementsApiClient.GetAsync(ArrangementId);
+            if (_arrangement is not null)
+            {
+                _rowVersion = _arrangement.RowVersion;
+                foreach (var p in _arrangement.Participants)
+                    AddedUserIds.Add(p.UserId);
+            }
+            await SearchUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load arrangement: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task SearchUsersAsync()
@@ -104,14 +127,19 @@ else
         }
     }
 
-    private async Task AddParticipantAsync(int userId)
+    private bool IsUserDisabled(Guid userId)
+        => AddingParticipantIds.Contains(userId) || AddedUserIds.Contains(userId);
+
+
+    private async Task AddParticipantAsync(Guid userId)
     {
         AddingParticipantIds.Add(userId);
         try
         {
-            var request = new AddParticipantToArrangementRequest(Guid.Empty); // Would need proper mapping
+            var request = new AddParticipantToArrangementRequest(userId, _rowVersion);
             await ArrangementsApiClient.AddParticipantAsync(ArrangementId, request);
-            AvailableUsers.RemoveAll(u => u.Id == userId);
+            _rowVersion++;
+            AddedUserIds.Add(userId);
         }
         catch (Exception ex)
         {

@@ -51,10 +51,18 @@ else
             <MudTd DataLabel="Created">@context.CreatedAt.ToString("yyyy-MM-dd")</MudTd>
             <MudTd DataLabel="Actions">
                 <MudStack Row="true" Spacing="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/edit"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/beers"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/participants"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/status"))" />
+                    <MudTooltip Text="@(IsAddContentDisabled(context.Status) ? $"Not available for {context.Status} arrangements" : "Edit arrangement")">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit arrangement" Disabled="@IsAddContentDisabled(context.Status)" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/edit"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="@(IsAddContentDisabled(context.Status) ? $"Not available for {context.Status} arrangements" : "Manage beers")">
+                        <MudIconButton Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Small" aria-label="Manage beers" Disabled="@IsAddContentDisabled(context.Status)" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/beers"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="@(IsAddContentDisabled(context.Status) ? $"Not available for {context.Status} arrangements" : "Manage participants")">
+                        <MudIconButton Icon="@Icons.Material.Filled.People" Size="Size.Small" aria-label="Manage participants" Disabled="@IsAddContentDisabled(context.Status)" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/participants"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="@(IsStatusDisabled(context.Status) ? "No further status transitions available" : "Change status")">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Size="Size.Small" aria-label="Change status" Disabled="@IsStatusDisabled(context.Status)" OnClick="@(() => Navigation.NavigateTo($"/arrangements/{context.Id}/status"))" />
+                    </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>
@@ -72,6 +80,12 @@ else
     {
         await SearchAsync();
     }
+
+    private static bool IsAddContentDisabled(ArrangementStatus status) =>
+        status is ArrangementStatus.Started or ArrangementStatus.Canceled or ArrangementStatus.Completed;
+
+    private static bool IsStatusDisabled(ArrangementStatus status) =>
+        status is ArrangementStatus.Completed;
 
     private async Task SearchAsync()
     {

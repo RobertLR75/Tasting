@@ -133,4 +133,13 @@ public sealed class ApiContractTests
         
         Assert.Equal(ArrangementStatus.Started, request.NewStatus);
     }
+
+    [Fact]
+    public void AddBeerToArrangementRequest_ShouldIncludeRowVersion()
+    {
+        var rowVersion = 5u;
+        var request = new AddBeerToArrangementRequest(Guid.NewGuid(), rowVersion);
+
+        Assert.Equal(rowVersion, request.RowVersion);
+    }
 }

@@ -54,9 +54,15 @@ else
             </MudTd>
             <MudTd DataLabel="Actions">
                 <MudStack Row="true" Spacing="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => EditUser(context.Id))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Security" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-role"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.ToggleOff" Size="Size.Small" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-status"))" />
+                    <MudTooltip Text="Edit user">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" aria-label="Edit user" OnClick="@(() => EditUser(context.Id))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Change role">
+                        <MudIconButton Icon="@Icons.Material.Filled.Security" Size="Size.Small" aria-label="Change role" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-role"))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Change status">
+                        <MudIconButton Icon="@Icons.Material.Filled.ToggleOff" Size="Size.Small" aria-label="Change status" OnClick="@(() => Navigation.NavigateTo($"/users/{context.Id}/change-status"))" />
+                    </MudTooltip>
                 </MudStack>
             </MudTd>
         </RowTemplate>
@@ -97,7 +103,7 @@ else
         }
     }
 
-    private void EditUser(int id)
+    private void EditUser(Guid id)
     {
         Navigation.NavigateTo($"/users/{id}/edit");
     }
