@@ -165,6 +165,10 @@ public class ArrangementsApiClient : IArrangementsApiClient
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<ArrangementDto>();
         }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException($"Failed to {errorAction}: {ex.Message}", ex, ex.StatusCode);
+        }
         catch (Exception ex)
         {
             throw new HttpRequestException($"Failed to {errorAction}: {ex.Message}", ex);
