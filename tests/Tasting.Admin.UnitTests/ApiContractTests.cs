@@ -84,14 +84,26 @@ public sealed class ApiContractTests
     public void ArrangementDtoBuilder_ShouldSupportAllStatusConfigurations()
     {
         var created = ArrangementDtoBuilder.Default().Build();
+        var active = ArrangementDtoBuilder.Active().Build();
         var started = ArrangementDtoBuilder.Started().Build();
         var completed = ArrangementDtoBuilder.Completed().Build();
         var canceled = ArrangementDtoBuilder.Canceled().Build();
         
         Assert.Equal(ArrangementStatus.Created, created.Status);
+        Assert.Equal(ArrangementStatus.Active, active.Status);
         Assert.Equal(ArrangementStatus.Started, started.Status);
         Assert.Equal(ArrangementStatus.Completed, completed.Status);
         Assert.Equal(ArrangementStatus.Canceled, canceled.Status);
+    }
+
+    [Fact]
+    public void ArrangementStatus_ShouldMatchBackendEnumOrdering()
+    {
+        Assert.Equal(0, (int)ArrangementStatus.Created);
+        Assert.Equal(1, (int)ArrangementStatus.Active);
+        Assert.Equal(2, (int)ArrangementStatus.Started);
+        Assert.Equal(3, (int)ArrangementStatus.Canceled);
+        Assert.Equal(4, (int)ArrangementStatus.Completed);
     }
 
     [Fact]
@@ -127,11 +139,11 @@ public sealed class ApiContractTests
     }
 
     [Fact]
-    public void ChangeArrangementStatusRequest_ShouldBeValid()
+    public void ArrangementLifecycleRequest_ShouldIncludeRowVersion()
     {
-        var request = new ChangeArrangementStatusRequest(ArrangementStatus.Started);
+        var request = new ArrangementLifecycleRequest(3);
         
-        Assert.Equal(ArrangementStatus.Started, request.NewStatus);
+        Assert.Equal(3u, request.RowVersion);
     }
 
     [Fact]

@@ -69,6 +69,11 @@ public class ArrangementDtoBuilder
         return new ArrangementDtoBuilder().WithStatus(ArrangementStatus.Started);
     }
 
+    public static ArrangementDtoBuilder Active()
+    {
+        return new ArrangementDtoBuilder().WithStatus(ArrangementStatus.Active);
+    }
+
     public static ArrangementDtoBuilder Completed()
     {
         return new ArrangementDtoBuilder().WithStatus(ArrangementStatus.Completed);

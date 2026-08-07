@@ -168,7 +168,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
     }
 
     [Fact]
-    public async Task StartArrangement_Transitions_ActiveToStarted_WithSnapshots()
+    public async Task Activate_Then_Start_Succeeds()
     {
         var arrangementId = Guid.NewGuid();
         var userId = Guid.NewGuid();
@@ -263,6 +263,33 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
         Assert.NotNull(body);
         Assert.Equal(ArrangementStatus.Started, body.Status);
+    }
+
+    [Fact]
+    public async Task Start_Without_Activate_Returns409()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Created only",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/start",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]

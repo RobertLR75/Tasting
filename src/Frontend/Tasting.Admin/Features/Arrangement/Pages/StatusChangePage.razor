@@ -100,8 +100,13 @@
         
         try
         {
-            var request = new ChangeArrangementStatusRequest(newStatus);
-            var result = await ArrangementsApiClient.ChangeStatusAsync(ArrangementId, request);
+            if (currentArrangement == null)
+            {
+                errorMessage = "Arrangement must be loaded before changing status";
+                return;
+            }
+
+            var result = await ChangeStatusAsync(newStatus);
             if (_cts.IsCancellationRequested) return;
             if (result != null)
             {
@@ -123,6 +128,21 @@
         }
     }
 
+    private Task<ArrangementDto?> ChangeStatusAsync(ArrangementStatus newStatus)
+        => newStatus switch
+        {
+            ArrangementStatus.Active => ArrangementsApiClient.ActivateAsync(ArrangementId, currentArrangement!.RowVersion),
+            ArrangementStatus.Started => ArrangementsApiClient.StartAsync(ArrangementId, currentArrangement!.RowVersion),
+            ArrangementStatus.Canceled => ArrangementsApiClient.CancelAsync(ArrangementId, currentArrangement!.RowVersion),
+            ArrangementStatus.Completed => ArrangementsApiClient.CompleteAsync(ArrangementId, currentArrangement!.RowVersion),
+            _ => UnsupportedStatus(newStatus)
+        };
+
+    private Task<ArrangementDto?> UnsupportedStatus(ArrangementStatus newStatus)
+    {
+        errorMessage = $"Status '{newStatus}' is not supported from this page.";
+        return Task.FromResult<ArrangementDto?>(null);
+    }
     private void HandleCancel()
     {
         Navigation.NavigateTo("/arrangements");

@@ -9,7 +9,10 @@ public interface IArrangementsApiClient
     Task<ArrangementDto?> GetAsync(Guid id);
     Task<ArrangementDto?> CreateAsync(CreateArrangementRequest request);
     Task<ArrangementDto?> UpdateAsync(Guid id, UpdateArrangementRequest request);
-    Task<ArrangementDto?> ChangeStatusAsync(Guid id, ChangeArrangementStatusRequest request);
+    Task<ArrangementDto?> ActivateAsync(Guid id, uint rowVersion);
+    Task<ArrangementDto?> StartAsync(Guid id, uint rowVersion);
+    Task<ArrangementDto?> CancelAsync(Guid id, uint rowVersion);
+    Task<ArrangementDto?> CompleteAsync(Guid id, uint rowVersion);
     Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request);
     Task<bool> RemoveBeerAsync(Guid id, Guid beerId);
     Task<ArrangementParticipantDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request);
@@ -82,19 +85,17 @@ public class ArrangementsApiClient : IArrangementsApiClient
         }
     }
 
-    public async Task<ArrangementDto?> ChangeStatusAsync(Guid id, ChangeArrangementStatusRequest request)
-    {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/change-status", request);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<ArrangementDto>();
-        }
-        catch (Exception ex)
-        {
-            throw new HttpRequestException($"Failed to change arrangement status: {ex.Message}", ex);
-        }
-    }
+    public Task<ArrangementDto?> ActivateAsync(Guid id, uint rowVersion)
+        => PostLifecycleAsync(id, "activate", rowVersion, "activate arrangement");
+
+    public Task<ArrangementDto?> StartAsync(Guid id, uint rowVersion)
+        => PostLifecycleAsync(id, "start", rowVersion, "start arrangement");
+
+    public Task<ArrangementDto?> CancelAsync(Guid id, uint rowVersion)
+        => PostLifecycleAsync(id, "cancel", rowVersion, "cancel arrangement");
+
+    public Task<ArrangementDto?> CompleteAsync(Guid id, uint rowVersion)
+        => PostLifecycleAsync(id, "complete", rowVersion, "complete arrangement");
 
     public async Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request)
     {
@@ -147,6 +148,30 @@ public class ArrangementsApiClient : IArrangementsApiClient
         catch (Exception ex)
         {
             throw new HttpRequestException($"Failed to remove participant from arrangement: {ex.Message}", ex);
+        }
+    }
+
+    private async Task<ArrangementDto?> PostLifecycleAsync(
+        Guid id,
+        string action,
+        uint rowVersion,
+        string errorAction)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync(
+                $"/api/v1/arrangements/{id}/{action}",
+                new ArrangementLifecycleRequest(rowVersion));
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ArrangementDto>();
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpRequestException($"Failed to {errorAction}: {ex.Message}", ex, ex.StatusCode);
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to {errorAction}: {ex.Message}", ex);
         }
     }
 }
