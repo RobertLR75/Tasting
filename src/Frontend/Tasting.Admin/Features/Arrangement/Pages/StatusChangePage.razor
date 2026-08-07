@@ -38,7 +38,7 @@
     }
 
     <MudStack Row="true" Spacing="2">
-        @if (currentArrangement == null || validTransitions.Count > 0)
+        @if (currentArrangement != null && validTransitions.Count > 0)
         {
             <ActionButton
                 Text="Change Status"
