@@ -115,19 +115,18 @@ public class BeersApiClient : IBeersApiClient
     {
         try
         {
-            var url = "/api/v1/beers";
-            var queryParams = new List<string>();
+            string url;
             if (breweryId.HasValue)
             {
-                queryParams.Add($"breweryId={breweryId.Value}");
+                url = $"/api/v1/breweries/{breweryId.Value}/beers";
             }
-            if (!string.IsNullOrEmpty(searchTerm))
+            else
             {
-                queryParams.Add($"searchTerm={Uri.EscapeDataString(searchTerm)}");
-            }
-            if (queryParams.Count > 0)
-            {
-                url += "?" + string.Join("&", queryParams);
+                url = "/api/v1/beers";
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    url += $"?searchTerm={Uri.EscapeDataString(searchTerm)}";
+                }
             }
             return await _httpClient.GetFromJsonAsync<ListBeersResponse>(url);
         }
@@ -188,6 +187,46 @@ public class BeersApiClient : IBeersApiClient
         catch (Exception ex)
         {
             throw new HttpRequestException($"Failed to deactivate beer {id}: {ex.Message}", ex);
+        }
+    }
+}
+
+public interface IBeerStylesApiClient
+{
+    Task<ListBeerStylesResponse?> ListAsync();
+}
+
+public class BeerStylesApiClient(HttpClient httpClient) : IBeerStylesApiClient
+{
+    public async Task<ListBeerStylesResponse?> ListAsync()
+    {
+        try
+        {
+            return await httpClient.GetFromJsonAsync<ListBeerStylesResponse>("/api/v1/beer-styles");
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to list beer styles: {ex.Message}", ex);
+        }
+    }
+}
+
+public interface IBeerTypesApiClient
+{
+    Task<ListBeerTypesResponse?> ListAsync();
+}
+
+public class BeerTypesApiClient(HttpClient httpClient) : IBeerTypesApiClient
+{
+    public async Task<ListBeerTypesResponse?> ListAsync()
+    {
+        try
+        {
+            return await httpClient.GetFromJsonAsync<ListBeerTypesResponse>("/api/v1/beer-types");
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException($"Failed to list beer types: {ex.Message}", ex);
         }
     }
 }

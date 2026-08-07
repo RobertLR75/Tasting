@@ -18,6 +18,8 @@ builder.Services.AddScoped<Tasting.Admin.Features.Identity.Services.IUsersApiCli
 builder.Services.AddScoped<Tasting.Admin.Features.Arrangement.Services.IArrangementsApiClient, Tasting.Admin.Features.Arrangement.Services.ArrangementsApiClient>();
 builder.Services.AddScoped<Tasting.Admin.Features.Catalog.Services.IBreweriesApiClient, Tasting.Admin.Features.Catalog.Services.BreweriesApiClient>();
 builder.Services.AddScoped<Tasting.Admin.Features.Catalog.Services.IBeersApiClient, Tasting.Admin.Features.Catalog.Services.BeersApiClient>();
+builder.Services.AddScoped<Tasting.Admin.Features.Catalog.Services.IBeerStylesApiClient, Tasting.Admin.Features.Catalog.Services.BeerStylesApiClient>();
+builder.Services.AddScoped<Tasting.Admin.Features.Catalog.Services.IBeerTypesApiClient, Tasting.Admin.Features.Catalog.Services.BeerTypesApiClient>();
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7100/";
 builder.Services.AddHttpClient("Tasting.Api", client =>
 {

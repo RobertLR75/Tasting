@@ -5,11 +5,12 @@
 @using Tasting.Admin.Shared.Components
 @implements IDisposable
 @inject IBeersApiClient BeersApiClient
+@inject IBreweriesApiClient BreweriesApiClient
 @inject NavigationManager Navigation
 
 <PageTitle>Beers</PageTitle>
 
-<PageHeader Title="Beers" />
+<PageHeader Title="@(brewery is not null ? $"Beers — {brewery.Name}" : "Beers")" />
 
 <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-4">
     <MudTextField @bind-Value="SearchTerm"
@@ -67,6 +68,7 @@ else
     [Parameter]
     public Guid BreweryId { get; set; }
 
+    private BreweryDto? brewery;
     private List<BeerDto> Beers { get; set; } = new();
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
@@ -75,6 +77,18 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (BreweryId != Guid.Empty)
+        {
+            try
+            {
+                brewery = await BreweriesApiClient.GetAsync(BreweryId);
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Failed to load brewery: {ex.Message}";
+                return;
+            }
+        }
         await SearchAsync();
     }
 

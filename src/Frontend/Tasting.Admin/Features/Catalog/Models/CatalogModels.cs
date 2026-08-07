@@ -47,3 +47,25 @@ public record ListBeersResponse(
     IEnumerable<BeerDto> Beers,
     int Total
 );
+
+public record BeerStyleDto(
+    Guid Id,
+    string Name,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt
+);
+
+public record ListBeerStylesResponse(
+    IEnumerable<BeerStyleDto> BeerStyles
+);
+
+public record BeerTypeDto(
+    Guid Id,
+    string Name,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt
+);
+
+public record ListBeerTypesResponse(
+    IEnumerable<BeerTypeDto> BeerTypes
+);
