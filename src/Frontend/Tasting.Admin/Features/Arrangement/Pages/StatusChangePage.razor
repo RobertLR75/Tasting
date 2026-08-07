@@ -15,25 +15,37 @@
         <MudText Typo="Typo.body1" Class="mb-3">Name: @currentArrangement.Name</MudText>
         <MudText Typo="Typo.body1" Class="mb-3">Current Status: <StatusBadge Status="@currentArrangement.Status.ToString()" /></MudText>
     }
-    
-    <FormField 
-        Label="New Status" 
-        @bind-Value="@selectedStatus"
-        ErrorMessage="@GetFieldError(nameof(selectedStatus))"
-        Required="true">
-    </FormField>
 
-    @if (!string.IsNullOrEmpty(statusWarning))
+    @if (currentArrangement != null && validTransitions.Count == 0)
     {
-        <MudAlert Severity="Severity.Warning">@statusWarning</MudAlert>
+        <MudAlert Severity="Severity.Info">
+            No further status transitions are available. There are no further transitions possible for this arrangement.
+        </MudAlert>
+    }
+    else if (currentArrangement != null)
+    {
+        <MudSelect T="ArrangementStatus"
+                   Label="New Status"
+                   @bind-Value="@selectedNewStatus"
+                   Required="true"
+                   Variant="Variant.Outlined"
+                   Class="mb-3">
+            @foreach (var status in validTransitions)
+            {
+                <MudSelectItem T="ArrangementStatus" Value="@status">@status</MudSelectItem>
+            }
+        </MudSelect>
     }
 
     <MudStack Row="true" Spacing="2">
-        <ActionButton 
-            Text="Change Status" 
-            Color="Color.Success"
-            OnClick="@HandleChangeStatusAsync"
-            Disabled="@isLoading" />
+        @if (currentArrangement == null || validTransitions.Count > 0)
+        {
+            <ActionButton
+                Text="Change Status"
+                Color="Color.Success"
+                OnClick="@HandleChangeStatusAsync"
+                Disabled="@isLoading" />
+        }
         <ActionButton 
             Text="Cancel" 
             Color="Color.Default"
@@ -46,11 +58,10 @@
     public Guid ArrangementId { get; set; }
 
     private ArrangementDto? currentArrangement;
-    private string selectedStatus = "";
+    private ArrangementStatus selectedNewStatus;
+    private IReadOnlyList<ArrangementStatus> validTransitions = [];
     private string? errorMessage;
-    private string? statusWarning;
     private bool isLoading = false;
-    private Dictionary<string, string> fieldErrors = new();
     private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
@@ -62,7 +73,8 @@
             if (_cts.IsCancellationRequested) return;
             if (currentArrangement != null)
             {
-                selectedStatus = currentArrangement.Status.ToString();
+                validTransitions = GetValidTransitions(currentArrangement.Status);
+                selectedNewStatus = validTransitions.FirstOrDefault();
             }
         }
         catch (OperationCanceledException)
@@ -82,31 +94,24 @@
 
     private async Task HandleChangeStatusAsync()
     {
-        if (string.IsNullOrEmpty(selectedStatus))
+        if (currentArrangement == null)
         {
-            errorMessage = "Please select a status";
+            errorMessage = "Arrangement must be loaded before changing status";
             return;
         }
 
-        if (!Enum.TryParse<ArrangementStatus>(selectedStatus, out var newStatus))
+        if (validTransitions.Count == 0)
         {
-            errorMessage = "Invalid status selected";
+            errorMessage = "No further status transitions are available.";
             return;
         }
 
         isLoading = true;
         errorMessage = null;
-        fieldErrors.Clear();
-        
+
         try
         {
-            if (currentArrangement == null)
-            {
-                errorMessage = "Arrangement must be loaded before changing status";
-                return;
-            }
-
-            var result = await ChangeStatusAsync(newStatus);
+            var result = await ChangeStatusAsync(selectedNewStatus);
             if (_cts.IsCancellationRequested) return;
             if (result != null)
             {
@@ -138,14 +143,20 @@
             _ => throw new InvalidOperationException($"Arrangement cannot be changed to status '{newStatus}' from this page.")
         };
 
+    private static IReadOnlyList<ArrangementStatus> GetValidTransitions(ArrangementStatus current)
+        => current switch
+        {
+            ArrangementStatus.Created => [ArrangementStatus.Active, ArrangementStatus.Canceled],
+            ArrangementStatus.Active => [ArrangementStatus.Started],
+            ArrangementStatus.Started => [ArrangementStatus.Completed],
+            ArrangementStatus.Canceled => [],
+            ArrangementStatus.Completed => [],
+            _ => []
+        };
+
     private void HandleCancel()
     {
         Navigation.NavigateTo("/arrangements");
-    }
-
-    private string? GetFieldError(string fieldName)
-    {
-        return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
     }
 
     public void Dispose()
