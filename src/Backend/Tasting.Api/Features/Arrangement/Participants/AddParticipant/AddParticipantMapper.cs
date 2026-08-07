@@ -18,5 +18,8 @@ public sealed class AddParticipantMapper
             entity.Status,
             entity.RowVersion,
             entity.CreatedAt,
-            entity.UpdatedAt));
+            entity.UpdatedAt,
+            entity.Participants
+                .Select(p => new ArrangementParticipantResponse(p.Id, p.UserId, $"{p.FirstNameSnapshot} {p.LastNameSnapshot}".Trim()))
+                .ToList()));
 }

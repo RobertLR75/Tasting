@@ -17,5 +17,8 @@ public sealed class ListArrangementsMapper
                 a.Status,
                 a.RowVersion,
                 a.CreatedAt,
-                a.UpdatedAt)).ToList()));
+                a.UpdatedAt,
+                a.Participants
+                    .Select(p => new ArrangementParticipantResponse(p.Id, p.UserId, $"{p.FirstNameSnapshot} {p.LastNameSnapshot}".Trim()))
+                    .ToList())).ToList()));
 }

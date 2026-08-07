@@ -5,7 +5,7 @@ public sealed record UserResponse(
     string Email,
     string FirstName,
     string LastName,
-    bool IsActive,
-    UserRole Role,
+    string Status,
+    string Role,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt);

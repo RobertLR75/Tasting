@@ -15,7 +15,8 @@ public record ArrangementDto(
     ArrangementStatus Status,
     uint RowVersion,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt
+    DateTimeOffset? UpdatedAt,
+    IEnumerable<ArrangementParticipantDto> Participants
 );
 
 public record CreateArrangementRequest(
@@ -56,5 +57,6 @@ public record ArrangementParticipantDto(
 );
 
 public record AddParticipantToArrangementRequest(
-    Guid UserId
+    Guid UserId,
+    uint RowVersion
 );

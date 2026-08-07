@@ -1,7 +1,7 @@
 namespace Tasting.Admin.Features.Identity.Models;
 
 public record UserDto(
-    int Id,
+    Guid Id,
     string FirstName,
     string LastName,
     string Email,
