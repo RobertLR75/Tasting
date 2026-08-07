@@ -168,7 +168,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
     }
 
     [Fact]
-    public async Task StartArrangement_Transitions_CreatedToStarted_WithSnapshots()
+    public async Task StartArrangement_Transitions_ActiveToStarted_WithSnapshots()
     {
         var arrangementId = Guid.NewGuid();
         var userId = Guid.NewGuid();
@@ -246,9 +246,18 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
 
+        var activateResponse = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/activate",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Created, activateResponse.StatusCode);
+        var activated = await activateResponse.Content.ReadFromJsonAsync<ArrangementResponse>();
+        Assert.NotNull(activated);
+        Assert.Equal(ArrangementStatus.Active, activated.Status);
+
         var response = await client.PostAsJsonAsync(
             $"/api/v1/arrangements/{arrangementId}/start",
-            new { rowVersion = 0 });
+            new { rowVersion = activated.RowVersion });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();

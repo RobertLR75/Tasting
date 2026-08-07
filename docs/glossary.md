@@ -15,7 +15,7 @@
 **Used in:** Participant-referanse i arrangement og tilgangsstyring.
 
 ## Arrangement status
-**Definition:** Livssyklusverdi (`Created`, `Canceled`, `Started`, `Completed`) som styrer hvilke operasjoner som er lov.  
+**Definition:** Livssyklusverdi (`Created`, `Active`, `Canceled`, `Started`, `Completed`) som styrer hvilke operasjoner som er lov. `Active` er et enveis bekreftelsessteg der arrangementinnholdet er låst før rating-vinduet åpnes i `Started`.
 **Used in:** Validering av oppdatering og medlemskapsendringer.
 
 ## Membership uniqueness invariant

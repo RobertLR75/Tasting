@@ -24,10 +24,10 @@ public sealed class StartArrangementHandler(
             .FirstOrDefaultAsync(a => a.Id == request.ArrangementId, ct)
             ?? throw new ServiceNotFoundException($"Arrangement '{request.ArrangementId}' was not found.");
 
-        if (arrangement.Status != ArrangementStatus.Created)
+        if (arrangement.Status != ArrangementStatus.Active)
         {
             throw new ConflictException(
-                $"Arrangement cannot be started from status '{arrangement.Status}'. Only 'Created' arrangements can be started.");
+                $"Arrangement cannot be started from status '{arrangement.Status}'. Only 'Active' arrangements can be started.");
         }
 
         if (arrangement.RowVersion != request.RowVersion)

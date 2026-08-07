@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Contracts;
+using Tasting.Api.Features.Arrangement.Arrangements.ActivateArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.CancelArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.CompleteArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.CreateArrangement;
@@ -47,6 +48,10 @@ public static class ArrangementServiceCollectionExtensions
         services.AddScoped<
             IRequestHandler<AddBeerCommand, ArrangementEntity>,
             AddBeerHandler>();
+
+        services.AddScoped<
+            IRequestHandler<ActivateArrangementCommand, ArrangementEntity>,
+            ActivateArrangementHandler>();
 
         services.AddScoped<
             IRequestHandler<StartArrangementCommand, ArrangementEntity>,
