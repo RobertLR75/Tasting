@@ -570,6 +570,91 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
+    // ── ReopenArrangement ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task ReopenArrangement_TransitionsToCreated_WhenCanceled()
+    {
+        var arrangementId = Guid.NewGuid();
+        var beerId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "To Reopen",
+                Status = ArrangementStatus.Canceled,
+                RowVersion = 4,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Beers.Add(new ArrangementBeer
+            {
+                Id = Guid.NewGuid(),
+                ArrangementId = arrangementId,
+                BeerId = beerId,
+                NameSnapshot = "Preserved Beer",
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            arrangement.Participants.Add(new ArrangementParticipant
+            {
+                Id = Guid.NewGuid(),
+                ArrangementId = arrangementId,
+                UserId = userId,
+                FirstNameSnapshot = "Ada",
+                LastNameSnapshot = "Admin",
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            db.Arrangements.Add(arrangement);
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/reopen",
+            new { rowVersion = 4 });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(ArrangementStatus.Created, body.Status);
+        Assert.Equal(5u, body.RowVersion);
+        Assert.NotNull(body.UpdatedAt);
+        Assert.Single(body.Beers);
+        Assert.Equal(beerId, body.Beers[0].BeerId);
+        Assert.Single(body.Participants);
+        Assert.Equal(userId, body.Participants[0].UserId);
+    }
+
+    [Fact]
+    public async Task ReopenArrangement_ReturnsConflict_WhenCreated()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            db.Arrangements.Add(new ArrangementEntity
+            {
+                Id = arrangementId,
+                Name = "Already Created",
+                Status = ArrangementStatus.Created,
+                RowVersion = 0,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+        });
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "admin");
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/reopen",
+            new { rowVersion = 0 });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
     // ── CompleteArrangement ─────────────────────────────────────────────────
 
     [Fact]
