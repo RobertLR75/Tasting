@@ -3,6 +3,7 @@
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IArrangementsApiClient ArrangementsApiClient
 @inject NavigationManager Navigation
 
@@ -18,7 +19,6 @@
     <FormField 
         Label="New Status" 
         @bind-Value="@selectedStatus"
-        Placeholder="Select new status"
         ErrorMessage="@GetFieldError(nameof(selectedStatus))"
         Required="true">
     </FormField>
@@ -51,6 +51,7 @@
     private string? statusWarning;
     private bool isLoading = false;
     private Dictionary<string, string> fieldErrors = new();
+    private readonly CancellationTokenSource _cts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,18 +59,24 @@
         try
         {
             currentArrangement = await ArrangementsApiClient.GetAsync(ArrangementId);
+            if (_cts.IsCancellationRequested) return;
             if (currentArrangement != null)
             {
                 selectedStatus = currentArrangement.Status.ToString();
             }
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
+            if (_cts.IsCancellationRequested) return;
             errorMessage = $"Failed to load arrangement: {ex.Message}";
         }
         finally
         {
-            isLoading = false;
+            if (!_cts.IsCancellationRequested)
+                isLoading = false;
         }
     }
 
@@ -95,18 +102,24 @@
         {
             var request = new ChangeArrangementStatusRequest(newStatus);
             var result = await ArrangementsApiClient.ChangeStatusAsync(ArrangementId, request);
+            if (_cts.IsCancellationRequested) return;
             if (result != null)
             {
                 Navigation.NavigateTo("/arrangements");
             }
         }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
+            if (_cts.IsCancellationRequested) return;
             errorMessage = $"Failed to change status: {ex.Message}";
         }
         finally
         {
-            isLoading = false;
+            if (!_cts.IsCancellationRequested)
+                isLoading = false;
         }
     }
 
@@ -118,5 +131,11 @@
     private string? GetFieldError(string fieldName)
     {
         return fieldErrors.TryGetValue(fieldName, out var error) ? error : null;
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

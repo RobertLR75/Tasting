@@ -3,10 +3,9 @@
 @using MudBlazor
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
-@using Tasting.Admin.Features.Auth.Services
 @using Tasting.Admin.Shared.Components
+@implements IDisposable
 @inject IArrangementsApiClient ArrangementsApiClient
-@inject TastingAuthStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
 <PageTitle>Arrangements</PageTitle>
@@ -75,24 +74,11 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; } = true;
-    private bool _hasLoaded;
+    private readonly CancellationTokenSource _cts = new();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (!firstRender || _hasLoaded)
-        {
-            return;
-        }
-
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (!(authState.User.Identity?.IsAuthenticated ?? false))
-        {
-            return;
-        }
-
-        _hasLoaded = true;
         await SearchAsync();
-        StateHasChanged();
     }
 
     private static bool IsAddContentDisabled(ArrangementStatus status) =>
@@ -108,15 +94,27 @@ else
         try
         {
             var response = await ArrangementsApiClient.ListAsync(SearchTerm);
+            if (_cts.IsCancellationRequested) return;
             Arrangements = response?.Items.ToList() ?? new();
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception ex)
         {
+            if (_cts.IsCancellationRequested) return;
             ErrorMessage = $"Failed to load arrangements: {ex.Message}";
         }
         finally
         {
-            IsLoading = false;
+            if (!_cts.IsCancellationRequested)
+                IsLoading = false;
         }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }
