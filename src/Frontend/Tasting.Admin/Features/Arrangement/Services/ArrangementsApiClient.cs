@@ -12,6 +12,7 @@ public interface IArrangementsApiClient
     Task<ArrangementDto?> ActivateAsync(Guid id, uint rowVersion);
     Task<ArrangementDto?> StartAsync(Guid id, uint rowVersion);
     Task<ArrangementDto?> CancelAsync(Guid id, uint rowVersion);
+    Task<ArrangementDto?> ReopenAsync(Guid id, uint rowVersion);
     Task<ArrangementDto?> CompleteAsync(Guid id, uint rowVersion);
     Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request);
     Task<bool> RemoveBeerAsync(Guid id, Guid beerId);
@@ -93,6 +94,9 @@ public class ArrangementsApiClient : IArrangementsApiClient
 
     public Task<ArrangementDto?> CancelAsync(Guid id, uint rowVersion)
         => PostLifecycleAsync(id, "cancel", rowVersion, "cancel arrangement");
+
+    public Task<ArrangementDto?> ReopenAsync(Guid id, uint rowVersion)
+        => PostLifecycleAsync(id, "reopen", rowVersion, "reopen arrangement");
 
     public Task<ArrangementDto?> CompleteAsync(Guid id, uint rowVersion)
         => PostLifecycleAsync(id, "complete", rowVersion, "complete arrangement");

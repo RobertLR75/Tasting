@@ -7,6 +7,7 @@ using Tasting.Api.Features.Arrangement.Arrangements.CompleteArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.CreateArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.GetArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.ListArrangements;
+using Tasting.Api.Features.Arrangement.Arrangements.ReopenArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.StartArrangement;
 using Tasting.Api.Features.Arrangement.Arrangements.UpdateArrangement;
 using Tasting.Api.Features.Arrangement.Beers.AddBeer;
@@ -72,6 +73,10 @@ public static class ArrangementServiceCollectionExtensions
         services.AddScoped<
             IRequestHandler<CancelArrangementCommand, ArrangementEntity>,
             CancelArrangementHandler>();
+
+        services.AddScoped<
+            IRequestHandler<ReopenArrangementCommand, ArrangementEntity>,
+            ReopenArrangementHandler>();
 
         services.AddScoped<
             IRequestHandler<CompleteArrangementCommand, ArrangementEntity>,

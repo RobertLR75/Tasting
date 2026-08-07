@@ -125,6 +125,28 @@ public sealed class HttpClientAuthorizationTests
         Assert.Equal(7u, arrangement.RowVersion);
     }
 
+    [Fact]
+    public async Task ArrangementsApiClient_ReopenAsync_PostsRowVersionToReopenEndpoint()
+    {
+        var innerHandler = new CapturingHandler(HttpStatusCode.OK)
+        {
+            ResponseContent = """{"id":"2771b182-209c-4372-a4fa-101c186e15c1","name":"Reopened","description":null,"status":0,"rowVersion":8,"createdAt":"2026-08-06T00:00:00Z","updatedAt":null}"""
+        };
+        var httpClient = new HttpClient(innerHandler)
+        {
+            BaseAddress = new Uri("https://api.example.test")
+        };
+        var client = new ArrangementsApiClient(httpClient);
+        var arrangementId = Guid.Parse("2771b182-209c-4372-a4fa-101c186e15c1");
+
+        await client.ReopenAsync(arrangementId, 7);
+
+        Assert.Equal(HttpMethod.Post, innerHandler.Request?.Method);
+        Assert.Equal($"/api/v1/arrangements/{arrangementId}/reopen", innerHandler.Request?.RequestUri?.AbsolutePath);
+        using var document = JsonDocument.Parse(innerHandler.RequestBody ?? "{}");
+        Assert.Equal(7, document.RootElement.GetProperty("rowVersion").GetInt32());
+    }
+
     private sealed class CapturingHandler(HttpStatusCode statusCode) : HttpMessageHandler
     {
         public HttpRequestMessage? Request { get; private set; }
