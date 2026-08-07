@@ -75,6 +75,32 @@ public sealed class AdminFrontendPagesTests
         Assert.DoesNotContain("Blank admin shell", arrangementsPageMarkup);
     }
 
+    [Theory]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Edit arrangement")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Manage beers")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Manage participants")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/ArrangementsPage.razor", "Change status")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Edit user")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Change role")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Identity/Pages/UsersPage.razor", "Change status")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BreweriesPage.razor", "Edit brewery")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BreweriesPage.razor", "Manage beers")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Catalog/Pages/BeersPage.razor", "Edit beer")]
+    public void ListPages_ActionButtons_ShouldHaveTooltipsAndAriaLabels(string relativePath, string expectedLabel)
+    {
+        var markup = File.ReadAllText(GetProjectFile(relativePath));
+        Assert.Contains($"aria-label=\"{expectedLabel}\"", markup);
+
+        if (relativePath.Contains("ArrangementsPage.razor", StringComparison.Ordinal))
+        {
+            Assert.Contains(expectedLabel, markup);
+            return;
+        }
+
+        Assert.Contains($"MudTooltip Text=\"{expectedLabel}\"", markup);
+        Assert.Contains($"aria-label=\"{expectedLabel}\"", markup);
+    }
+
     private static string GetProjectFile(string relativePath)
         => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", relativePath));
 }
