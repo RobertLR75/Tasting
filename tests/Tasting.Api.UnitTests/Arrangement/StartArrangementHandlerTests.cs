@@ -23,7 +23,7 @@ public sealed class StartArrangementHandlerTests
 
         var (user, beer) = await SeedIdentityAndCatalogAsync(usersDb, catalogDb);
         var arrangement = await SeedArrangementWithParticipantAndBeerAsync(
-            db, user.Id, beer.Id, ArrangementStatus.Created);
+            db, user.Id, beer.Id, ArrangementStatus.Active);
 
         var handler = new StartArrangementHandler(db, usersDb, catalogDb);
 
@@ -46,13 +46,13 @@ public sealed class StartArrangementHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenNotInCreatedStatus()
+    public async Task HandleAsync_ThrowsConflict_WhenNotInActiveStatus()
     {
         await using var db = CreateArrangementDbContext();
         await using var usersDb = CreateUsersDbContext();
         await using var catalogDb = CreateCatalogDbContext();
 
-        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Started);
+        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Created);
 
         var handler = new StartArrangementHandler(db, usersDb, catalogDb);
 
@@ -68,7 +68,7 @@ public sealed class StartArrangementHandlerTests
         await using var usersDb = CreateUsersDbContext();
         await using var catalogDb = CreateCatalogDbContext();
 
-        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Created);
+        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Active);
 
         var handler = new StartArrangementHandler(db, usersDb, catalogDb);
 
