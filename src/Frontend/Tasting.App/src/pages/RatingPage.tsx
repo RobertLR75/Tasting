@@ -24,6 +24,10 @@ export function RatingPage() {
   const [saving, setSaving] = useState(false);
   const complete = fields.every(field => scores[field.name] !== undefined);
 
+  function setScore(name: ScoreName, value: number) {
+    setScores(current => ({ ...current, [name]: value }));
+  }
+
   async function save() {
     if (!beer || !complete) return;
     setSaving(true);
@@ -35,7 +39,7 @@ export function RatingPage() {
         ? `/arrangements/${arrangementId}/beers/${nextIndex}`
         : `/arrangements/${arrangementId}/beers/1`);
     } catch (reason) {
-      setError(reason instanceof ApiError && reason.status === 409
+      setError(reason instanceof ApiError && reason.status === 409 && reason.message.toLowerCase().includes('concurrent')
         ? 'Ratingen ble oppdatert av en annen instans — last siden på nytt.'
         : reason instanceof ApiError ? reason.message : 'Kunne ikke lagre ratingen.');
     } finally {
@@ -56,7 +60,9 @@ export function RatingPage() {
           {fields.map(field => <IonItem key={field.name} lines="none" className="rating-field">
             <IonLabel>{field.label}: {scores[field.name]?.toFixed(1) ?? 'Ikke satt'}</IonLabel>
             <IonRange aria-label={field.label} min={0} max={10} step={0.5} snaps ticks
-              onIonChange={event => setScores(current => ({ ...current, [field.name]: Number(event.detail.value) }))} />
+              value={scores[field.name] ?? 0}
+              onIonKnobMoveStart={() => setScore(field.name, scores[field.name] ?? 0)}
+              onIonInput={event => setScore(field.name, Number(event.detail.value))} />
           </IonItem>)}
         </section>
         {error && <p role="alert" className="form-error">{error}</p>}

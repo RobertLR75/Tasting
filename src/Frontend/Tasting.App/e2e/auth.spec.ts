@@ -168,7 +168,9 @@ test('a participant can rate a beer during Started and resubmit it as an update'
     const save = page.getByRole('button', { name: 'Lagre og gå videre' });
     if (submission === 0) {
       await expect(save).toBeDisabled();
-      for (const label of ['Utseende', 'Lukt', 'Smak', 'Skål']) {
+      await page.getByRole('slider', { name: 'Utseende' }).click();
+      await expect(page.getByText('Utseende: 0.0')).toBeVisible();
+      for (const label of ['Lukt', 'Smak', 'Skål']) {
         await page.getByRole('slider', { name: label }).press('ArrowRight');
       }
     }
@@ -178,9 +180,34 @@ test('a participant can rate a beer during Started and resubmit it as an update'
   }
 
   expect(requests).toEqual([
-    { beerId: 'beer-1', visibility: 0.5, smell: 0.5, taste: 0.5, toast: 0.5 },
-    { beerId: 'beer-1', visibility: 0.5, smell: 0.5, taste: 0.5, toast: 0.5 },
+    { beerId: 'beer-1', visibility: 0, smell: 0.5, taste: 0.5, toast: 0.5 },
+    { beerId: 'beer-1', visibility: 0, smell: 0.5, taste: 0.5, toast: 0.5 },
   ]);
+});
+
+test('a non-concurrency backend conflict is surfaced without being relabeled', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/arr-1', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({
+      id: 'arr-1', name: 'Sommerfest', status: 'Started',
+      beers: [{ id: 'beer-1', name: 'Hemmelig lager', breweryName: 'Bryggeri', beerStyle: 'Lager', beerType: 'Mørk' }],
+    }),
+  }));
+  await page.route('**/api/v1/arrangements/arr-1/ratings', route => route.fulfill({
+    status: 409, contentType: 'application/json',
+    body: JSON.stringify({ code: 'conflict', message: 'Arrangementet er ikke startet.', correlationId: 'corr-window' }),
+  }));
+
+  await page.goto('/arrangements/arr-1/beers/1/rate');
+  for (const label of ['Utseende', 'Lukt', 'Smak', 'Skål']) {
+    await page.getByRole('slider', { name: label }).press('ArrowRight');
+  }
+  await page.getByRole('button', { name: 'Lagre og gå videre' }).click();
+
+  await expect(page.getByRole('alert')).toHaveText('Arrangementet er ikke startet.');
 });
 
 test('rating interactions are unavailable outside Started', async ({ page }) => {
