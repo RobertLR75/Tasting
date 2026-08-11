@@ -14,6 +14,8 @@ using Tasting.Api.Features.Arrangement.Beers.AddBeer;
 using Tasting.Api.Features.Arrangement.Beers.RemoveBeer;
 using Tasting.Api.Features.Arrangement.Participants.AddParticipant;
 using Tasting.Api.Features.Arrangement.Participants.RemoveParticipant;
+using Tasting.Api.Features.Arrangement.Participants.ListVisibleArrangements;
+using Tasting.Api.Features.Arrangement.Participants.SelfJoinArrangement;
 using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
 
 namespace Tasting.Api.Infrastructure.Arrangement;
@@ -37,6 +39,14 @@ public static class ArrangementServiceCollectionExtensions
         });
 
         services.AddScoped<IArrangementService, ArrangementService>();
+
+        services.AddScoped<
+            IRequestHandler<ListVisibleArrangementsQuery, ListVisibleArrangementsResponse>,
+            ListVisibleArrangementsHandler>();
+
+        services.AddScoped<
+            IRequestHandler<SelfJoinArrangementCommand, SelfJoinArrangementResponse>,
+            SelfJoinArrangementHandler>();
 
         services.AddScoped<
             IRequestHandler<CreateArrangementCommand, ArrangementEntity>,

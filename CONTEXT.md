@@ -75,6 +75,10 @@ _Avoid_: Catalog copy, Frozen beer
 **Membership uniqueness invariant**:
 Innen ett arrangement kan samme `User` og samme `Beer` forekomme maks én gang. Brudd gir `409 Conflict`.
 
+**Self-join**:
+En `User` legger seg selv til som `Participant` i et synlig arrangement mens status er `Active`. Identiteten kommer fra den autentiserte sikkerhetskonteksten; klienten kan ikke velge en annen `User`.
+_Avoid_: Self-registration, Add yourself, Open enrollment
+
 ### Rating og resultat
 
 **Rating**:
