@@ -48,6 +48,7 @@ async function send<T>(path: string, init?: RequestInit): Promise<T> {
     const error = await readError(response);
     throw new ApiError(response.status, error.code, error.message, error.correlationId);
   }
+  if (response.status === 204) return undefined as T;
   return await response.json() as T;
 }
 
