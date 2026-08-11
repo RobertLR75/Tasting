@@ -24,13 +24,6 @@ public sealed class ReopenArrangementHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Arrangement cannot be reopened from status '{arrangement.Status}'. Only 'Canceled' arrangements can be reopened.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         arrangement.Status = ArrangementStatus.Created;
         arrangement.RowVersion++;
         arrangement.UpdatedAt = DateTimeOffset.UtcNow;
@@ -45,6 +38,6 @@ public sealed class ReopenArrangementHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

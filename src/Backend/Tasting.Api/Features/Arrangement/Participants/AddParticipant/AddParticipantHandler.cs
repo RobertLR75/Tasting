@@ -27,13 +27,6 @@ public sealed class AddParticipantHandler(
             throw new ConflictException(
                 "Participants can only be added when arrangement is in Created status.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         var userExists = await usersDbContext.Users
             .AnyAsync(u => u.Id == request.UserId, ct);
         if (!userExists)
@@ -72,6 +65,6 @@ public sealed class AddParticipantHandler(
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

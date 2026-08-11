@@ -17,11 +17,10 @@ public sealed class CreateArrangementHandler(ArrangementDbContext dbContext)
             Name = request.Name.Trim(),
             Description = request.Description?.Trim(),
             Status = ArrangementStatus.Created,
-            RowVersion = 0,
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        dbContext.Arrangements.Add(arrangement);
+        dbContext.Arrangements.Add(ArrangementRecord.FromDomain(arrangement));
         await dbContext.SaveChangesAsync(ct);
         return arrangement;
     }

@@ -81,7 +81,6 @@ else
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
-    private uint _rowVersion;
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,7 +91,6 @@ else
             _arrangement = await ArrangementsApiClient.GetAsync(ArrangementId);
             if (_arrangement is not null)
             {
-                _rowVersion = _arrangement.RowVersion;
                 foreach (var p in _arrangement.Participants)
                     AddedUserIds.Add(p.UserId);
             }
@@ -136,9 +134,8 @@ else
         AddingParticipantIds.Add(userId);
         try
         {
-            var request = new AddParticipantToArrangementRequest(userId, _rowVersion);
+            var request = new AddParticipantToArrangementRequest(userId);
             await ArrangementsApiClient.AddParticipantAsync(ArrangementId, request);
-            _rowVersion++;
             AddedUserIds.Add(userId);
         }
         catch (Exception ex)

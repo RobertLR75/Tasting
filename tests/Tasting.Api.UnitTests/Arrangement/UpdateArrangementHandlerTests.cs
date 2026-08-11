@@ -4,7 +4,7 @@ using Tasting.Api.Features.Arrangement.Arrangements.UpdateArrangement;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Infrastructure.Arrangement;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -18,11 +18,10 @@ public sealed class UpdateArrangementHandlerTests
 
         var handler = new UpdateArrangementHandler(db);
         var result = await handler.HandleAsync(
-            new UpdateArrangementCommand(arrangement.Id, "New Name", "New Desc", 0u));
+            new UpdateArrangementCommand(arrangement.Id, "New Name", "New Desc"));
 
         Assert.Equal("New Name", result.Name);
         Assert.Equal("New Desc", result.Description);
-        Assert.Equal(1u, result.RowVersion);
     }
 
     [Fact]
@@ -33,10 +32,9 @@ public sealed class UpdateArrangementHandlerTests
 
         var handler = new UpdateArrangementHandler(db);
         var result = await handler.HandleAsync(
-            new UpdateArrangementCommand(arrangement.Id, "Fresh Name", null, 3u));
+            new UpdateArrangementCommand(arrangement.Id, "Fresh Name", null));
 
         Assert.Equal("Fresh Name", result.Name);
-        Assert.Equal(4u, result.RowVersion);
     }
 
     [Fact]
@@ -48,20 +46,9 @@ public sealed class UpdateArrangementHandlerTests
         var handler = new UpdateArrangementHandler(db);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new UpdateArrangementCommand(arrangement.Id, "X", null, 0u)));
+            handler.HandleAsync(new UpdateArrangementCommand(arrangement.Id, "X", null)));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateDb();
-        var arrangement = await SeedAsync(db, ArrangementStatus.Created);
-
-        var handler = new UpdateArrangementHandler(db);
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new UpdateArrangementCommand(arrangement.Id, "X", null, 99u)));
-    }
 
     [Fact]
     public async Task HandleAsync_ThrowsNotFound_WhenMissing()
@@ -70,7 +57,7 @@ public sealed class UpdateArrangementHandlerTests
         var handler = new UpdateArrangementHandler(db);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() =>
-            handler.HandleAsync(new UpdateArrangementCommand(Guid.NewGuid(), "X", null, 0u)));
+            handler.HandleAsync(new UpdateArrangementCommand(Guid.NewGuid(), "X", null)));
     }
 
     private static async Task<ArrangementEntity> SeedAsync(

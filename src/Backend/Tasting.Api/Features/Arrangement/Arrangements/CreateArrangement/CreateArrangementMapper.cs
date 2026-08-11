@@ -14,7 +14,6 @@ public sealed class CreateArrangementMapper
             entity.Name,
             entity.Description,
             entity.Status,
-            entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
             entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),

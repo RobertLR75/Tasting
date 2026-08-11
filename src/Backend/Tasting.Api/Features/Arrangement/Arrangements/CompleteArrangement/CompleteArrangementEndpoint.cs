@@ -24,6 +24,6 @@ public sealed class CompleteArrangementEndpoint(
     protected override CompleteArrangementCommand ToCommand(CompleteArrangementRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new CompleteArrangementCommand(arrangementId, req.RowVersion);
+        return new CompleteArrangementCommand(arrangementId);
     }
 }

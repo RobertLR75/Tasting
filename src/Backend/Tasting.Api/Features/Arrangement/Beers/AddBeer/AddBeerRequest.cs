@@ -1,3 +1,3 @@
 namespace Tasting.Api.Features.Arrangement.Beers.AddBeer;
 
-public sealed record AddBeerRequest(Guid BeerId, uint RowVersion);
+public sealed record AddBeerRequest(Guid BeerId);

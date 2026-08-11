@@ -26,7 +26,7 @@ public sealed class RemoveParticipantEndpoint(
     {
         var arrangementId = Route<Guid>("arrangementId");
         var userId = Route<Guid>("userId");
-        return new RemoveParticipantCommand(arrangementId, userId, req.RowVersion);
+        return new RemoveParticipantCommand(arrangementId, userId);
     }
 
     protected override async Task HandleResponseAsync(ArrangementResponse response, CancellationToken ct)

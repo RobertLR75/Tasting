@@ -24,6 +24,6 @@ public sealed class StartArrangementEndpoint(
     protected override StartArrangementCommand ToCommand(StartArrangementRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new StartArrangementCommand(arrangementId, req.RowVersion);
+        return new StartArrangementCommand(arrangementId);
     }
 }

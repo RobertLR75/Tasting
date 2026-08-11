@@ -6,7 +6,7 @@ public sealed class CompleteArrangementMapper
     : BaseCommandMapper<CompleteArrangementRequest, ArrangementResponse, CompleteArrangementCommand, Domain.Arrangement>
 {
     public override CompleteArrangementCommand ToCommand(CompleteArrangementRequest req)
-        => new(Guid.Empty, req.RowVersion);
+        => new(Guid.Empty);
 
     public override Task<ArrangementResponse> FromEntityAsync(Domain.Arrangement entity, CancellationToken ct = default)
         => Task.FromResult(new ArrangementResponse(
@@ -14,7 +14,6 @@ public sealed class CompleteArrangementMapper
             entity.Name,
             entity.Description,
             entity.Status,
-            entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
             entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),

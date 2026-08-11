@@ -6,7 +6,7 @@ using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Infrastructure.Identity;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -24,12 +24,11 @@ public sealed class AddParticipantHandlerTests
         var handler = new AddParticipantHandler(db, usersDb);
 
         var result = await handler.HandleAsync(
-            new AddParticipantCommand(arrangement.Id, user.Id, arrangement.RowVersion),
+            new AddParticipantCommand(arrangement.Id, user.Id),
             CancellationToken.None);
 
         Assert.Single(result.Participants);
         Assert.Equal(user.Id, result.Participants[0].UserId);
-        Assert.Equal(1u, result.RowVersion);
     }
 
     [Fact]
@@ -44,7 +43,7 @@ public sealed class AddParticipantHandlerTests
         var handler = new AddParticipantHandler(db, usersDb);
 
         await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new AddParticipantCommand(arrangement.Id, user.Id, arrangement.RowVersion),
+            new AddParticipantCommand(arrangement.Id, user.Id),
             CancellationToken.None));
     }
 
@@ -59,7 +58,7 @@ public sealed class AddParticipantHandlerTests
 
         var handler = new AddParticipantHandler(db, usersDb);
         await handler.HandleAsync(
-            new AddParticipantCommand(arrangement.Id, user.Id, arrangement.RowVersion),
+            new AddParticipantCommand(arrangement.Id, user.Id),
             CancellationToken.None);
 
         // Reload to get updated RowVersion
@@ -67,25 +66,10 @@ public sealed class AddParticipantHandlerTests
         Assert.NotNull(updated);
 
         await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new AddParticipantCommand(arrangement.Id, user.Id, updated.RowVersion),
+            new AddParticipantCommand(arrangement.Id, user.Id),
             CancellationToken.None));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateArrangementDbContext();
-        await using var usersDb = CreateUsersDbContext();
-
-        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Created);
-        var user = await SeedUserAsync(usersDb);
-
-        var handler = new AddParticipantHandler(db, usersDb);
-
-        await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new AddParticipantCommand(arrangement.Id, user.Id, RowVersion: 99u),
-            CancellationToken.None));
-    }
 
     [Fact]
     public async Task HandleAsync_ThrowsNotFound_WhenUserDoesNotExist()
@@ -98,7 +82,7 @@ public sealed class AddParticipantHandlerTests
         var handler = new AddParticipantHandler(db, usersDb);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() => handler.HandleAsync(
-            new AddParticipantCommand(arrangement.Id, Guid.NewGuid(), arrangement.RowVersion),
+            new AddParticipantCommand(arrangement.Id, Guid.NewGuid()),
             CancellationToken.None));
     }
 

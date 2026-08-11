@@ -11,7 +11,6 @@ public sealed record ArrangementResponse(
     string Name,
     string? Description,
     ArrangementStatus Status,
-    uint RowVersion,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     IReadOnlyList<ArrangementBeerItem> Beers,

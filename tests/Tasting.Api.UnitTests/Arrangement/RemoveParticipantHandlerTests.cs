@@ -4,7 +4,7 @@ using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Features.Arrangement.Participants.RemoveParticipant;
 using Tasting.Api.Infrastructure.Arrangement;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -19,10 +19,9 @@ public sealed class RemoveParticipantHandlerTests
 
         var handler = new RemoveParticipantHandler(db);
         var result = await handler.HandleAsync(
-            new RemoveParticipantCommand(arrangement.Id, userId, 0u));
+            new RemoveParticipantCommand(arrangement.Id, userId));
 
         Assert.Empty(result.Participants);
-        Assert.Equal(1u, result.RowVersion);
     }
 
     [Fact]
@@ -35,7 +34,7 @@ public sealed class RemoveParticipantHandlerTests
         var handler = new RemoveParticipantHandler(db);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new RemoveParticipantCommand(arrangement.Id, userId, 0u)));
+            handler.HandleAsync(new RemoveParticipantCommand(arrangement.Id, userId)));
     }
 
     [Fact]
@@ -47,21 +46,9 @@ public sealed class RemoveParticipantHandlerTests
         var handler = new RemoveParticipantHandler(db);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() =>
-            handler.HandleAsync(new RemoveParticipantCommand(arrangement.Id, Guid.NewGuid(), 0u)));
+            handler.HandleAsync(new RemoveParticipantCommand(arrangement.Id, Guid.NewGuid())));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateDb();
-        var userId = Guid.NewGuid();
-        var arrangement = await SeedWithParticipantAsync(db, userId, ArrangementStatus.Created);
-
-        var handler = new RemoveParticipantHandler(db);
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new RemoveParticipantCommand(arrangement.Id, userId, 99u)));
-    }
 
     private static async Task<ArrangementEntity> SeedAsync(ArrangementDbContext db, ArrangementStatus status)
     {

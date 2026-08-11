@@ -100,7 +100,7 @@ Deterministiske regler ved lik `Result score`: 1) flest antall ratings, 2) laves
 ### Tverrgående
 
 **Optimistic concurrency**:
-Versjonsbasert skrivekontroll der mutasjoner krever match på kjent versjon (`RowVersion`). Tapende skriv returnerer `409 Conflict`.
+Backend-intern versjonsbasert skrivekontroll. Persistenslaget oppdager konkurrerende writes mellom lesing og commit; klienter sender ingen versjonsverdi. Tapende skriv returnerer `409 Conflict` uten automatisk retry.
 
 **Unified error contract**:
 Felles feilstruktur for alle API-svar: `code`, `message`, `correlationId`. Brukt konsekvent for 400, 403, 404 og 409.

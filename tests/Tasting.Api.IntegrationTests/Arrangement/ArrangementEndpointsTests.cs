@@ -5,7 +5,7 @@ using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Features.Catalog.Domain;
 using Tasting.Api.Features.Identity.Users;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.IntegrationTests.Arrangement;
 
@@ -55,7 +55,6 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         Assert.NotNull(body);
         Assert.Equal("Autumn Tasting", body.Name);
         Assert.Equal(ArrangementStatus.Created, body.Status);
-        Assert.Equal(0u, body.RowVersion);
     }
 
     [Fact]
@@ -257,7 +256,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
 
         var response = await client.PostAsJsonAsync(
             $"/api/v1/arrangements/{arrangementId}/start",
-            new { rowVersion = activated.RowVersion });
+            new { });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
@@ -427,11 +426,10 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
         Assert.NotNull(body);
         Assert.Equal("New Name", body.Name);
-        Assert.Equal(1u, body.RowVersion);
     }
 
     [Fact]
-    public async Task UpdateArrangement_ReturnsConflict_WhenRowVersionMismatch()
+    public async Task UpdateArrangement_IgnoresLegacyRowVersionInput()
     {
         var arrangementId = Guid.NewGuid();
         await _factory.SeedArrangementAsync(db =>
@@ -454,11 +452,11 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
             $"/api/v1/arrangements/{arrangementId}",
             new { name = "New Name", description = (string?)null, rowVersion = 1 });
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
-    public async Task UpdateArrangement_ReturnsConflict_WhenRowVersionIsMissingAndCurrentVersionIsNotZero()
+    public async Task UpdateArrangement_SucceedsWithoutRowVersion_WhenCurrentVersionIsNotZero()
     {
         var arrangementId = Guid.NewGuid();
         await _factory.SeedArrangementAsync(db =>
@@ -481,7 +479,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
             $"/api/v1/arrangements/{arrangementId}",
             new { name = "New Name", description = (string?)null });
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
@@ -620,7 +618,6 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var body = await response.Content.ReadFromJsonAsync<ArrangementResponse>();
         Assert.NotNull(body);
         Assert.Equal(ArrangementStatus.Created, body.Status);
-        Assert.Equal(5u, body.RowVersion);
         Assert.NotNull(body.UpdatedAt);
         Assert.Single(body.Beers);
         Assert.Equal(beerId, body.Beers[0].BeerId);

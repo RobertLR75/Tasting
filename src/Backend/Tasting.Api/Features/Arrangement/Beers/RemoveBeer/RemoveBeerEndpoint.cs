@@ -26,7 +26,7 @@ public sealed class RemoveBeerEndpoint(
     {
         var arrangementId = Route<Guid>("arrangementId");
         var beerId = Route<Guid>("beerId");
-        return new RemoveBeerCommand(arrangementId, beerId, req.RowVersion);
+        return new RemoveBeerCommand(arrangementId, beerId);
     }
 
     protected override async Task HandleResponseAsync(ArrangementResponse response, CancellationToken ct)

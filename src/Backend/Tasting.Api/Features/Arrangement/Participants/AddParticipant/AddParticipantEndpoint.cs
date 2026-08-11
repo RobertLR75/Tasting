@@ -25,6 +25,6 @@ public sealed class AddParticipantEndpoint(
     protected override AddParticipantCommand ToCommand(AddParticipantRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new AddParticipantCommand(arrangementId, req.UserId, req.RowVersion);
+        return new AddParticipantCommand(arrangementId, req.UserId);
     }
 }

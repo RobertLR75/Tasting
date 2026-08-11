@@ -27,13 +27,6 @@ public sealed class AddBeerHandler(
             throw new ConflictException(
                 "Beers can only be added when arrangement is in Created status.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         var beerExists = await catalogDbContext.Beers
             .AnyAsync(b => b.Id == request.BeerId, ct);
         if (!beerExists)
@@ -74,6 +67,6 @@ public sealed class AddBeerHandler(
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

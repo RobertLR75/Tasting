@@ -29,13 +29,6 @@ public sealed class StartArrangementHandler(
             throw new ConflictException(
                 $"Arrangement cannot be started from status '{arrangement.Status}'. Only 'Active' arrangements can be started.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         await TakeParticipantSnapshotsAsync(arrangement, ct);
         await TakeBeerSnapshotsAsync(arrangement, ct);
 
@@ -53,10 +46,10 @@ public sealed class StartArrangementHandler(
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 
-    private async Task TakeParticipantSnapshotsAsync(Domain.Arrangement arrangement, CancellationToken ct)
+    private async Task TakeParticipantSnapshotsAsync(ArrangementRecord arrangement, CancellationToken ct)
     {
         var userIds = arrangement.Participants.Select(p => p.UserId).ToList();
         if (userIds.Count == 0)
@@ -81,7 +74,7 @@ public sealed class StartArrangementHandler(
         }
     }
 
-    private async Task TakeBeerSnapshotsAsync(Domain.Arrangement arrangement, CancellationToken ct)
+    private async Task TakeBeerSnapshotsAsync(ArrangementRecord arrangement, CancellationToken ct)
     {
         var beerIds = arrangement.Beers.Select(b => b.BeerId).ToList();
         if (beerIds.Count == 0)

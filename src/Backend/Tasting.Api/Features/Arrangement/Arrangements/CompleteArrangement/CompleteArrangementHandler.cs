@@ -22,13 +22,6 @@ public sealed class CompleteArrangementHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Arrangement cannot be completed from status '{arrangement.Status}'. Only 'Started' arrangements can be completed.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         arrangement.Status = ArrangementStatus.Completed;
         arrangement.RowVersion++;
         arrangement.UpdatedAt = DateTimeOffset.UtcNow;
@@ -43,6 +36,6 @@ public sealed class CompleteArrangementHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

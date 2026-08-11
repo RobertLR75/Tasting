@@ -22,7 +22,6 @@ public sealed class CreateArrangementHandlerTests
         Assert.Equal("Summer Tasting", result.Name);
         Assert.Equal("A lovely summer event", result.Description);
         Assert.Equal(ArrangementStatus.Created, result.Status);
-        Assert.Equal(0u, result.RowVersion);
         Assert.NotEqual(Guid.Empty, result.Id);
     }
 

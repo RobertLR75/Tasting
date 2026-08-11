@@ -15,7 +15,6 @@ public sealed class ListArrangementsMapper
                 a.Name,
                 a.Description,
                 a.Status,
-                a.RowVersion,
                 a.CreatedAt,
                 a.UpdatedAt,
                 a.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),

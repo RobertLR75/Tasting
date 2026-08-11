@@ -24,6 +24,6 @@ public sealed class CancelArrangementEndpoint(
     protected override CancelArrangementCommand ToCommand(CancelArrangementRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new CancelArrangementCommand(arrangementId, req.RowVersion);
+        return new CancelArrangementCommand(arrangementId);
     }
 }

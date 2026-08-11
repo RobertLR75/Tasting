@@ -8,7 +8,7 @@ using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -28,11 +28,10 @@ public sealed class StartArrangementHandlerTests
         var handler = new StartArrangementHandler(db, usersDb, catalogDb);
 
         var result = await handler.HandleAsync(
-            new StartArrangementCommand(arrangement.Id, arrangement.RowVersion),
+            new StartArrangementCommand(arrangement.Id),
             CancellationToken.None);
 
         Assert.Equal(ArrangementStatus.Started, result.Status);
-        Assert.Equal(1u, result.RowVersion);
 
         var participant = result.Participants.Single();
         Assert.Equal("Ola", participant.FirstNameSnapshot);
@@ -57,25 +56,10 @@ public sealed class StartArrangementHandlerTests
         var handler = new StartArrangementHandler(db, usersDb, catalogDb);
 
         await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new StartArrangementCommand(arrangement.Id, arrangement.RowVersion),
+            new StartArrangementCommand(arrangement.Id),
             CancellationToken.None));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateArrangementDbContext();
-        await using var usersDb = CreateUsersDbContext();
-        await using var catalogDb = CreateCatalogDbContext();
-
-        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Active);
-
-        var handler = new StartArrangementHandler(db, usersDb, catalogDb);
-
-        await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new StartArrangementCommand(arrangement.Id, RowVersion: 99u),
-            CancellationToken.None));
-    }
 
     [Fact]
     public async Task HandleAsync_ThrowsNotFound_WhenArrangementDoesNotExist()
@@ -87,7 +71,7 @@ public sealed class StartArrangementHandlerTests
         var handler = new StartArrangementHandler(db, usersDb, catalogDb);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() => handler.HandleAsync(
-            new StartArrangementCommand(Guid.NewGuid(), 0u),
+            new StartArrangementCommand(Guid.NewGuid()),
             CancellationToken.None));
     }
 

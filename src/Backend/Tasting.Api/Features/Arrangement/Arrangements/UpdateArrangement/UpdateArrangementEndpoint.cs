@@ -25,7 +25,7 @@ public sealed class UpdateArrangementEndpoint(
     protected override UpdateArrangementCommand ToCommand(UpdateArrangementRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new UpdateArrangementCommand(arrangementId, req.Name, req.Description, req.RowVersion);
+        return new UpdateArrangementCommand(arrangementId, req.Name, req.Description);
     }
 
     protected override async Task HandleResponseAsync(ArrangementResponse response, CancellationToken ct)

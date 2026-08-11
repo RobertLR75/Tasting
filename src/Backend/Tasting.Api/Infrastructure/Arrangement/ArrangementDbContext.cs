@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
 using Tasting.Api.Features.Arrangement.Domain;
 
 namespace Tasting.Api.Infrastructure.Arrangement;
 
 public sealed class ArrangementDbContext(DbContextOptions<ArrangementDbContext> options) : DbContext(options)
 {
-    public DbSet<ArrangementEntity> Arrangements => Set<ArrangementEntity>();
+    public DbSet<ArrangementRecord> Arrangements => Set<ArrangementRecord>();
     public DbSet<ArrangementParticipant> Participants => Set<ArrangementParticipant>();
     public DbSet<ArrangementBeer> Beers => Set<ArrangementBeer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        ConfigureArrangement(modelBuilder.Entity<ArrangementEntity>());
+        ConfigureArrangement(modelBuilder.Entity<ArrangementRecord>());
         ConfigureParticipant(modelBuilder.Entity<ArrangementParticipant>());
         ConfigureBeer(modelBuilder.Entity<ArrangementBeer>());
 
@@ -20,7 +19,7 @@ public sealed class ArrangementDbContext(DbContextOptions<ArrangementDbContext> 
     }
 
     private static void ConfigureArrangement(
-        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<ArrangementEntity> builder)
+        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<ArrangementRecord> builder)
     {
         builder.ToTable("arrangements");
         builder.HasKey(x => x.Id);

@@ -8,7 +8,6 @@ public sealed class Arrangement : IEntity
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public ArrangementStatus Status { get; set; }
-    public uint RowVersion { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
 
