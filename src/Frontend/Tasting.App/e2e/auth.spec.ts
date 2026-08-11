@@ -109,6 +109,67 @@ test('participant arrangement backend errors are shown cleanly', async ({ page }
   await expect(page.getByRole('alert')).toHaveText('Arrangementet ble ikke funnet.');
 });
 
+test('a joined participant can view backend-ranked results after completion', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/arr-1', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ id: 'arr-1', name: 'Sommerfest', status: 'Completed', beers: [
+      { id: 'beer-2', name: 'Backend Winner', breweryName: 'Vinnerbryggeriet', beerStyle: 'IPA', beerType: 'Ale' },
+      { id: 'beer-1', name: 'Backend Runner-up', breweryName: 'Andreplassen', beerStyle: 'Lager', beerType: 'Lager' },
+    ] }),
+  }));
+  await page.route('**/api/v1/arrangements/arr-1/results', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ results: [
+      { rank: 1, beerId: 'beer-2', beerNameSnapshot: 'Backend Winner', totalRating: 8.2, ratingCount: 2, standardDeviation: 0.4, participants: [] },
+      { rank: 2, beerId: 'beer-1', beerNameSnapshot: 'Backend Runner-up', totalRating: 8.2, ratingCount: 3, standardDeviation: 0.1, participants: [] },
+    ] }),
+  }));
+
+  await page.goto('/arrangements/arr-1/lobby');
+
+  await expect(page).toHaveURL(/\/arrangements\/arr-1\/results$/);
+  await expect(page.getByRole('heading', { name: 'Sommerfest — Resultater' })).toBeVisible();
+  await expect(page.getByRole('row').nth(1)).toContainText('1Backend WinnerVinnerbryggeriet8.20');
+  await expect(page.getByRole('row').nth(2)).toContainText('2Backend Runner-upAndreplassen8.20');
+});
+
+test('completed results show an explicit empty state', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/arr-1', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ id: 'arr-1', name: 'Sommerfest', status: 'Completed', beers: [] }),
+  }));
+  await page.route('**/api/v1/arrangements/arr-1/results', route => route.fulfill({
+    status: 200, contentType: 'application/json', body: '{"results":[]}',
+  }));
+
+  await page.goto('/arrangements/arr-1/results');
+  await expect(page.getByText('Ingen resultater er tilgjengelige.')).toBeVisible();
+});
+
+test('completed results show the backend error surface', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/arr-1', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ id: 'arr-1', name: 'Sommerfest', status: 'Completed', beers: [] }),
+  }));
+  await page.route('**/api/v1/arrangements/arr-1/results', route => route.fulfill({
+    status: 403, contentType: 'application/json', body: JSON.stringify({
+      code: 'forbidden', message: 'Du er ikke deltaker i arrangementet.', correlationId: 'corr-results',
+    }),
+  }));
+
+  await page.goto('/arrangements/arr-1/results');
+  await expect(page.getByRole('alert')).toHaveText('Du er ikke deltaker i arrangementet.');
+});
+
 test('an invalid arrangement status response replaces the lobby content', async ({ page }) => {
   await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
     token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',

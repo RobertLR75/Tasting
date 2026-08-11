@@ -1,13 +1,26 @@
 using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
+using Tasting.Api.Contracts;
 using Tasting.Api.Infrastructure.Rating;
 
 namespace Tasting.Api.Features.Rating.Results.GetResults;
 
-public class GetResultsHandler(RatingDbContext db) : IRequestHandler<GetResultsQuery, GetResultsResponse>
+public class GetResultsHandler(RatingDbContext db, IArrangementService arrangementService)
+    : IRequestHandler<GetResultsQuery, GetResultsResponse>
 {
     public async Task<GetResultsResponse> HandleAsync(GetResultsQuery query, CancellationToken ct = default)
     {
+        if (!await arrangementService.IsParticipantAsync(query.ArrangementId, query.UserId, ct))
+        {
+            throw new ForbiddenException("You are not a participant in this arrangement.");
+        }
+
+        if (await arrangementService.GetStatusAsync(query.ArrangementId, ct) != ArrangementStatus.Completed)
+        {
+            throw new ConflictException("Results are available only after the arrangement is completed.");
+        }
+
         var results = await db.Results
             .Where(r => r.ArrangementId == query.ArrangementId)
             .Include(r => r.Participants)

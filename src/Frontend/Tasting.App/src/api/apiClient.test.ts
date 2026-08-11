@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { persistSession, SESSION_INVALIDATED_EVENT, SESSION_STORAGE_KEY, type ParticipantSession } from '../auth/session';
-import { ApiError, authenticatedApiRequest } from './apiClient';
+import { ApiError, apiRequest, authenticatedApiRequest } from './apiClient';
 
 const session: ParticipantSession = {
   token: createToken(Date.now() + 60_000),
@@ -41,6 +41,16 @@ describe('authenticated API requests', () => {
 
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull();
     expect(invalidated).toHaveBeenCalledOnce();
+  });
+});
+
+describe('API responses', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('accepts a successful response with no content', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
+
+    await expect(apiRequest<void>('/api/v1/example', { method: 'POST' })).resolves.toBeUndefined();
   });
 });
 

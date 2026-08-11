@@ -48,3 +48,42 @@ jobs:
         with:
           name: test-results
           path: ./test-results/**/*.trx
+
+  participant-e2e:
+    name: Participant E2E
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: src/Frontend/Tasting.App
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: src/Frontend/Tasting.App/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Build participant app
+        run: npm run build
+
+      - name: Run participant E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: participant-playwright-report
+          path: src/Frontend/Tasting.App/playwright-report
+          if-no-files-found: ignore

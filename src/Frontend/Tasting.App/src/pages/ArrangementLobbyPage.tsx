@@ -43,8 +43,13 @@ export function ArrangementLobbyPage() {
           <p className="eyebrow">Arrangement</p>
           {!arrangement && !error && <IonSpinner aria-label="Laster arrangement" />}
           {error && <p role="alert" className="form-error">{error}</p>}
-          {arrangement?.status === 'Started' && arrangement.beers.length > 0
-            ? <Redirect to={`/arrangements/${arrangementId}/beers/1`} />
+          {arrangement?.status === 'Completed'
+            ? <Redirect to={{
+              pathname: `/arrangements/${arrangementId}/results`,
+              state: { arrangementName: arrangement.name },
+            }} />
+            : arrangement?.status === 'Started' && arrangement.beers.length > 0
+              ? <Redirect to={`/arrangements/${arrangementId}/beers/1`} />
             : arrangement && <>
             <h1>{arrangement.name}</h1>
             <section className="empty-state" data-arrangement-id={arrangementId}>
