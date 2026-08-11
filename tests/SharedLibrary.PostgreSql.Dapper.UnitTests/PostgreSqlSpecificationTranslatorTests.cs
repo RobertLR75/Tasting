@@ -23,6 +23,22 @@ public class PostgreSqlSpecificationTranslatorTests
     }
 
     [Fact]
+    public void Translate_UsesDistinctParametersAcrossSeparateCriteria()
+    {
+        var specification = new EntitySpecification();
+        specification.Query
+            .Where(entity => entity.Alcohol >= 5)
+            .Where(entity => entity.Name == "IPA");
+
+        var result = CreateTranslator().Translate(specification);
+
+        Assert.Contains("root.\"alcohol\" >= @p0", result.Sql);
+        Assert.Contains("root.\"name\" = @p1", result.Sql);
+        Assert.Equal(5, result.Parameters.Get<int>("p0"));
+        Assert.Equal("IPA", result.Parameters.Get<string>("p1"));
+    }
+
+    [Fact]
     public void Translate_AddsProjectionSortingAndPaging()
     {
         var specification = new ProjectionSpecification();

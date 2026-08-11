@@ -36,8 +36,9 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
 
         if (specification.WhereExpressions.Any())
         {
+            var predicateWriter = new PredicateWriter(_columnName, parameters);
             var predicates = specification.WhereExpressions
-                .Select(expression => new PredicateWriter(_columnName, parameters).Write(expression.Filter.Body))
+                .Select(expression => predicateWriter.Write(expression.Filter.Body))
                 .ToArray();
             sql += $" WHERE {string.Join(" AND ", predicates.Select(predicate => $"({predicate})"))}";
         }
