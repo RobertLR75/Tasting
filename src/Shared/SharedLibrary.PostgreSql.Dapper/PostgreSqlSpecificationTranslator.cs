@@ -243,16 +243,21 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
             if (call.Object is MemberExpression member && IsRootMember(member) &&
                 call.Method.DeclaringType == typeof(string) && call.Arguments.Count == 1)
             {
-                var value = Convert.ToString(Evaluate(call.Arguments[0])) ?? string.Empty;
+                var raw = Convert.ToString(Evaluate(call.Arguments[0])) ?? string.Empty;
+                var escaped = raw
+                    .Replace("\\", "\\\\", StringComparison.Ordinal)
+                    .Replace("%", "\\%", StringComparison.Ordinal)
+                    .Replace("_", "\\_", StringComparison.Ordinal);
+
                 var pattern = call.Method.Name switch
                 {
-                    nameof(string.Contains) => $"%{value}%",
-                    nameof(string.StartsWith) => $"{value}%",
-                    nameof(string.EndsWith) => $"%{value}",
+                    nameof(string.Contains) => $"%{escaped}%",
+                    nameof(string.StartsWith) => $"{escaped}%",
+                    nameof(string.EndsWith) => $"%{escaped}",
                     _ => throw Unsupported($"String method '{call.Method.Name}' is not supported.")
                 };
-                return $"root.{Quote(columnName(member.Member.Name))} LIKE {AddParameter(pattern)}";
-            }
+
+                return $"root.{Quote(columnName(member.Member.Name))} LIKE {AddParameter(pattern)} ESCAPE '\\\\'";
 
             throw Unsupported($"Method call '{call.Method.Name}' is not supported.");
         }
