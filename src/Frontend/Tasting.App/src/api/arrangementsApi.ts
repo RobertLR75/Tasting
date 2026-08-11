@@ -64,3 +64,32 @@ export async function getArrangementResults(arrangementId: string): Promise<Arra
   const response = await authenticatedApiRequest<ArrangementResultsResponse>(`/api/v1/arrangements/${arrangementId}/results`);
   return response.results;
 }
+
+export interface RatingScores {
+  visibility: number;
+  smell: number;
+  taste: number;
+  toast: number;
+}
+
+export interface SubmittedRating extends RatingScores {
+  id: string;
+  arrangementId: string;
+  participantId: string;
+  beerId: string;
+  totalRating: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export function submitRating(
+  arrangementId: string,
+  beerId: string,
+  scores: RatingScores,
+): Promise<SubmittedRating> {
+  return authenticatedApiRequest(`/api/v1/arrangements/${arrangementId}/ratings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ beerId, ...scores }),
+  });
+}

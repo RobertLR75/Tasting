@@ -48,6 +48,8 @@ export function ArrangementLobbyPage() {
               pathname: `/arrangements/${arrangementId}/results`,
               state: { arrangementName: arrangement.name },
             }} />
+            : arrangement?.status === 'Started' && arrangement.beers.length > 0
+              ? <Redirect to={`/arrangements/${arrangementId}/beers/1`} />
             : arrangement && <>
             <h1>{arrangement.name}</h1>
             <section className="empty-state" data-arrangement-id={arrangementId}>
@@ -56,7 +58,7 @@ export function ArrangementLobbyPage() {
                 <p>Venter på at arrangementet starter…</p>
               </> : arrangement.status === 'Started' ? <>
                 <h2>Arrangementet har startet</h2>
-                <p>Vurdering blir tilgjengelig her.</p>
+                <p>Ingen øl er tilgjengelige for vurdering.</p>
               </> : <>
                 <h2>Arrangementet er ferdig</h2>
                 <p>Resultater blir tilgjengelige her.</p>
