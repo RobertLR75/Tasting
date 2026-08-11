@@ -257,7 +257,8 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
                     _ => throw Unsupported($"String method '{call.Method.Name}' is not supported.")
                 };
 
-                return $"root.{Quote(columnName(member.Member.Name))} LIKE {AddParameter(pattern)} ESCAPE '\\\\'";
+                return $"root.{Quote(columnName(member.Member.Name))} LIKE {AddParameter(pattern)} ESCAPE '\\'";
+            }
 
             throw Unsupported($"Method call '{call.Method.Name}' is not supported.");
         }

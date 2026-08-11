@@ -16,7 +16,7 @@ public class PostgreSqlSpecificationTranslatorTests
         var result = CreateTranslator().Translate(specification);
 
         Assert.Equal(
-            "SELECT root.* FROM \"beers\" AS root WHERE ((root.\"is_active\" = TRUE) AND ((root.\"alcohol\" >= @p0) OR (root.\"name\" LIKE @p1)));",
+            "SELECT root.* FROM \"beers\" AS root WHERE ((root.\"is_active\" = TRUE) AND ((root.\"alcohol\" >= @p0) OR (root.\"name\" LIKE @p1 ESCAPE '\\')));",
             result.Sql);
         Assert.Equal(5, result.Parameters.Get<int>("p0"));
         Assert.Equal("%IPA%", result.Parameters.Get<string>("p1"));
@@ -116,6 +116,18 @@ public class PostgreSqlSpecificationTranslatorTests
         var result = CreateTranslator().Translate(specification);
 
         Assert.Equal(expectedPattern, result.Parameters.Get<string>("p0"));
+    }
+
+    [Fact]
+    public void Translate_EscapesPostgreSqlLikeWildcards()
+    {
+        var specification = new EntitySpecification();
+        specification.Query.Where(entity => entity.Name.Contains(@"100%_beer\style"));
+
+        var result = CreateTranslator().Translate(specification);
+
+        Assert.Contains("LIKE @p0 ESCAPE '\\'", result.Sql);
+        Assert.Equal(@"%100\%\_beer\\style%", result.Parameters.Get<string>("p0"));
     }
 
     [Fact]
