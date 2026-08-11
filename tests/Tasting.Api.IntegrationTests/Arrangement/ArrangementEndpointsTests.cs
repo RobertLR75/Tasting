@@ -940,6 +940,38 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
     }
 
     [Fact]
+    public async Task ParticipantArrangement_ReturnsWaitingStatus_WithoutBeerDetails()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId, Name = "Waiting", Status = ArrangementStatus.Active, CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Participants.Add(new ArrangementParticipant
+            {
+                Id = Guid.NewGuid(), ArrangementId = arrangementId, UserId = ArrangementTestAuthHandler.RegularUserId
+            });
+            arrangement.Beers.Add(new ArrangementBeer
+            {
+                Id = Guid.NewGuid(), ArrangementId = arrangementId, BeerId = Guid.NewGuid(), NameSnapshot = "Secret beer"
+            });
+            db.Arrangements.Add(arrangement);
+        });
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/participant/arrangements/{arrangementId}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("\"status\":\"Active\"", json);
+        Assert.DoesNotContain("Secret beer", json);
+    }
+
+    [Fact]
     public async Task RemoveBeer_ReturnsConflict_WhenNotCreated()
     {
         var arrangementId = Guid.NewGuid();

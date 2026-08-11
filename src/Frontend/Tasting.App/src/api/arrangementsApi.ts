@@ -17,6 +17,23 @@ export interface JoinedArrangement {
   status: 'Active';
 }
 
+export type ArrangementStatus = 'Created' | 'Active' | 'Started' | 'Completed';
+
+export interface ParticipantBeer {
+  id: string;
+  name: string;
+  breweryName: string;
+  beerStyle: string;
+  beerType: string;
+}
+
+export interface ParticipantArrangement {
+  id: string;
+  name: string;
+  status: ArrangementStatus;
+  beers: ParticipantBeer[];
+}
+
 export async function listVisibleArrangements(): Promise<VisibleArrangement[]> {
   const response = await authenticatedApiRequest<VisibleArrangementsResponse>('/api/v1/participant/arrangements');
   return response.items;
@@ -24,4 +41,8 @@ export async function listVisibleArrangements(): Promise<VisibleArrangement[]> {
 
 export function joinArrangement(arrangementId: string): Promise<JoinedArrangement> {
   return authenticatedApiRequest(`/api/v1/participant/arrangements/${arrangementId}/join`, { method: 'POST' });
+}
+
+export function getParticipantArrangement(arrangementId: string): Promise<ParticipantArrangement> {
+  return authenticatedApiRequest(`/api/v1/participant/arrangements/${arrangementId}`);
 }
