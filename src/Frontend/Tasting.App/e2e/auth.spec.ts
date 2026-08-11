@@ -138,6 +138,67 @@ test('an unauthorized arrangement response returns the participant to login', as
   await expect(page).toHaveURL(/\/login$/);
 });
 
+test('a participant can rate a beer during Started and resubmit it as an update', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  const requests: Array<Record<string, number | string>> = [];
+  await page.route('**/api/v1/participant/arrangements/arr-1', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({
+      id: 'arr-1', name: 'Sommerfest', status: 'Started',
+      beers: [{ id: 'beer-1', name: 'Hemmelig lager', breweryName: 'Bryggeri', beerStyle: 'Lager', beerType: 'Mørk' }],
+    }),
+  }));
+  await page.route('**/api/v1/arrangements/arr-1/ratings', async route => {
+    requests.push(await route.request().postDataJSON());
+    await route.fulfill({
+      status: requests.length === 1 ? 201 : 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ id: 'rating-1', arrangementId: 'arr-1', participantId: 'user-1', beerId: 'beer-1', totalRating: 0.5 }),
+    });
+  });
+
+  await page.goto('/arrangements/arr-1/lobby');
+  await expect(page).toHaveURL(/\/arrangements\/arr-1\/beers\/1$/);
+  await expect(page.getByRole('heading', { name: 'Hemmelig lager' })).toBeVisible();
+
+  for (let submission = 0; submission < 2; submission++) {
+    await page.getByRole('button', { name: 'Vurder ølet' }).click();
+    const save = page.getByRole('button', { name: 'Lagre og gå videre' });
+    if (submission === 0) {
+      await expect(save).toBeDisabled();
+      for (const label of ['Utseende', 'Lukt', 'Smak', 'Skål']) {
+        await page.getByRole('slider', { name: label }).press('ArrowRight');
+      }
+    }
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(page).toHaveURL(/\/arrangements\/arr-1\/beers\/1$/);
+  }
+
+  expect(requests).toEqual([
+    { beerId: 'beer-1', visibility: 0.5, smell: 0.5, taste: 0.5, toast: 0.5 },
+    { beerId: 'beer-1', visibility: 0.5, smell: 0.5, taste: 0.5, toast: 0.5 },
+  ]);
+});
+
+test('rating interactions are unavailable outside Started', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/arr-1', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ id: 'arr-1', name: 'Sommerfest', status: 'Completed', beers: [{ id: 'beer-1', name: 'Skjult øl' }] }),
+  }));
+
+  await page.goto('/arrangements/arr-1/beers/1/rate');
+
+  await expect(page.getByRole('alert')).toHaveText('Vurdering er bare tilgjengelig mens arrangementet pågår.');
+  await expect(page.getByRole('button', { name: 'Lagre og gå videre' })).toHaveCount(0);
+  await expect(page.getByText('Skjult øl')).toHaveCount(0);
+});
+
 function createToken(expiresAt: number): string {
   return `header.${Buffer.from(JSON.stringify({ exp: Math.floor(expiresAt / 1000) })).toString('base64url')}.signature`;
 }
