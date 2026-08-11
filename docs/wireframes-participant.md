@@ -217,14 +217,6 @@ Hvert wireframe følger dette mønsteret:
 │                                              │
 │  Sommerfest — Lobby                          │
 │                                              │
-│  Øl i arrangementet:                         │
-│  ┌──────────────────────────────────────┐    │
-│  │ Navn       │ Bryggeri   │ Stil       │    │
-│  ├────────────┼────────────┼────────────┤    │
-│  │ Mørk Lager │ Hansa      │ Lager      │    │
-│  │ Pale Ale   │ Nøgne Ø    │ Pale Ale   │    │
-│  └──────────────────────────────────────┘    │
-│                                              │
 │  ⏳ Venter på at arrangementet starter…      │
 │                                              │
 └──────────────────────────────────────────────┘
@@ -232,10 +224,10 @@ Hvert wireframe følger dette mønsteret:
 
 | Element | Regel |
 |---|---|
-| Ølgrid | Viser beer snapshot-data (fryst ved arrangementstart) |
-| Ventemelding | Vises mens `Arrangement.Status = Created` |
-| Navigasjon | Blokkert manuelt — kun SignalR kan utløse viderekobling |
-| Viderekobling | Automatisk navigasjon til Screen 5 (beer[0]) når SignalR sender `ArrangementStatusChanged` med `Started` |
+| Beer-detaljer | Skjules helt før `Arrangement.Status = Started` |
+| Ventemelding | Vises mens `Arrangement.Status = Created` eller `Active` |
+| Statusoppdatering | Leser backend-status periodisk; klienten beregner ikke status lokalt |
+| Viderekobling | Rating-slicen overtar når backend-status blir `Started` |
 
 **Backend-feil:**
 
@@ -243,11 +235,7 @@ Hvert wireframe følger dette mønsteret:
 |---|---|
 | Lastfeil | Generisk feilmelding |
 
-**SignalR:**
-
-| Event | Handling |
-|---|---|
-| `ArrangementStatusChanged` → `Started` | Naviger automatisk til Screen 5 for beerIndex = 1 |
+**SignalR:** — (periodisk statuslesing i v1)
 
 ---
 

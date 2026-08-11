@@ -940,6 +940,112 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
     }
 
     [Fact]
+    public async Task ParticipantArrangement_ReturnsWaitingStatus_WithoutBeerDetails()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId, Name = "Waiting", Status = ArrangementStatus.Active, CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Participants.Add(new ArrangementParticipant
+            {
+                Id = Guid.NewGuid(), ArrangementId = arrangementId, UserId = ArrangementTestAuthHandler.RegularUserId
+            });
+            arrangement.Beers.Add(new ArrangementBeer
+            {
+                Id = Guid.NewGuid(), ArrangementId = arrangementId, BeerId = Guid.NewGuid(), NameSnapshot = "Secret beer"
+            });
+            db.Arrangements.Add(arrangement);
+        });
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/participant/arrangements/{arrangementId}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.Contains("\"status\":\"Active\"", json);
+        Assert.DoesNotContain("Secret beer", json);
+    }
+
+    [Fact]
+    public async Task ParticipantArrangement_ReturnsUnifiedNotFoundError()
+    {
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/participant/arrangements/{Guid.NewGuid()}");
+
+        await AssertUnifiedErrorAsync(response, HttpStatusCode.NotFound, "not_found");
+    }
+
+    [Fact]
+    public async Task ParticipantArrangement_ReturnsUnifiedForbiddenError_ForNonParticipant()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db => db.Arrangements.Add(new ArrangementEntity
+        {
+            Id = arrangementId, Name = "Private", Status = ArrangementStatus.Active, CreatedAt = DateTimeOffset.UtcNow
+        }));
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/participant/arrangements/{arrangementId}");
+
+        await AssertUnifiedErrorAsync(response, HttpStatusCode.Forbidden, "forbidden");
+    }
+
+    [Fact]
+    public async Task ParticipantArrangement_ReturnsUnifiedConflictError_WhenCanceled()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db =>
+        {
+            var arrangement = new ArrangementEntity
+            {
+                Id = arrangementId, Name = "Canceled", Status = ArrangementStatus.Canceled, CreatedAt = DateTimeOffset.UtcNow
+            };
+            arrangement.Participants.Add(new ArrangementParticipant
+            {
+                Id = Guid.NewGuid(), ArrangementId = arrangementId, UserId = ArrangementTestAuthHandler.RegularUserId
+            });
+            db.Arrangements.Add(arrangement);
+        });
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync($"/api/v1/participant/arrangements/{arrangementId}");
+
+        await AssertUnifiedErrorAsync(response, HttpStatusCode.Conflict, "conflict");
+    }
+
+    [Fact]
+    public async Task ParticipantArrangement_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        using var client = _factory.CreateClient();
+
+        var response = await client.GetAsync($"/api/v1/participant/arrangements/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    private static async Task AssertUnifiedErrorAsync(HttpResponseMessage response, HttpStatusCode status, string code)
+    {
+        Assert.Equal(status, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(error);
+        Assert.Equal(code, error.Code);
+        Assert.False(string.IsNullOrWhiteSpace(error.Message));
+        Assert.False(string.IsNullOrWhiteSpace(error.CorrelationId));
+    }
+
+    [Fact]
     public async Task RemoveBeer_ReturnsConflict_WhenNotCreated()
     {
         var arrangementId = Guid.NewGuid();
