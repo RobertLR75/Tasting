@@ -1,6 +1,6 @@
 import { IonContent, IonHeader, IonPage, IonSpinner, IonTitle, IonToolbar } from '@ionic/react';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Redirect, useParams } from 'react-router-dom';
 import { ApiError } from '../api/apiClient';
 import { getParticipantArrangement, type ParticipantArrangement } from '../api/arrangementsApi';
 
@@ -43,7 +43,12 @@ export function ArrangementLobbyPage() {
           <p className="eyebrow">Arrangement</p>
           {!arrangement && !error && <IonSpinner aria-label="Laster arrangement" />}
           {error && <p role="alert" className="form-error">{error}</p>}
-          {arrangement && <>
+          {arrangement?.status === 'Completed'
+            ? <Redirect to={{
+              pathname: `/arrangements/${arrangementId}/results`,
+              state: { arrangementName: arrangement.name },
+            }} />
+            : arrangement && <>
             <h1>{arrangement.name}</h1>
             <section className="empty-state" data-arrangement-id={arrangementId}>
               {arrangement.status === 'Created' || arrangement.status === 'Active' ? <>

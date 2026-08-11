@@ -85,3 +85,5 @@
 .arrangement-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem; border: 1px solid #dbc9b1; border-radius: 1rem; background: #fffaf3; }
 .arrangement-card h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; }
 .arrangement-card p { margin: 0.4rem 0 0; color: #705d4e; }
+.results-table { width: 100%; margin: 1.5rem 0; border-collapse: collapse; background: #fffaf3; }
+.results-table th, .results-table td { padding: 0.8rem; border-bottom: 1px solid #dbc9b1; text-align: left; }

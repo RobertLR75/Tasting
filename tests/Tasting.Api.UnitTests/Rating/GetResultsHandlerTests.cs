@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using SharedLibrary.Services.Exceptions;
 using Tasting.Api.Contracts;
 using Tasting.Api.Features.Rating.Results.GetResults;
 using Tasting.Api.Infrastructure.Rating;
@@ -10,7 +11,9 @@ namespace Tasting.Api.UnitTests.Rating;
 public class GetResultsHandlerTests : IDisposable
 {
     private readonly RatingDbContext _db;
+    private readonly IArrangementService _arrangementService;
     private readonly GetResultsHandler _handler;
+    private readonly Guid _userId = Guid.NewGuid();
 
     public GetResultsHandlerTests()
     {
@@ -18,7 +21,12 @@ public class GetResultsHandlerTests : IDisposable
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         _db = new RatingDbContext(options);
-        _handler = new GetResultsHandler(_db);
+        _arrangementService = Substitute.For<IArrangementService>();
+        _arrangementService.GetStatusAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(ArrangementStatus.Completed);
+        _arrangementService.IsParticipantAsync(Arg.Any<Guid>(), _userId, Arg.Any<CancellationToken>())
+            .Returns(true);
+        _handler = new GetResultsHandler(_db, _arrangementService);
     }
 
     public void Dispose() => _db.Dispose();
@@ -46,7 +54,7 @@ public class GetResultsHandlerTests : IDisposable
     [Fact]
     public async Task HandleAsync_ReturnsEmptyList_WhenNoResults()
     {
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = Guid.NewGuid() });
+        var response = await _handler.HandleAsync(Query(Guid.NewGuid()));
         Assert.Empty(response.Results);
     }
 
@@ -57,7 +65,7 @@ public class GetResultsHandlerTests : IDisposable
         var beerId = Guid.NewGuid();
         await SeedResultAsync(arrangementId, beerId, 8.5m, beerName: "Pilsner");
 
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = arrangementId });
+        var response = await _handler.HandleAsync(Query(arrangementId));
 
         Assert.Single(response.Results);
         Assert.Equal("Pilsner", response.Results[0].BeerNameSnapshot);
@@ -74,7 +82,7 @@ public class GetResultsHandlerTests : IDisposable
         await SeedResultAsync(arrangementId, beer1, 7.0m, beerName: "Low");
         await SeedResultAsync(arrangementId, beer2, 9.0m, beerName: "High");
 
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = arrangementId });
+        var response = await _handler.HandleAsync(Query(arrangementId));
 
         Assert.Equal(2, response.Results.Count);
         Assert.Equal(1, response.Results[0].Rank);
@@ -94,7 +102,7 @@ public class GetResultsHandlerTests : IDisposable
         await SeedResultAsync(arrangementId, beer1, 8.0m, ratingCount: 1, beerName: "Fewer");
         await SeedResultAsync(arrangementId, beer2, 8.0m, ratingCount: 3, beerName: "More");
 
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = arrangementId });
+        var response = await _handler.HandleAsync(Query(arrangementId));
 
         Assert.Equal(1, response.Results[0].Rank);
         Assert.Equal("More", response.Results[0].BeerNameSnapshot);
@@ -111,7 +119,7 @@ public class GetResultsHandlerTests : IDisposable
         await SeedResultAsync(arrangementId, beer1, 8.0m, ratingCount: 2, stdDev: 1.5m, beerName: "High StdDev");
         await SeedResultAsync(arrangementId, beer2, 8.0m, ratingCount: 2, stdDev: 0.5m, beerName: "Low StdDev");
 
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = arrangementId });
+        var response = await _handler.HandleAsync(Query(arrangementId));
 
         Assert.Equal(1, response.Results[0].Rank);
         Assert.Equal("Low StdDev", response.Results[0].BeerNameSnapshot);
@@ -128,7 +136,7 @@ public class GetResultsHandlerTests : IDisposable
         await SeedResultAsync(arrangementId, beer2, 8.0m, ratingCount: 2, stdDev: 0.5m, beerName: "Beer2");
         await SeedResultAsync(arrangementId, beer1, 8.0m, ratingCount: 2, stdDev: 0.5m, beerName: "Beer1");
 
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = arrangementId });
+        var response = await _handler.HandleAsync(Query(arrangementId));
 
         Assert.Equal(1, response.Results[0].Rank);
         Assert.Equal(beer1, response.Results[0].BeerId);
@@ -143,9 +151,38 @@ public class GetResultsHandlerTests : IDisposable
         await SeedResultAsync(arrangement1, Guid.NewGuid(), 8.0m, beerName: "Arr1 Beer");
         await SeedResultAsync(arrangement2, Guid.NewGuid(), 9.0m, beerName: "Arr2 Beer");
 
-        var response = await _handler.HandleAsync(new GetResultsQuery { ArrangementId = arrangement1 });
+        var response = await _handler.HandleAsync(Query(arrangement1));
 
         Assert.Single(response.Results);
         Assert.Equal("Arr1 Beer", response.Results[0].BeerNameSnapshot);
     }
+
+    [Fact]
+    public async Task HandleAsync_RejectsUserWhoDidNotJoinArrangement()
+    {
+        _arrangementService.IsParticipantAsync(Arg.Any<Guid>(), _userId, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            _handler.HandleAsync(Query(Guid.NewGuid())));
+    }
+
+    [Theory]
+    [InlineData(ArrangementStatus.Created)]
+    [InlineData(ArrangementStatus.Active)]
+    [InlineData(ArrangementStatus.Started)]
+    public async Task HandleAsync_RejectsResultsBeforeArrangementIsCompleted(ArrangementStatus status)
+    {
+        _arrangementService.GetStatusAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(status);
+
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            _handler.HandleAsync(Query(Guid.NewGuid())));
+    }
+
+    private GetResultsQuery Query(Guid arrangementId) => new()
+    {
+        ArrangementId = arrangementId,
+        UserId = _userId
+    };
 }

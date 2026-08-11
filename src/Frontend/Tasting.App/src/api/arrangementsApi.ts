@@ -34,6 +34,19 @@ export interface ParticipantArrangement {
   beers: ParticipantBeer[];
 }
 
+export interface ArrangementResult {
+  rank: number;
+  beerId: string;
+  beerNameSnapshot: string;
+  totalRating: number;
+  ratingCount: number;
+  standardDeviation: number;
+}
+
+interface ArrangementResultsResponse {
+  results: ArrangementResult[];
+}
+
 export async function listVisibleArrangements(): Promise<VisibleArrangement[]> {
   const response = await authenticatedApiRequest<VisibleArrangementsResponse>('/api/v1/participant/arrangements');
   return response.items;
@@ -45,4 +58,9 @@ export function joinArrangement(arrangementId: string): Promise<JoinedArrangemen
 
 export function getParticipantArrangement(arrangementId: string): Promise<ParticipantArrangement> {
   return authenticatedApiRequest(`/api/v1/participant/arrangements/${arrangementId}`);
+}
+
+export async function getArrangementResults(arrangementId: string): Promise<ArrangementResult[]> {
+  const response = await authenticatedApiRequest<ArrangementResultsResponse>(`/api/v1/arrangements/${arrangementId}/results`);
+  return response.results;
 }
