@@ -94,6 +94,7 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
     [Fact]
     public async Task GetResults_EmptyArrangement_ReturnsEmptyList()
     {
+        ResultsAreCompleted();
         var arrangementId = Guid.NewGuid();
 
         var response = await _client.GetAsync($"/api/v1/arrangements/{arrangementId}/results");
@@ -101,6 +102,29 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(0, body.GetProperty("results").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task GetResults_NonParticipant_Returns403()
+    {
+        ResultsAreCompleted();
+        _factory.ArrangementServiceStub.IsParticipantAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var response = await _client.GetAsync($"/api/v1/arrangements/{Guid.NewGuid()}/results");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetResults_StartedArrangement_Returns409()
+    {
+        _factory.ArrangementServiceStub.GetStatusAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(ArrangementStatus.Started);
+
+        var response = await _client.GetAsync($"/api/v1/arrangements/{Guid.NewGuid()}/results");
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]
@@ -116,6 +140,7 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
         await _client.PostAsJsonAsync($"/api/v1/arrangements/{arrangementId}/ratings",
             new { beerId = beer2, visibility = 6.0, smell = 6.0, taste = 6.0, toast = 6.0 });
 
+        ResultsAreCompleted();
         var response = await _client.GetAsync($"/api/v1/arrangements/{arrangementId}/results");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -160,6 +185,7 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
         Assert.False(string.IsNullOrWhiteSpace(error.GetProperty("message").GetString()));
         Assert.False(string.IsNullOrWhiteSpace(error.GetProperty("correlationId").GetString()));
 
+        ResultsAreCompleted();
         var resultsResponse = await _client.GetAsync($"/api/v1/arrangements/{arrangementId}/results");
         var results = (await resultsResponse.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("results");
         Assert.Single(results.EnumerateArray());
@@ -197,6 +223,7 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
         var error = await loser.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("conflict", error.GetProperty("code").GetString());
 
+        ResultsAreCompleted();
         var resultsResponse = await _client.GetAsync($"/api/v1/arrangements/{arrangementId}/results");
         var result = (await resultsResponse.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("results")[0];
         Assert.Equal(1, result.GetProperty("ratingCount").GetInt32());
@@ -208,6 +235,10 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
             new { beerId, visibility = 6.0, smell = 6.0, taste = 6.0, toast = 6.0 });
         Assert.Equal(HttpStatusCode.OK, freshResponse.StatusCode);
     }
+
+    private void ResultsAreCompleted() =>
+        _factory.ArrangementServiceStub.GetStatusAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(ArrangementStatus.Completed);
 }
 
 /// <summary>
