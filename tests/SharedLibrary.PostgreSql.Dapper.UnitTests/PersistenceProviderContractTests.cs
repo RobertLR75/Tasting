@@ -1,4 +1,5 @@
 using Ardalis.Specification;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using SharedLibrary.Interfaces;
@@ -30,10 +31,108 @@ public class PersistenceProviderContractTests : IAsyncLifetime
                 "updated_at_utc" timestamp with time zone NULL,
                 "name" text NOT NULL,
                 "alcohol" integer NOT NULL,
-                "is_active" boolean NOT NULL
+                "is_active" boolean NOT NULL,
+                "brewery_id" uuid NULL
+            );
+            CREATE TABLE "brewery" (
+                "id" uuid PRIMARY KEY,
+                "created_at_utc" timestamp with time zone NOT NULL,
+                "updated_at_utc" timestamp with time zone NULL,
+                "name" text NOT NULL
+            );
+            ALTER TABLE "test_entity" ADD CONSTRAINT "fk_test_entity_brewery"
+                FOREIGN KEY ("brewery_id") REFERENCES "brewery" ("id");
+            CREATE TABLE "parent_entity" (
+                "id" uuid PRIMARY KEY,
+                "created_at_utc" timestamp with time zone NOT NULL,
+                "updated_at_utc" timestamp with time zone NULL,
+                "name" text NOT NULL
+            );
+            CREATE TABLE "child_entity" (
+                "id" uuid PRIMARY KEY,
+                "created_at_utc" timestamp with time zone NOT NULL,
+                "updated_at_utc" timestamp with time zone NULL,
+                "parent_id" uuid NOT NULL,
+                "name" text NOT NULL
             );
             """;
         await command.ExecuteNonQueryAsync();
+    }
+
+    [Fact]
+    public async Task Providers_MaterializeIdenticalReferenceRelationship()
+    {
+        var breweryId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
+        await using (var seed = new NpgsqlConnection(_postgres.GetConnectionString()))
+        {
+            await seed.ExecuteAsync(
+                "INSERT INTO brewery (id, created_at_utc, name) VALUES (@breweryId, now(), 'Mapped Brewery'); " +
+                "INSERT INTO test_entity (id, created_at_utc, name, alcohol, is_active, brewery_id) VALUES (@entityId, now(), 'Related IPA', 7, true, @breweryId);",
+                new { breweryId, entityId });
+        }
+
+        var options = new DbContextOptionsBuilder<GenericDbContext<TestEntity>>()
+            .UseNpgsql(_postgres.GetConnectionString())
+            .Options;
+        await using var context = new GenericDbContext<TestEntity>(options);
+        await using var connection = new NpgsqlConnection(_postgres.GetConnectionString());
+
+        var specification = new EntityWithBrewerySpecification(entityId);
+        var efResult = await new EntityFrameworkStorage(context).GetAsync(specification);
+        var dapperResult = await new DapperStorage(connection).GetAsync(specification);
+
+        Assert.NotNull(efResult.Brewery);
+        Assert.NotNull(dapperResult.Brewery);
+        Assert.Equal(efResult.Brewery.Id, dapperResult.Brewery.Id);
+        Assert.Equal(efResult.Brewery.Name, dapperResult.Brewery.Name);
+    }
+
+    [Fact]
+    public async Task Dapper_MaterializesAndDeduplicatesCollectionRelationship()
+    {
+        var parentId = Guid.NewGuid();
+        await using (var seed = new NpgsqlConnection(_postgres.GetConnectionString()))
+        {
+            await seed.ExecuteAsync(
+                "INSERT INTO parent_entity (id, created_at_utc, name) VALUES (@parentId, now(), 'Parent'); " +
+                "INSERT INTO child_entity (id, created_at_utc, parent_id, name) VALUES (@firstId, now(), @parentId, 'First'), (@secondId, now(), @parentId, 'Second');",
+                new { parentId, firstId = Guid.NewGuid(), secondId = Guid.NewGuid() });
+        }
+
+        await using var connection = new NpgsqlConnection(_postgres.GetConnectionString());
+        var result = await new ParentDapperStorage(connection).GetAsync(new ParentWithChildrenSpecification(parentId));
+
+        Assert.Equal(2, result.Children.Count);
+        Assert.Equal(["First", "Second"], result.Children.Select(child => child.Name).Order().ToArray());
+    }
+
+    [Fact]
+    public async Task Dapper_PagesRootEntitiesBeforeMaterializingCollections()
+    {
+        var firstParentId = Guid.NewGuid();
+        var secondParentId = Guid.NewGuid();
+        await using (var seed = new NpgsqlConnection(_postgres.GetConnectionString()))
+        {
+            await seed.ExecuteAsync(
+                "INSERT INTO parent_entity (id, created_at_utc, name) VALUES (@firstParentId, now(), 'Page A'), (@secondParentId, now(), 'Page B'); " +
+                "INSERT INTO child_entity (id, created_at_utc, parent_id, name) VALUES (@firstChildId, now(), @firstParentId, 'A1'), (@secondChildId, now(), @firstParentId, 'A2'), (@thirdChildId, now(), @secondParentId, 'B1');",
+                new
+                {
+                    firstParentId,
+                    secondParentId,
+                    firstChildId = Guid.NewGuid(),
+                    secondChildId = Guid.NewGuid(),
+                    thirdChildId = Guid.NewGuid()
+                });
+        }
+
+        await using var connection = new NpgsqlConnection(_postgres.GetConnectionString());
+        var results = await new ParentDapperStorage(connection).SearchAsync(new PagedParentsWithChildrenSpecification());
+
+        Assert.Equal(2, results.Count);
+        Assert.Equal(2, results.Single(parent => parent.Name == "Page A").Children.Count);
+        Assert.Single(results.Single(parent => parent.Name == "Page B").Children);
     }
 
     public async Task DisposeAsync() => await _postgres.DisposeAsync();
@@ -133,6 +232,34 @@ public class PersistenceProviderContractTests : IAsyncLifetime
         }
     }
 
+    private sealed class EntityWithBrewerySpecification : PersistenceSpecification<TestEntity>
+    {
+        public EntityWithBrewerySpecification(Guid id)
+        {
+            Query.Where(entity => entity.Id == id).Include(entity => entity.Brewery!);
+        }
+    }
+
+    private sealed class ParentWithChildrenSpecification : PersistenceSpecification<ParentEntity>
+    {
+        public ParentWithChildrenSpecification(Guid id)
+        {
+            Query.Where(entity => entity.Id == id).Include(entity => entity.Children);
+        }
+    }
+
+    private sealed class PagedParentsWithChildrenSpecification : PersistenceSpecification<ParentEntity>
+    {
+        public PagedParentsWithChildrenSpecification()
+        {
+            Query
+                .Where(entity => entity.Name.StartsWith("Page "))
+                .Include(entity => entity.Children)
+                .OrderBy(entity => entity.Name)
+                .Take(2);
+        }
+    }
+
     private sealed class EntityFrameworkStorage(GenericDbContext<TestEntity> context)
         : EntityFrameworkPostgresSqlStorageBase<TestEntity>(context);
 
@@ -151,7 +278,47 @@ public class PersistenceProviderContractTests : IAsyncLifetime
             nameof(TestEntity.IsActive) => "is_active",
             _ => propertyName
         };
+
+        protected override IReadOnlyCollection<DapperRelationship> Relationships =>
+        [
+            DapperRelationship.Reference<TestEntity, Brewery>(
+                nameof(TestEntity.Brewery),
+                "brewery",
+                "brewery_id",
+                "id",
+                (entity, brewery) => entity.Brewery = brewery,
+                MapRelatedPropertyToColumn)
+        ];
     }
+
+    private sealed class ParentDapperStorage(NpgsqlConnection connection)
+        : PostgresSqlDapperStorageBase<ParentEntity>(connection)
+    {
+        protected override string TableName => "parent_entity";
+
+        protected override string MapPropertyToColumn(string propertyName) => MapRelatedPropertyToColumn(propertyName);
+
+        protected override IReadOnlyCollection<DapperRelationship> Relationships =>
+        [
+            DapperRelationship.Collection<ParentEntity, ChildEntity>(
+                nameof(ParentEntity.Children),
+                "child_entity",
+                "id",
+                "parent_id",
+                entity => entity.Children,
+                MapRelatedPropertyToColumn)
+        ];
+    }
+
+    private static string MapRelatedPropertyToColumn(string propertyName) => propertyName switch
+    {
+        nameof(IEntity.Id) => "id",
+        nameof(IEntity.CreatedAt) => "created_at_utc",
+        nameof(IEntity.UpdatedAt) => "updated_at_utc",
+        nameof(Brewery.Name) => "name",
+        nameof(ChildEntity.ParentId) => "parent_id",
+        _ => propertyName
+    };
 
     private sealed record EntitySummary(Guid Id, string Name);
 
@@ -172,5 +339,32 @@ public class PersistenceProviderContractTests : IAsyncLifetime
         public string Name { get; set; } = string.Empty;
         public int Alcohol { get; set; }
         public bool IsActive { get; set; }
+        public Brewery? Brewery { get; set; }
+    }
+
+    private sealed class Brewery : IEntity
+    {
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private sealed class ParentEntity : IEntity
+    {
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public List<ChildEntity> Children { get; set; } = [];
+    }
+
+    private sealed class ChildEntity : IEntity
+    {
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
+        public Guid ParentId { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

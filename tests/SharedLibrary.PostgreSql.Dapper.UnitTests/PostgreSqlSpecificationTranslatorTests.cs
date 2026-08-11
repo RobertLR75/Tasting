@@ -66,13 +66,20 @@ public class PostgreSqlSpecificationTranslatorTests
         var translator = new PostgreSqlSpecificationTranslator<TestEntity>(
             "beers",
             ToSnakeCase,
-            [new DapperRelationship(nameof(TestEntity.Brewery), "breweries", "brewery_id", "id")]);
+            [DapperRelationship.Reference<TestEntity, Brewery>(
+                nameof(TestEntity.Brewery),
+                "breweries",
+                "brewery_id",
+                "id",
+                (entity, brewery) => entity.Brewery = brewery,
+                ToSnakeCase)]);
 
         var result = translator.Translate(specification);
 
         Assert.Equal(
-            "SELECT root.* FROM \"beers\" AS root LEFT JOIN \"breweries\" AS \"rel_Brewery\" ON root.\"brewery_id\" = \"rel_Brewery\".\"id\";",
+            "SELECT root.*, \"rel_Brewery\".\"id\" AS \"Id\" FROM \"beers\" AS root LEFT JOIN \"breweries\" AS \"rel_Brewery\" ON root.\"brewery_id\" = \"rel_Brewery\".\"id\";",
             result.Sql);
+        Assert.Single(result.Relationships);
     }
 
     [Fact]

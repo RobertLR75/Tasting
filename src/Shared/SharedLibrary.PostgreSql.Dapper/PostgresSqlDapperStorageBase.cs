@@ -99,12 +99,50 @@ public abstract class PostgresSqlDapperStorageBase<T>(DbConnection connection) :
         await EnsureConnectionOpenAsync(cancellationToken);
 
         var query = CreateSpecificationTranslator().Translate(specification);
+        if (query.Relationships.Count > 0)
+        {
+            return await QueryWithRelationshipsAsync(query);
+        }
+
         var entities = await Connection.QueryAsync<T>(new CommandDefinition(
             query.Sql,
             query.Parameters,
             cancellationToken: cancellationToken));
 
         return entities.AsList();
+    }
+
+    private async Task<List<T>> QueryWithRelationshipsAsync(SqlSpecificationQuery query)
+    {
+        var roots = new Dictionary<Guid, T>();
+        var types = new[] { typeof(T) }
+            .Concat(query.Relationships.Select(relationship => relationship.RelatedType))
+            .ToArray();
+        var splitOn = string.Join(",", query.Relationships.Select(_ => nameof(IEntity.Id)));
+
+        await Connection.QueryAsync<T>(
+            query.Sql,
+            types,
+            values =>
+            {
+                var rowRoot = (T)values[0];
+                if (!roots.TryGetValue(rowRoot.Id, out var root))
+                {
+                    root = rowRoot;
+                    roots.Add(root.Id, root);
+                }
+
+                for (var index = 0; index < query.Relationships.Count; index++)
+                {
+                    query.Relationships[index].Attach(root, values[index + 1]);
+                }
+
+                return root;
+            },
+            query.Parameters,
+            splitOn: splitOn);
+
+        return roots.Values.ToList();
     }
 
     public virtual async Task<T> GetAsync(IPersistenceSpecification<T> specification, CancellationToken cancellationToken = default)

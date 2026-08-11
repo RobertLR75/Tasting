@@ -30,50 +30,87 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
 
         RejectUnsupportedFeatures(specification);
         var parameters = new DynamicParameters();
-        var joins = BuildJoins(specification);
-        var projection = selector is null ? defaultProjection : BuildProjection(selector);
-        var sql = $"SELECT {projection} FROM {Quote(tableName)} AS root{joins}";
-
-        if (specification.WhereExpressions.Any())
+        var includedRelationships = ResolveRelationships(specification);
+        if (selector is not null && includedRelationships.Count > 0)
         {
-            var predicateWriter = new PredicateWriter(_columnName, parameters);
-            var predicates = specification.WhereExpressions
-                .Select(expression => predicateWriter.Write(expression.Filter.Body))
-                .ToArray();
-            sql += $" WHERE {string.Join(" AND ", predicates.Select(predicate => $"({predicate})"))}";
+            throw Unsupported("Relationship includes cannot be combined with projection specifications.");
         }
 
-        if (specification.OrderExpressions.Any())
+        var joins = BuildJoins(includedRelationships);
+        var projection = selector is null
+            ? BuildEntityProjection(includedRelationships)
+            : BuildProjection(selector);
+        var whereClause = BuildWhereClause(specification, parameters);
+        var orderClause = BuildOrderClause(specification);
+        var pagingClause = BuildPagingClause(specification, parameters);
+
+        string sql;
+        if (includedRelationships.Count > 0 && !string.IsNullOrEmpty(pagingClause))
         {
-            var orders = specification.OrderExpressions.Select(order =>
-            {
-                var member = GetRootMember(order.KeySelector.Body);
-                var direction = order.OrderType.ToString().Contains("Descending", StringComparison.Ordinal)
-                    ? "DESC"
-                    : "ASC";
-                return $"root.{Quote(_columnName(member.Member.Name))} {direction}";
-            });
-            sql += $" ORDER BY {string.Join(", ", orders)}";
+            var pagedRoots = $"SELECT root.* FROM {Quote(tableName)} AS root{whereClause}{orderClause}{pagingClause}";
+            sql = $"SELECT {projection} FROM ({pagedRoots}) AS root{joins}{orderClause}";
+        }
+        else
+        {
+            sql = $"SELECT {projection} FROM {Quote(tableName)} AS root{joins}{whereClause}{orderClause}{pagingClause}";
         }
 
+        return new SqlSpecificationQuery(sql + ";", parameters, includedRelationships);
+    }
+
+    private string BuildWhereClause(ISpecification<T> specification, DynamicParameters parameters)
+    {
+        if (!specification.WhereExpressions.Any())
+        {
+            return string.Empty;
+        }
+
+        var predicateWriter = new PredicateWriter(_columnName, parameters);
+        var predicates = specification.WhereExpressions
+            .Select(expression => predicateWriter.Write(expression.Filter.Body))
+            .ToArray();
+        return $" WHERE {string.Join(" AND ", predicates.Select(predicate => $"({predicate})"))}";
+    }
+
+    private string BuildOrderClause(ISpecification<T> specification)
+    {
+        if (!specification.OrderExpressions.Any())
+        {
+            return string.Empty;
+        }
+
+        var orders = specification.OrderExpressions.Select(order =>
+        {
+            var member = GetRootMember(order.KeySelector.Body);
+            var direction = order.OrderType.ToString().Contains("Descending", StringComparison.Ordinal)
+                ? "DESC"
+                : "ASC";
+            return $"root.{Quote(_columnName(member.Member.Name))} {direction}";
+        });
+        return $" ORDER BY {string.Join(", ", orders)}";
+    }
+
+    private static string BuildPagingClause(ISpecification<T> specification, DynamicParameters parameters)
+    {
+        var paging = string.Empty;
         if (specification.Take > 0)
         {
-            sql += " LIMIT @__take";
+            paging += " LIMIT @__take";
             parameters.Add("__take", specification.Take);
         }
 
         if (specification.Skip > 0)
         {
-            sql += " OFFSET @__skip";
+            paging += " OFFSET @__skip";
             parameters.Add("__skip", specification.Skip);
         }
 
-        return new SqlSpecificationQuery(sql + ";", parameters);
+        return paging;
     }
 
-    private string BuildJoins(ISpecification<T> specification)
+    private IReadOnlyList<DapperRelationship> ResolveRelationships(ISpecification<T> specification)
     {
-        var joins = new List<string>();
+        var included = new List<DapperRelationship>();
         foreach (var include in specification.IncludeExpressions)
         {
             var member = GetRootMember(include.LambdaExpression.Body);
@@ -82,14 +119,66 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
                 throw Unsupported($"Relationship '{member.Member.Name}' has no Dapper mapping.");
             }
 
-            var alias = $"rel_{member.Member.Name}";
-            joins.Add(
-                $" LEFT JOIN {Quote(relationship.TableName)} AS {Quote(alias)}" +
-                $" ON root.{Quote(relationship.SourceColumn)} = {Quote(alias)}.{Quote(relationship.TargetColumn)}");
+            included.Add(relationship);
         }
 
-        return string.Concat(joins);
+        return included;
     }
+
+    private static string BuildJoins(IReadOnlyList<DapperRelationship> relationships)
+    {
+        return string.Concat(relationships.Select(relationship =>
+        {
+            var alias = RelationshipAlias(relationship);
+            return
+                $" LEFT JOIN {Quote(relationship.TableName)} AS {Quote(alias)}" +
+                $" ON root.{Quote(relationship.SourceColumn)} = {Quote(alias)}.{Quote(relationship.TargetColumn)}";
+        }));
+    }
+
+    private string BuildEntityProjection(IReadOnlyList<DapperRelationship> relationships)
+    {
+        var projections = new List<string> { defaultProjection };
+        projections.AddRange(relationships.Select(BuildRelationshipProjection));
+        return string.Join(", ", projections);
+    }
+
+    private static string BuildRelationshipProjection(DapperRelationship relationship)
+    {
+        var alias = RelationshipAlias(relationship);
+        var properties = relationship.RelatedType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(property => property.CanRead && property.CanWrite && property.GetIndexParameters().Length == 0)
+            .Where(property => IsScalar(Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType));
+
+        var projection = string.Join(", ", properties.Select(property =>
+            $"{Quote(alias)}.{Quote(relationship.ColumnName(property.Name))} AS {Quote(property.Name)}"));
+
+        if (string.IsNullOrWhiteSpace(projection))
+        {
+            throw Unsupported($"Relationship '{relationship.NavigationProperty}' has no scalar properties to materialize.");
+        }
+
+        return projection;
+    }
+
+    private static bool IsScalar(Type type)
+        => type.IsEnum
+           || type == typeof(string)
+           || type == typeof(Guid)
+           || type == typeof(DateTimeOffset)
+           || type == typeof(DateTime)
+           || type == typeof(bool)
+           || type == typeof(int)
+           || type == typeof(long)
+           || type == typeof(decimal)
+           || type == typeof(double)
+           || type == typeof(float)
+           || type == typeof(short)
+           || type == typeof(byte);
+
+    private static string RelationshipAlias(DapperRelationship relationship)
+        => $"rel_{relationship.NavigationProperty}";
 
     private string BuildProjection(LambdaExpression selector)
     {
