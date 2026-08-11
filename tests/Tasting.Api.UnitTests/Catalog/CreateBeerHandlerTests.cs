@@ -19,7 +19,8 @@ public sealed class CreateBeerHandlerTests
         dbContext.AddRange(style, type, brewery);
         await dbContext.SaveChangesAsync();
 
-        var sut = new CreateBeerHandler(dbContext);
+        var persistence = new CatalogTestPersistence(dbContext);
+        var sut = new CreateBeerHandler(persistence.Breweries, persistence.Styles, persistence.Types, persistence.Beers);
 
         await Assert.ThrowsAsync<ConflictException>(() => sut.HandleAsync(
             new CreateBeerCommand(brewery.Id, style.Id, type.Id, "Cloud", true),
@@ -46,7 +47,8 @@ public sealed class CreateBeerHandlerTests
         dbContext.AddRange(style, type, brewery, existingBeer);
         await dbContext.SaveChangesAsync();
 
-        var sut = new CreateBeerHandler(dbContext);
+        var persistence = new CatalogTestPersistence(dbContext);
+        var sut = new CreateBeerHandler(persistence.Breweries, persistence.Styles, persistence.Types, persistence.Beers);
 
         await Assert.ThrowsAsync<ConflictException>(() => sut.HandleAsync(
             new CreateBeerCommand(brewery.Id, style.Id, type.Id, "PILSNER", true),

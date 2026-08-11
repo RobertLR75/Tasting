@@ -1,5 +1,10 @@
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using SharedLibrary.Configuration;
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Interfaces;
+using Tasting.Api.Features.Catalog;
 using Tasting.Api.Features.Catalog.Beers;
 using Tasting.Api.Features.Catalog.Beers.CreateBeer;
 using Tasting.Api.Features.Catalog.Beers.DeactivateBeer;
@@ -29,17 +34,27 @@ public static class CatalogServiceCollectionExtensions
 {
     public static IServiceCollection AddCatalog(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("TastingDb");
-        services.AddDbContext<CatalogDbContext>(options =>
-        {
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                options.UseInMemoryDatabase("tasting-catalog");
-                return;
-            }
+        var persistence = PersistenceConfigurationSelector.Select(configuration);
+        services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(persistence.ConnectionString));
 
-            options.UseNpgsql(connectionString);
-        });
+        if (persistence.Provider == PersistenceProvider.EntityFramework)
+        {
+            services.AddScoped<IPersistenceService<Brewery>, EfCatalogStorage<Brewery>>();
+            services.AddScoped<IPersistenceService<Beer>, EfCatalogStorage<Beer>>();
+            services.AddScoped<IPersistenceService<BeerStyle>, EfCatalogStorage<BeerStyle>>();
+            services.AddScoped<IPersistenceService<BeerType>, EfCatalogStorage<BeerType>>();
+            services.AddScoped<ICatalogDeactivationService, EfCatalogDeactivationService>();
+        }
+        else
+        {
+            services.AddScoped(_ => new NpgsqlConnection(persistence.ConnectionString));
+            services.AddScoped<DbConnection>(provider => provider.GetRequiredService<NpgsqlConnection>());
+            services.AddScoped<IPersistenceService<Brewery>, DapperBreweryStorage>();
+            services.AddScoped<IPersistenceService<Beer>, DapperBeerStorage>();
+            services.AddScoped<IPersistenceService<BeerStyle>, DapperBeerStyleStorage>();
+            services.AddScoped<IPersistenceService<BeerType>, DapperBeerTypeStorage>();
+            services.AddScoped<ICatalogDeactivationService, DapperCatalogDeactivationService>();
+        }
 
         services.AddScoped<IRequestHandler<CreateBreweryCommand, Brewery>, CreateBreweryHandler>();
         services.AddScoped<IRequestHandler<CreateBeerCommand, Beer>, CreateBeerHandler>();

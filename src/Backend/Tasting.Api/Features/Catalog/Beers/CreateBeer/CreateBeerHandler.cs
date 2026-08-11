@@ -1,17 +1,19 @@
-using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Catalog.Domain;
-using Tasting.Api.Infrastructure.Catalog;
 
 namespace Tasting.Api.Features.Catalog.Beers.CreateBeer;
 
-public sealed class CreateBeerHandler(CatalogDbContext dbContext) : IRequestHandler<CreateBeerCommand, Beer>
+public sealed class CreateBeerHandler(
+    IPersistenceService<Brewery> breweries,
+    IPersistenceService<BeerStyle> styles,
+    IPersistenceService<BeerType> types,
+    IPersistenceService<Beer> beers) : IRequestHandler<CreateBeerCommand, Beer>
 {
     public async Task<Beer> HandleAsync(CreateBeerCommand request, CancellationToken ct = default)
     {
-        var brewery = await dbContext.Breweries
-            .FirstOrDefaultAsync(x => x.Id == request.BreweryId, ct)
+        var brewery = await breweries.GetAsync(request.BreweryId, ct)
             ?? throw new ServiceNotFoundException($"Brewery '{request.BreweryId}' was not found.");
 
         if (!brewery.IsActive)
@@ -19,28 +21,17 @@ public sealed class CreateBeerHandler(CatalogDbContext dbContext) : IRequestHand
             throw new ConflictException($"Brewery '{request.BreweryId}' is inactive.");
         }
 
-        var beerStyleExists = await dbContext.BeerStyles
-            .AnyAsync(x => x.Id == request.BeerStyleId, ct);
-        if (!beerStyleExists)
+        if (await styles.GetAsync(request.BeerStyleId, ct) is null)
         {
             throw new ServiceNotFoundException($"BeerStyle '{request.BeerStyleId}' was not found.");
         }
 
-        var beerTypeExists = await dbContext.BeerTypes
-            .AnyAsync(x => x.Id == request.BeerTypeId, ct);
-        if (!beerTypeExists)
+        if (await types.GetAsync(request.BeerTypeId, ct) is null)
         {
             throw new ServiceNotFoundException($"BeerType '{request.BeerTypeId}' was not found.");
         }
 
-        var normalizedName = request.Name.Trim().ToLowerInvariant();
-        var duplicateExists = await dbContext.Beers
-            .AnyAsync(
-                x => x.BreweryId == request.BreweryId &&
-                     x.Name.ToLower() == normalizedName,
-                ct);
-
-        if (duplicateExists)
+        if ((await beers.SearchAsync(new BeerNameWithinBrewerySpecification(request.BreweryId, request.Name), ct)).Count > 0)
         {
             throw new ConflictException("A beer with this name already exists for this brewery.");
         }
@@ -56,8 +47,7 @@ public sealed class CreateBeerHandler(CatalogDbContext dbContext) : IRequestHand
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        dbContext.Beers.Add(beer);
-        await dbContext.SaveChangesAsync(ct);
+        await beers.CreateAsync(beer, ct);
         return beer;
     }
 }

@@ -26,7 +26,8 @@ public sealed class ListBreweryBeersHandlerTests
             new Beer { Id = Guid.NewGuid(), BreweryId = brewery2.Id, BeerStyleId = style.Id, BeerTypeId = type.Id, Name = "Other Beer", IsActive = true, CreatedAt = DateTimeOffset.UtcNow });
         await dbContext.SaveChangesAsync();
 
-        var sut = new ListBreweryBeersHandler(dbContext);
+        var persistence = new CatalogTestPersistence(dbContext);
+        var sut = new ListBreweryBeersHandler(persistence.Breweries, persistence.Beers);
 
         var result = await sut.HandleAsync(new ListBreweryBeersQuery(brewery1.Id), CancellationToken.None);
 
@@ -41,7 +42,8 @@ public sealed class ListBreweryBeersHandlerTests
     {
         await using var dbContext = CreateDbContext();
 
-        var sut = new ListBreweryBeersHandler(dbContext);
+        var persistence = new CatalogTestPersistence(dbContext);
+        var sut = new ListBreweryBeersHandler(persistence.Breweries, persistence.Beers);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(
             () => sut.HandleAsync(new ListBreweryBeersQuery(Guid.NewGuid()), CancellationToken.None));

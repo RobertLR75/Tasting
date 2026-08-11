@@ -18,10 +18,12 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\Config\Tasting.ServiceDefaults\Tasting.ServiceDefaults.csproj" />
         <ProjectReference Include="..\..\Shared\SharedLibrary\SharedLibrary.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary.Dapper\SharedLibrary.Dapper.csproj" />
         <ProjectReference Include="..\..\Shared\SharedLibrary.EntityFramework\SharedLibrary.EntityFramework.csproj" />
         <ProjectReference Include="..\..\Shared\SharedLibrary.FastEndpoints\SharedLibrary.FastEndpoints.csproj" />
         <ProjectReference Include="..\..\Shared\SharedLibrary.FluentMigration\SharedLibrary.FluentMigration.csproj" />
         <ProjectReference Include="..\..\Shared\SharedLibrary.PostgreSql.EntityFramework\SharedLibrary.PostgreSql.EntityFramework.csproj" />
+        <ProjectReference Include="..\..\Shared\SharedLibrary.PostgreSql.Dapper\SharedLibrary.PostgreSql.Dapper.csproj" />
         <ProjectReference Include="..\..\Shared\SharedLibrary.Services\SharedLibrary.Services.csproj" />
     </ItemGroup>
 
