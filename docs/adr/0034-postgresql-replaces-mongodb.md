@@ -1,6 +1,6 @@
 # PostgreSQL replaces MongoDB for all storage
 
-ADR-0014 chose MongoDB for Arrangements, Ratings and Results. After further evaluation we decided to use PostgreSQL for all storage domains (Arrangements, Ratings, Results, Users, Breweries, Beers and Taxonomy). A single relational store with Entity Framework Core and FluentMigration simplifies the data model, enables cross-entity queries and transactions, and eliminates the operational overhead of maintaining two separate databases. Redis is retained as a dedicated caching layer.
+ADR-0014 chose MongoDB for Arrangements, Ratings and Results. After further evaluation we decided to use PostgreSQL for all storage domains (Arrangements, Ratings, Results, Users, Breweries, Beers and Taxonomy). A single relational store with provider-neutral persistence and FluentMigration simplifies the data model, enables cross-entity queries and transactions, and eliminates the operational overhead of maintaining two separate databases. ADR-0047 amends the original Entity Framework-only provider choice. Redis is retained as a dedicated caching layer.
 
 ## Considered Options
 

@@ -33,8 +33,25 @@ public class SearchFilterTests
         Assert.Contains("Field selector must reference a property", exception.Message);
     }
 
+    [Fact]
+    public void SearchFilterAndSortCriteria_ExposeConfiguredValues()
+    {
+        var filter = new SearchFilter<TestEntity>
+        {
+            LogicalOperator = SearchLogicalOperator.Or,
+            Parameters = [new SearchFilterCriterion<TestEntity>(entity => entity.Number, 4)],
+            SortFields = [new SearchSortCriterion<TestEntity>(entity => entity.Number, SearchSortDirection.Descending)]
+        };
+
+        Assert.Equal(SearchLogicalOperator.Or, filter.LogicalOperator);
+        Assert.Single(filter.Parameters);
+        Assert.Equal(SearchSortDirection.Descending, filter.SortFields[0].Direction);
+        Assert.NotNull(filter.SortFields[0].FieldSelector);
+    }
+
     private sealed class TestEntity
     {
         public string Name { get; init; } = string.Empty;
+        public int Number { get; init; }
     }
 }

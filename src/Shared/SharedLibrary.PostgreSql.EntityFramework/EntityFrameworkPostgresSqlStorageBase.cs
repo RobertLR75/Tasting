@@ -37,8 +37,7 @@ public abstract class EntityFrameworkPostgresSqlStorageBase<T>(DbContext context
     {
         await ExecuteInTransactionAsync(async () =>
         {
-            var entity = await DbSet.AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            var entity = await DbSet.FindAsync([id], cancellationToken);
 
             if (entity is not null)
             {
@@ -52,23 +51,6 @@ public abstract class EntityFrameworkPostgresSqlStorageBase<T>(DbContext context
     {
         return DbSet.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-    }
-
-    public virtual async Task<List<T>> SearchAsync(SearchFilter<T> filter, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(filter);
-
-        IQueryable<T> query = DbSet.AsNoTracking();
-
-        if (filter.Parameters.Count > 0)
-        {
-            var predicate = BuildFilterPredicate(filter);
-            query = query.Where(predicate);
-        }
-
-        query = ApplySorting(query, filter.SortFields);
-
-        return await query.ToListAsync(cancellationToken);
     }
 
     public virtual async Task<List<T>> SearchAsync(IPersistenceSpecification<T> specification, CancellationToken cancellationToken = default)
@@ -86,5 +68,15 @@ public abstract class EntityFrameworkPostgresSqlStorageBase<T>(DbContext context
         var query = SpecificationEvaluator.Default.GetQuery(DbSet.AsNoTracking(), specification);
         return await query.FirstOrDefaultAsync(cancellationToken)
                ?? throw new InvalidOperationException("Entity matching specification was not found.");
+    }
+
+    public virtual async Task<List<TResult>> SearchAsync<TResult>(
+        IPersistenceSpecification<T, TResult> specification,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(specification);
+
+        var query = SpecificationEvaluator.Default.GetQuery(DbSet.AsNoTracking(), specification);
+        return await query.ToListAsync(cancellationToken);
     }
 }
