@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SharedLibrary.Services.Exceptions;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Features.Arrangement.Participants.ListVisibleArrangements;
+using Tasting.Api.Features.Arrangement.Participants.GetParticipantArrangement;
 using Tasting.Api.Features.Arrangement.Participants.SelfJoinArrangement;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Arrangement;
@@ -12,6 +13,82 @@ namespace Tasting.Api.UnitTests.Arrangement;
 
 public sealed class ParticipantArrangementHandlerTests
 {
+    [Fact]
+    public async Task GetParticipantArrangement_HidesBeers_WhileWaitingForStart()
+    {
+        await using var db = CreateArrangementDbContext();
+        var userId = Guid.NewGuid();
+        var arrangement = CreateArrangement("Waiting", ArrangementStatus.Active);
+        arrangement.Participants.Add(new ArrangementParticipant { Id = Guid.NewGuid(), ArrangementId = arrangement.Id, UserId = userId });
+        arrangement.Beers.Add(new ArrangementBeer
+        {
+            Id = Guid.NewGuid(), ArrangementId = arrangement.Id, BeerId = Guid.NewGuid(), NameSnapshot = "Secret beer"
+        });
+        db.Arrangements.Add(arrangement);
+        await db.SaveChangesAsync();
+
+        var result = await new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, userId));
+
+        Assert.Equal(ArrangementStatus.Active, result.Status);
+        Assert.Empty(result.Beers);
+    }
+
+    [Fact]
+    public async Task GetParticipantArrangement_RejectsUsersWhoHaveNotJoined()
+    {
+        await using var db = CreateArrangementDbContext();
+        var arrangement = CreateArrangement("Private", ArrangementStatus.Active);
+        db.Arrangements.Add(arrangement);
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() => new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, Guid.NewGuid())));
+    }
+
+    [Fact]
+    public async Task GetParticipantArrangement_RevealsBeerSnapshots_WhenStarted()
+    {
+        await using var db = CreateArrangementDbContext();
+        var userId = Guid.NewGuid();
+        var arrangement = CreateArrangement("Started", ArrangementStatus.Started);
+        arrangement.Participants.Add(new ArrangementParticipant { Id = Guid.NewGuid(), ArrangementId = arrangement.Id, UserId = userId });
+        arrangement.Beers.Add(new ArrangementBeer
+        {
+            Id = Guid.NewGuid(), ArrangementId = arrangement.Id, BeerId = Guid.NewGuid(), NameSnapshot = "Revealed beer"
+        });
+        db.Arrangements.Add(arrangement);
+        await db.SaveChangesAsync();
+
+        var result = await new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, userId));
+
+        Assert.Equal("Revealed beer", Assert.Single(result.Beers).Name);
+    }
+
+    [Fact]
+    public async Task GetParticipantArrangement_ReturnsNotFound_WhenArrangementDoesNotExist()
+    {
+        await using var db = CreateArrangementDbContext();
+
+        await Assert.ThrowsAsync<ServiceNotFoundException>(() => new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(Guid.NewGuid(), Guid.NewGuid())));
+    }
+
+    [Fact]
+    public async Task GetParticipantArrangement_RejectsCanceledArrangement()
+    {
+        await using var db = CreateArrangementDbContext();
+        var userId = Guid.NewGuid();
+        var arrangement = CreateArrangement("Canceled", ArrangementStatus.Canceled);
+        arrangement.Participants.Add(new ArrangementParticipant { Id = Guid.NewGuid(), ArrangementId = arrangement.Id, UserId = userId });
+        db.Arrangements.Add(arrangement);
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ConflictException>(() => new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, userId)));
+    }
+
     [Fact]
     public async Task ListVisibleArrangements_ReturnsOnlyActiveArrangements_AndMembershipState()
     {
