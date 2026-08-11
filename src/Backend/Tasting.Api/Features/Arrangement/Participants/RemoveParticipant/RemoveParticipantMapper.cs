@@ -6,7 +6,7 @@ public sealed class RemoveParticipantMapper
     : BaseCommandMapper<RemoveParticipantRequest, ArrangementResponse, RemoveParticipantCommand, Domain.Arrangement>
 {
     public override RemoveParticipantCommand ToCommand(RemoveParticipantRequest req)
-        => new(Guid.Empty, Guid.Empty, req.RowVersion);
+        => new(Guid.Empty, Guid.Empty);
 
     public override Task<ArrangementResponse> FromEntityAsync(Domain.Arrangement entity, CancellationToken ct = default)
         => Task.FromResult(new ArrangementResponse(
@@ -14,7 +14,6 @@ public sealed class RemoveParticipantMapper
             entity.Name,
             entity.Description,
             entity.Status,
-            entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
             entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),

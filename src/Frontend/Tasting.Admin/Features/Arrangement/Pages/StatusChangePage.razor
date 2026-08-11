@@ -1,5 +1,6 @@
 @page "/arrangements/{ArrangementId:guid}/status"
 @using MudBlazor
+@using global::System.Net
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
 @using Tasting.Admin.Shared.Components
@@ -121,6 +122,17 @@
         catch (OperationCanceledException)
         {
         }
+        catch (ArrangementConflictException ex)
+        {
+            if (_cts.IsCancellationRequested) return;
+            errorMessage = ex.Message;
+            currentArrangement = ex.FreshArrangement;
+            if (currentArrangement != null)
+            {
+                validTransitions = GetValidTransitions(currentArrangement.Status);
+                selectedNewStatus = validTransitions.FirstOrDefault();
+            }
+        }
         catch (Exception ex)
         {
             if (_cts.IsCancellationRequested) return;
@@ -136,11 +148,11 @@
     private Task<ArrangementDto?> ChangeStatusAsync(ArrangementStatus newStatus)
         => newStatus switch
         {
-            ArrangementStatus.Created when currentArrangement!.Status == ArrangementStatus.Canceled => ArrangementsApiClient.ReopenAsync(ArrangementId, currentArrangement!.RowVersion),
-            ArrangementStatus.Active => ArrangementsApiClient.ActivateAsync(ArrangementId, currentArrangement!.RowVersion),
-            ArrangementStatus.Started => ArrangementsApiClient.StartAsync(ArrangementId, currentArrangement!.RowVersion),
-            ArrangementStatus.Canceled => ArrangementsApiClient.CancelAsync(ArrangementId, currentArrangement!.RowVersion),
-            ArrangementStatus.Completed => ArrangementsApiClient.CompleteAsync(ArrangementId, currentArrangement!.RowVersion),
+            ArrangementStatus.Created when currentArrangement!.Status == ArrangementStatus.Canceled => ArrangementsApiClient.ReopenAsync(ArrangementId),
+            ArrangementStatus.Active => ArrangementsApiClient.ActivateAsync(ArrangementId),
+            ArrangementStatus.Started => ArrangementsApiClient.StartAsync(ArrangementId),
+            ArrangementStatus.Canceled => ArrangementsApiClient.CancelAsync(ArrangementId),
+            ArrangementStatus.Completed => ArrangementsApiClient.CompleteAsync(ArrangementId),
             _ => UnsupportedStatus(newStatus)
         };
 

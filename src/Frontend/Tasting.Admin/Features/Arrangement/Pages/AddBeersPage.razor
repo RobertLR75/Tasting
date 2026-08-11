@@ -97,7 +97,6 @@ else
     private List<ArrangementBeerItem> AlreadyAddedBeers { get; set; } = new();
     private HashSet<Guid> AlreadyAddedBeerIds { get; set; } = new();
     private HashSet<Guid> AddingBeerIds { get; set; } = new();
-    private uint _rowVersion;
     private string SearchTerm { get; set; } = "";
     private string? ErrorMessage { get; set; }
     private bool IsLoading { get; set; }
@@ -111,7 +110,6 @@ else
             var arrangement = await ArrangementsApiClient.GetAsync(ArrangementId);
             if (arrangement is not null)
             {
-                _rowVersion = arrangement.RowVersion;
                 AlreadyAddedBeers = arrangement.Beers.ToList();
                 AlreadyAddedBeerIds = arrangement.Beers.Select(b => b.BeerId).ToHashSet();
             }
@@ -153,11 +151,10 @@ else
         AddingBeerIds.Add(beerId);
         try
         {
-            var request = new AddBeerToArrangementRequest(beerId, _rowVersion);
+            var request = new AddBeerToArrangementRequest(beerId);
             var result = await ArrangementsApiClient.AddBeerAsync(ArrangementId, request);
             if (result is not null)
             {
-                _rowVersion = result.RowVersion;
                 AlreadyAddedBeers = result.Beers.ToList();
                 AlreadyAddedBeerIds = result.Beers.Select(b => b.BeerId).ToHashSet();
             }

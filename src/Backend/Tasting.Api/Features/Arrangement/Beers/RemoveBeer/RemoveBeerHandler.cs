@@ -23,13 +23,6 @@ public sealed class RemoveBeerHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Beers can only be removed when arrangement is in 'Created' status. Current status: '{arrangement.Status}'.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         var beer = arrangement.Beers
             .FirstOrDefault(b => b.BeerId == request.BeerId)
             ?? throw new ServiceNotFoundException($"Beer '{request.BeerId}' was not found in arrangement '{request.ArrangementId}'.");
@@ -48,6 +41,6 @@ public sealed class RemoveBeerHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

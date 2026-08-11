@@ -24,13 +24,6 @@ public sealed class UpdateArrangementHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Arrangement cannot be updated in status '{arrangement.Status}'. Only 'Created' arrangements can be updated.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         arrangement.Name = request.Name.Trim();
         arrangement.Description = request.Description?.Trim();
         arrangement.RowVersion++;
@@ -46,6 +39,6 @@ public sealed class UpdateArrangementHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

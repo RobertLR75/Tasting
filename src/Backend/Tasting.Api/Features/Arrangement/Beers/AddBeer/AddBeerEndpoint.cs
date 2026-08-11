@@ -24,6 +24,6 @@ public sealed class AddBeerEndpoint(
     protected override AddBeerCommand ToCommand(AddBeerRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new AddBeerCommand(arrangementId, req.BeerId, req.RowVersion);
+        return new AddBeerCommand(arrangementId, req.BeerId);
     }
 }

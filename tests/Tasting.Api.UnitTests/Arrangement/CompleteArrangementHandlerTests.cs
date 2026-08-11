@@ -4,7 +4,7 @@ using Tasting.Api.Features.Arrangement.Arrangements.CompleteArrangement;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Infrastructure.Arrangement;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -17,10 +17,9 @@ public sealed class CompleteArrangementHandlerTests
         var arrangement = await SeedAsync(db, ArrangementStatus.Started);
 
         var handler = new CompleteArrangementHandler(db);
-        var result = await handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id, 0u));
+        var result = await handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id));
 
         Assert.Equal(ArrangementStatus.Completed, result.Status);
-        Assert.Equal(1u, result.RowVersion);
     }
 
     [Fact]
@@ -32,7 +31,7 @@ public sealed class CompleteArrangementHandlerTests
         var handler = new CompleteArrangementHandler(db);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id, 0u)));
+            handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id)));
     }
 
     [Fact]
@@ -44,20 +43,9 @@ public sealed class CompleteArrangementHandlerTests
         var handler = new CompleteArrangementHandler(db);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id, 0u)));
+            handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id)));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateDb();
-        var arrangement = await SeedAsync(db, ArrangementStatus.Started);
-
-        var handler = new CompleteArrangementHandler(db);
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new CompleteArrangementCommand(arrangement.Id, 99u)));
-    }
 
     [Fact]
     public async Task HandleAsync_ThrowsNotFound_WhenMissing()
@@ -66,7 +54,7 @@ public sealed class CompleteArrangementHandlerTests
         var handler = new CompleteArrangementHandler(db);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() =>
-            handler.HandleAsync(new CompleteArrangementCommand(Guid.NewGuid(), 0u)));
+            handler.HandleAsync(new CompleteArrangementCommand(Guid.NewGuid())));
     }
 
     private static async Task<ArrangementEntity> SeedAsync(ArrangementDbContext db, ArrangementStatus status)

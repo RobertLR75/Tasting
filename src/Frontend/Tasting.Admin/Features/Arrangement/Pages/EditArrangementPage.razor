@@ -1,4 +1,5 @@
 @page "/arrangements/{ArrangementId:guid}/edit"
+@using global::System.Net
 @using MudBlazor
 @using Tasting.Admin.Features.Arrangement.Models
 @using Tasting.Admin.Features.Arrangement.Services
@@ -94,12 +95,21 @@
 
             var request = new UpdateArrangementRequest(
                 arrangementName,
-                description,
-                currentArrangement.RowVersion);
+                description);
             var result = await ArrangementsApiClient.UpdateAsync(ArrangementId, request);
             if (result != null)
             {
                 Navigation.NavigateTo("/arrangements");
+            }
+        }
+        catch (ArrangementConflictException ex)
+        {
+            errorMessage = ex.Message;
+            currentArrangement = ex.FreshArrangement;
+            if (currentArrangement != null)
+            {
+                arrangementName = currentArrangement.Name;
+                description = currentArrangement.Description ?? "";
             }
         }
         catch (Exception ex)

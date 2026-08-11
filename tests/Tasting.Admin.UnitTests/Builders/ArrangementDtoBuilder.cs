@@ -8,7 +8,6 @@ public class ArrangementDtoBuilder
     private string _name = "Test Arrangement";
     private string? _description = null;
     private ArrangementStatus _status = ArrangementStatus.Created;
-    private uint _rowVersion = 1;
     private DateTimeOffset _createdAt = DateTimeOffset.UtcNow;
     private DateTimeOffset? _updatedAt = null;
 
@@ -36,12 +35,6 @@ public class ArrangementDtoBuilder
         return this;
     }
 
-    public ArrangementDtoBuilder WithRowVersion(uint rowVersion)
-    {
-        _rowVersion = rowVersion;
-        return this;
-    }
-
     public ArrangementDtoBuilder WithCreatedAt(DateTimeOffset createdAt)
     {
         _createdAt = createdAt;
@@ -56,7 +49,7 @@ public class ArrangementDtoBuilder
 
     public ArrangementDto Build()
     {
-        return new ArrangementDto(_id, _name, _description, _status, _rowVersion, _createdAt, _updatedAt, [], []);
+        return new ArrangementDto(_id, _name, _description, _status, _createdAt, _updatedAt, [], []);
     }
 
     public static ArrangementDtoBuilder Default()

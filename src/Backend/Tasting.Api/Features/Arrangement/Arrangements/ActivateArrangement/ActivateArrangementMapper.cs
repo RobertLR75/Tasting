@@ -6,7 +6,7 @@ public sealed class ActivateArrangementMapper
     : BaseCommandMapper<ActivateArrangementRequest, ArrangementResponse, ActivateArrangementCommand, Domain.Arrangement>
 {
     public override ActivateArrangementCommand ToCommand(ActivateArrangementRequest req)
-        => new(Guid.Empty, req.RowVersion);
+        => new(Guid.Empty);
 
     public override Task<ArrangementResponse> FromEntityAsync(
         Domain.Arrangement entity,
@@ -16,7 +16,6 @@ public sealed class ActivateArrangementMapper
             entity.Name,
             entity.Description,
             entity.Status,
-            entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
             entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),

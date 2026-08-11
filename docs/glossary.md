@@ -23,8 +23,8 @@
 **Used in:** Add participant/beer-endepunkter, konfliktrespons `409 Conflict`.
 
 ## Optimistic concurrency
-**Definition:** Versjonsbasert write-kontroll der mutasjoner krever match på kjent versjon (ETag/RowVersion), ellers `409 Conflict`.  
-**Used in:** Start/update/add participant/add beer-endepunkter.
+**Definition:** Backend-intern versjonsbasert write-kontroll der persistenslaget oppdager konkurrerende writes mellom lesing og commit. Klienter sender ingen versjonsverdi; tapende writes gir `409 Conflict` uten automatisk retry.
+**Used in:** Arrangement- og ratingmutasjoner med samtidige writes.
 
 ## Rating window
 **Definition:** Tids-/statusvindu der rating er gyldig; i dette domenet kun mens arrangement er `Started`.  

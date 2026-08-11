@@ -12,11 +12,13 @@ public sealed class GetArrangementHandler(ArrangementDbContext dbContext)
         GetArrangementQuery request,
         CancellationToken ct = default)
     {
-        return await dbContext.Arrangements
+        var arrangement = await dbContext.Arrangements
             .AsNoTracking()
             .Include(a => a.Participants)
             .Include(a => a.Beers)
             .FirstOrDefaultAsync(a => a.Id == request.ArrangementId, ct)
             ?? throw new ServiceNotFoundException($"Arrangement '{request.ArrangementId}' was not found.");
+
+        return arrangement.ToDomain();
     }
 }

@@ -6,7 +6,7 @@ using Tasting.Api.Features.Catalog.Domain;
 using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Infrastructure.Catalog;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -24,12 +24,11 @@ public sealed class AddBeerHandlerTests
         var handler = new AddBeerHandler(db, catalogDb);
 
         var result = await handler.HandleAsync(
-            new AddBeerCommand(arrangement.Id, beer.Id, arrangement.RowVersion),
+            new AddBeerCommand(arrangement.Id, beer.Id),
             CancellationToken.None);
 
         Assert.Single(result.Beers);
         Assert.Equal(beer.Id, result.Beers[0].BeerId);
-        Assert.Equal(1u, result.RowVersion);
     }
 
     [Fact]
@@ -44,7 +43,7 @@ public sealed class AddBeerHandlerTests
         var handler = new AddBeerHandler(db, catalogDb);
 
         await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new AddBeerCommand(arrangement.Id, beer.Id, arrangement.RowVersion),
+            new AddBeerCommand(arrangement.Id, beer.Id),
             CancellationToken.None));
     }
 
@@ -59,32 +58,17 @@ public sealed class AddBeerHandlerTests
 
         var handler = new AddBeerHandler(db, catalogDb);
         await handler.HandleAsync(
-            new AddBeerCommand(arrangement.Id, beer.Id, arrangement.RowVersion),
+            new AddBeerCommand(arrangement.Id, beer.Id),
             CancellationToken.None);
 
         var updated = await db.Arrangements.FindAsync(arrangement.Id);
         Assert.NotNull(updated);
 
         await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new AddBeerCommand(arrangement.Id, beer.Id, updated.RowVersion),
+            new AddBeerCommand(arrangement.Id, beer.Id),
             CancellationToken.None));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateArrangementDbContext();
-        await using var catalogDb = CreateCatalogDbContext();
-
-        var arrangement = await SeedArrangementAsync(db, ArrangementStatus.Created);
-        var beer = await SeedBeerAsync(catalogDb);
-
-        var handler = new AddBeerHandler(db, catalogDb);
-
-        await Assert.ThrowsAsync<ConflictException>(() => handler.HandleAsync(
-            new AddBeerCommand(arrangement.Id, beer.Id, RowVersion: 99u),
-            CancellationToken.None));
-    }
 
     private static async Task<ArrangementEntity> SeedArrangementAsync(
         ArrangementDbContext db, ArrangementStatus status)

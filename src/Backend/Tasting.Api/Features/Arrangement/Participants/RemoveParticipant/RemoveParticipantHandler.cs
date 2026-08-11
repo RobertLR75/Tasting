@@ -23,13 +23,6 @@ public sealed class RemoveParticipantHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Participants can only be removed when arrangement is in 'Created' status. Current status: '{arrangement.Status}'.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         var participant = arrangement.Participants
             .FirstOrDefault(p => p.UserId == request.UserId)
             ?? throw new ServiceNotFoundException($"Participant '{request.UserId}' was not found in arrangement '{request.ArrangementId}'.");
@@ -48,6 +41,6 @@ public sealed class RemoveParticipantHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

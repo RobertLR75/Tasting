@@ -22,13 +22,6 @@ public sealed class CancelArrangementHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Arrangement cannot be cancelled from status '{arrangement.Status}'. Only 'Created' arrangements can be cancelled.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         arrangement.Status = ArrangementStatus.Canceled;
         arrangement.RowVersion++;
         arrangement.UpdatedAt = DateTimeOffset.UtcNow;
@@ -43,6 +36,6 @@ public sealed class CancelArrangementHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

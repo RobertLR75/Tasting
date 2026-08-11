@@ -4,7 +4,7 @@ using Tasting.Api.Features.Arrangement.Arrangements.GetArrangement;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Infrastructure.Arrangement;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 

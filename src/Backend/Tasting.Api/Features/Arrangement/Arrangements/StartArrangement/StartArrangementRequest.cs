@@ -1,3 +1,6 @@
 namespace Tasting.Api.Features.Arrangement.Arrangements.StartArrangement;
 
-public sealed record StartArrangementRequest(uint RowVersion);
+public sealed class StartArrangementRequest
+{
+    public Guid ArrangementId { get; set; }
+}

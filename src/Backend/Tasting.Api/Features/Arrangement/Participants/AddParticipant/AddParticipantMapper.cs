@@ -6,7 +6,7 @@ public sealed class AddParticipantMapper
     : BaseCommandMapper<AddParticipantRequest, ArrangementResponse, AddParticipantCommand, Domain.Arrangement>
 {
     public override AddParticipantCommand ToCommand(AddParticipantRequest req)
-        => new(Guid.Empty, req.UserId, req.RowVersion);
+        => new(Guid.Empty, req.UserId);
 
     public override Task<ArrangementResponse> FromEntityAsync(
         Domain.Arrangement entity,
@@ -16,7 +16,6 @@ public sealed class AddParticipantMapper
             entity.Name,
             entity.Description,
             entity.Status,
-            entity.RowVersion,
             entity.CreatedAt,
             entity.UpdatedAt,
             entity.Beers.Select(b => new ArrangementBeerItem(b.Id, b.BeerId, b.NameSnapshot)).ToList(),

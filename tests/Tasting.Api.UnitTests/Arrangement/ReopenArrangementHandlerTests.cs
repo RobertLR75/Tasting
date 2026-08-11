@@ -4,7 +4,7 @@ using Tasting.Api.Features.Arrangement.Arrangements.ReopenArrangement;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Infrastructure.Arrangement;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -17,26 +17,14 @@ public sealed class ReopenArrangementHandlerTests
         var arrangement = await SeedAsync(db, ArrangementStatus.Canceled, rowVersion: 2u, withMembership: true);
 
         var handler = new ReopenArrangementHandler(db);
-        var result = await handler.HandleAsync(new ReopenArrangementCommand(arrangement.Id, 2u));
+        var result = await handler.HandleAsync(new ReopenArrangementCommand(arrangement.Id));
 
         Assert.Equal(ArrangementStatus.Created, result.Status);
-        Assert.Equal(3u, result.RowVersion);
         Assert.NotNull(result.UpdatedAt);
         Assert.Single(result.Beers);
         Assert.Single(result.Participants);
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateDb();
-        var arrangement = await SeedAsync(db, ArrangementStatus.Canceled, rowVersion: 2u);
-
-        var handler = new ReopenArrangementHandler(db);
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new ReopenArrangementCommand(arrangement.Id, 1u)));
-    }
 
     [Fact]
     public async Task HandleAsync_ThrowsNotFound_WhenMissing()
@@ -45,7 +33,7 @@ public sealed class ReopenArrangementHandlerTests
         var handler = new ReopenArrangementHandler(db);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() =>
-            handler.HandleAsync(new ReopenArrangementCommand(Guid.NewGuid(), 0u)));
+            handler.HandleAsync(new ReopenArrangementCommand(Guid.NewGuid())));
     }
 
     [Theory]
@@ -61,7 +49,7 @@ public sealed class ReopenArrangementHandlerTests
         var handler = new ReopenArrangementHandler(db);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new ReopenArrangementCommand(arrangement.Id, 0u)));
+            handler.HandleAsync(new ReopenArrangementCommand(arrangement.Id)));
     }
 
     private static async Task<ArrangementEntity> SeedAsync(

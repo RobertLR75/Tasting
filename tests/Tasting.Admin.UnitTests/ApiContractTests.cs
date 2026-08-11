@@ -139,19 +139,18 @@ public sealed class ApiContractTests
     }
 
     [Fact]
-    public void ArrangementLifecycleRequest_ShouldIncludeRowVersion()
+    public void ArrangementLifecycleRequest_ShouldNotExposeRowVersion()
     {
-        var request = new ArrangementLifecycleRequest(3);
-        
-        Assert.Equal(3u, request.RowVersion);
+        var request = new ArrangementLifecycleRequest();
+        Assert.DoesNotContain(request.GetType().GetProperties(), property => property.Name == "RowVersion");
     }
 
     [Fact]
-    public void AddBeerToArrangementRequest_ShouldIncludeRowVersion()
+    public void ArrangementContracts_ShouldNotExposeRowVersion()
     {
-        var rowVersion = 5u;
-        var request = new AddBeerToArrangementRequest(Guid.NewGuid(), rowVersion);
-
-        Assert.Equal(rowVersion, request.RowVersion);
+        var request = new AddBeerToArrangementRequest(Guid.NewGuid());
+        Assert.DoesNotContain(request.GetType().GetProperties(), property => property.Name == "RowVersion");
+        Assert.DoesNotContain(typeof(ArrangementDto).GetProperties(), property => property.Name == "RowVersion");
+        Assert.DoesNotContain(typeof(UpdateArrangementRequest).GetProperties(), property => property.Name == "RowVersion");
     }
 }

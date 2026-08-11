@@ -24,13 +24,6 @@ public sealed class ActivateArrangementHandler(ArrangementDbContext dbContext)
             throw new ConflictException(
                 $"Arrangement cannot be activated from status '{arrangement.Status}'. Only 'Created' arrangements can be activated.");
         }
-
-        if (arrangement.RowVersion != request.RowVersion)
-        {
-            throw new ConflictException(
-                "Arrangement has been modified by another request. Please reload and retry.");
-        }
-
         arrangement.Status = ArrangementStatus.Active;
         arrangement.RowVersion++;
         arrangement.UpdatedAt = DateTimeOffset.UtcNow;
@@ -45,6 +38,6 @@ public sealed class ActivateArrangementHandler(ArrangementDbContext dbContext)
                 "Arrangement was modified concurrently. Please reload and retry.");
         }
 
-        return arrangement;
+        return arrangement.ToDomain();
     }
 }

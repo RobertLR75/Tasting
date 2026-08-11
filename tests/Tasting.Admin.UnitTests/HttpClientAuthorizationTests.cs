@@ -85,7 +85,7 @@ public sealed class HttpClientAuthorizationTests
     }
 
     [Fact]
-    public async Task ArrangementsApiClient_UpdateAsync_SendsRowVersion()
+    public async Task ArrangementsApiClient_UpdateAsync_DoesNotSendRowVersion()
     {
         var innerHandler = new CapturingHandler(HttpStatusCode.OK)
         {
@@ -98,16 +98,16 @@ public sealed class HttpClientAuthorizationTests
         var client = new ArrangementsApiClient(httpClient);
         var arrangementId = Guid.Parse("2771b182-209c-4372-a4fa-101c186e15c1");
 
-        await client.UpdateAsync(arrangementId, new UpdateArrangementRequest("Updated", null, 7));
+        await client.UpdateAsync(arrangementId, new UpdateArrangementRequest("Updated", null));
 
         Assert.Equal(HttpMethod.Put, innerHandler.Request?.Method);
         Assert.Equal($"/api/v1/arrangements/{arrangementId}", innerHandler.Request?.RequestUri?.AbsolutePath);
         using var document = JsonDocument.Parse(innerHandler.RequestBody ?? "{}");
-        Assert.Equal(7, document.RootElement.GetProperty("rowVersion").GetInt32());
+        Assert.False(document.RootElement.TryGetProperty("rowVersion", out _));
     }
 
     [Fact]
-    public async Task ArrangementsApiClient_GetAsync_ReadsRowVersion()
+    public async Task ArrangementsApiClient_GetAsync_ReadsCleanContract()
     {
         var innerHandler = new CapturingHandler(HttpStatusCode.OK)
         {
@@ -122,11 +122,10 @@ public sealed class HttpClientAuthorizationTests
         var arrangement = await client.GetAsync(Guid.Parse("2771b182-209c-4372-a4fa-101c186e15c1"));
 
         Assert.NotNull(arrangement);
-        Assert.Equal(7u, arrangement.RowVersion);
     }
 
     [Fact]
-    public async Task ArrangementsApiClient_ReopenAsync_PostsRowVersionToReopenEndpoint()
+    public async Task ArrangementsApiClient_ReopenAsync_PostsCleanRequestToReopenEndpoint()
     {
         var innerHandler = new CapturingHandler(HttpStatusCode.OK)
         {
@@ -139,12 +138,34 @@ public sealed class HttpClientAuthorizationTests
         var client = new ArrangementsApiClient(httpClient);
         var arrangementId = Guid.Parse("2771b182-209c-4372-a4fa-101c186e15c1");
 
-        await client.ReopenAsync(arrangementId, 7);
+        await client.ReopenAsync(arrangementId);
 
         Assert.Equal(HttpMethod.Post, innerHandler.Request?.Method);
         Assert.Equal($"/api/v1/arrangements/{arrangementId}/reopen", innerHandler.Request?.RequestUri?.AbsolutePath);
         using var document = JsonDocument.Parse(innerHandler.RequestBody ?? "{}");
-        Assert.Equal(7, document.RootElement.GetProperty("rowVersion").GetInt32());
+        Assert.False(document.RootElement.TryGetProperty("rowVersion", out _));
+    }
+
+    [Fact]
+    public async Task ArrangementsApiClient_UpdateAsync_UsesUnifiedConflictMessage()
+    {
+        var innerHandler = new CapturingHandler(HttpStatusCode.Conflict)
+        {
+            ResponseContent = """{"code":"conflict","message":"Arrangement was modified concurrently. Please reload and retry.","correlationId":"test-123"}""",
+            SecondStatusCode = HttpStatusCode.OK,
+            SecondResponseContent = """{"id":"2771b182-209c-4372-a4fa-101c186e15c1","name":"Winner","description":null,"status":0,"createdAt":"2026-08-06T00:00:00Z","updatedAt":null,"beers":[],"participants":[]}"""
+        };
+        var client = new ArrangementsApiClient(new HttpClient(innerHandler)
+        {
+            BaseAddress = new Uri("https://api.example.test")
+        });
+
+        var exception = await Assert.ThrowsAsync<ArrangementConflictException>(() =>
+            client.UpdateAsync(Guid.NewGuid(), new UpdateArrangementRequest("Updated", null)));
+
+        Assert.Equal(HttpStatusCode.Conflict, exception.StatusCode);
+        Assert.Equal("Arrangement was modified concurrently. Please reload and retry.", exception.Message);
+        Assert.Equal("Winner", exception.FreshArrangement?.Name);
     }
 
     private sealed class CapturingHandler(HttpStatusCode statusCode) : HttpMessageHandler
@@ -152,6 +173,9 @@ public sealed class HttpClientAuthorizationTests
         public HttpRequestMessage? Request { get; private set; }
         public string? RequestBody { get; private set; }
         public string ResponseContent { get; set; } = """{"items":[]}""";
+        public HttpStatusCode? SecondStatusCode { get; set; }
+        public string? SecondResponseContent { get; set; }
+        private int _requestCount;
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -159,10 +183,16 @@ public sealed class HttpClientAuthorizationTests
         {
             Request = request;
             RequestBody = request.Content?.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
-            return Task.FromResult(new HttpResponseMessage(statusCode)
+            var currentStatus = _requestCount++ > 0 && SecondStatusCode.HasValue
+                ? SecondStatusCode.Value
+                : statusCode;
+            var currentContent = _requestCount > 1 && SecondResponseContent is not null
+                ? SecondResponseContent
+                : ResponseContent;
+            return Task.FromResult(new HttpResponseMessage(currentStatus)
             {
                 RequestMessage = request,
-                Content = new StringContent(ResponseContent)
+                Content = new StringContent(currentContent)
             });
         }
     }

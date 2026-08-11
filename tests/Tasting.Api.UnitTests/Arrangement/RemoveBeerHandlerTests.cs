@@ -4,7 +4,7 @@ using Tasting.Api.Features.Arrangement.Beers.RemoveBeer;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Infrastructure.Arrangement;
 using Xunit;
-using ArrangementEntity = Tasting.Api.Features.Arrangement.Domain.Arrangement;
+using ArrangementEntity = Tasting.Api.Infrastructure.Arrangement.ArrangementRecord;
 
 namespace Tasting.Api.UnitTests.Arrangement;
 
@@ -19,10 +19,9 @@ public sealed class RemoveBeerHandlerTests
 
         var handler = new RemoveBeerHandler(db);
         var result = await handler.HandleAsync(
-            new RemoveBeerCommand(arrangement.Id, beerId, 0u));
+            new RemoveBeerCommand(arrangement.Id, beerId));
 
         Assert.Empty(result.Beers);
-        Assert.Equal(1u, result.RowVersion);
     }
 
     [Fact]
@@ -35,7 +34,7 @@ public sealed class RemoveBeerHandlerTests
         var handler = new RemoveBeerHandler(db);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new RemoveBeerCommand(arrangement.Id, beerId, 0u)));
+            handler.HandleAsync(new RemoveBeerCommand(arrangement.Id, beerId)));
     }
 
     [Fact]
@@ -47,21 +46,9 @@ public sealed class RemoveBeerHandlerTests
         var handler = new RemoveBeerHandler(db);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() =>
-            handler.HandleAsync(new RemoveBeerCommand(arrangement.Id, Guid.NewGuid(), 0u)));
+            handler.HandleAsync(new RemoveBeerCommand(arrangement.Id, Guid.NewGuid())));
     }
 
-    [Fact]
-    public async Task HandleAsync_ThrowsConflict_WhenRowVersionMismatch()
-    {
-        await using var db = CreateDb();
-        var beerId = Guid.NewGuid();
-        var arrangement = await SeedWithBeerAsync(db, beerId, ArrangementStatus.Created);
-
-        var handler = new RemoveBeerHandler(db);
-
-        await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new RemoveBeerCommand(arrangement.Id, beerId, 99u)));
-    }
 
     private static async Task<ArrangementEntity> SeedAsync(ArrangementDbContext db, ArrangementStatus status)
     {

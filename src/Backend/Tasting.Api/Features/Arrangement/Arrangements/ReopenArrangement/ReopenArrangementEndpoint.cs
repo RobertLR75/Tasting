@@ -24,6 +24,6 @@ public sealed class ReopenArrangementEndpoint(
     protected override ReopenArrangementCommand ToCommand(ReopenArrangementRequest req)
     {
         var arrangementId = Route<Guid>("arrangementId");
-        return new ReopenArrangementCommand(arrangementId, req.RowVersion);
+        return new ReopenArrangementCommand(arrangementId);
     }
 }

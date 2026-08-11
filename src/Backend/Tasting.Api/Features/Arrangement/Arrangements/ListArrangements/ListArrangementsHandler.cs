@@ -24,6 +24,6 @@ public sealed class ListArrangementsHandler(ArrangementDbContext dbContext)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync(ct);
 
-        return new ListArrangementsResult(items);
+        return new ListArrangementsResult(items.Select(item => item.ToDomain()).ToList());
     }
 }

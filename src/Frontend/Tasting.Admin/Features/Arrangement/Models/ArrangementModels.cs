@@ -16,7 +16,6 @@ public record ArrangementDto(
     string Name,
     string? Description,
     ArrangementStatus Status,
-    uint RowVersion,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt,
     IReadOnlyList<ArrangementBeerItem> Beers,
@@ -30,13 +29,10 @@ public record CreateArrangementRequest(
 
 public record UpdateArrangementRequest(
     string Name,
-    string? Description,
-    uint RowVersion
+    string? Description
 );
 
-public record ArrangementLifecycleRequest(
-    uint RowVersion
-);
+public record ArrangementLifecycleRequest;
 
 public record ListArrangementsResponse(
     IEnumerable<ArrangementDto> Items
@@ -50,8 +46,7 @@ public record ArrangementBeerDto(
 );
 
 public record AddBeerToArrangementRequest(
-    Guid BeerId,
-    uint RowVersion
+    Guid BeerId
 );
 
 public record ArrangementParticipantDto(
@@ -62,6 +57,5 @@ public record ArrangementParticipantDto(
 );
 
 public record AddParticipantToArrangementRequest(
-    Guid UserId,
-    uint RowVersion
+    Guid UserId
 );
