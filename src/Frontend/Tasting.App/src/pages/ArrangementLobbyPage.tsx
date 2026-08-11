@@ -20,7 +20,10 @@ export function ArrangementLobbyPage() {
           setError('');
         }
       } catch (reason) {
-        if (active) setError(reason instanceof ApiError ? reason.message : 'Kunne ikke laste arrangementet.');
+        if (active) {
+          setArrangement(undefined);
+          setError(reason instanceof ApiError ? reason.message : 'Kunne ikke laste arrangementet.');
+        }
       }
     }
 

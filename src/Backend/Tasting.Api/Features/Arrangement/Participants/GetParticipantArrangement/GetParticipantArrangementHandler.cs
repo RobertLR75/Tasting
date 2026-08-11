@@ -39,6 +39,6 @@ public sealed class GetParticipantArrangementHandler(ArrangementDbContext dbCont
                 beer.BeerTypeSnapshot)).ToArray()
             : [];
 
-        return new ParticipantArrangementResponse(arrangement.Id, arrangement.Name, arrangement.Status.ToString(), beers);
+        return new ParticipantArrangementResponse(arrangement.Id, arrangement.Name, arrangement.Status, beers);
     }
 }

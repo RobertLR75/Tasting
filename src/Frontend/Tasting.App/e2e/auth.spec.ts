@@ -109,6 +109,35 @@ test('participant arrangement backend errors are shown cleanly', async ({ page }
   await expect(page.getByRole('alert')).toHaveText('Arrangementet ble ikke funnet.');
 });
 
+test('an invalid arrangement status response replaces the lobby content', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/canceled', route => route.fulfill({
+    status: 409, contentType: 'application/json',
+    body: JSON.stringify({ code: 'conflict', message: 'Arrangementet er avlyst.', correlationId: 'corr-state' }),
+  }));
+
+  await page.goto('/arrangements/canceled/lobby');
+
+  await expect(page.getByRole('alert')).toHaveText('Arrangementet er avlyst.');
+  await expect(page.getByText('Venter på at arrangementet starter…')).toHaveCount(0);
+});
+
+test('an unauthorized arrangement response returns the participant to login', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements/expired', route => route.fulfill({
+    status: 401, contentType: 'application/json',
+    body: JSON.stringify({ code: 'unauthorized', message: 'Authentication is required.', correlationId: 'corr-auth' }),
+  }));
+
+  await page.goto('/arrangements/expired/lobby');
+
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 function createToken(expiresAt: number): string {
   return `header.${Buffer.from(JSON.stringify({ exp: Math.floor(expiresAt / 1000) })).toString('base64url')}.signature`;
 }

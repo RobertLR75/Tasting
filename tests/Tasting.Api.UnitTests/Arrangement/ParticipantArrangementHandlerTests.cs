@@ -30,7 +30,7 @@ public sealed class ParticipantArrangementHandlerTests
         var result = await new GetParticipantArrangementHandler(db)
             .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, userId));
 
-        Assert.Equal("Active", result.Status);
+        Assert.Equal(ArrangementStatus.Active, result.Status);
         Assert.Empty(result.Beers);
     }
 
@@ -64,6 +64,29 @@ public sealed class ParticipantArrangementHandlerTests
             .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, userId));
 
         Assert.Equal("Revealed beer", Assert.Single(result.Beers).Name);
+    }
+
+    [Fact]
+    public async Task GetParticipantArrangement_ReturnsNotFound_WhenArrangementDoesNotExist()
+    {
+        await using var db = CreateArrangementDbContext();
+
+        await Assert.ThrowsAsync<ServiceNotFoundException>(() => new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(Guid.NewGuid(), Guid.NewGuid())));
+    }
+
+    [Fact]
+    public async Task GetParticipantArrangement_RejectsCanceledArrangement()
+    {
+        await using var db = CreateArrangementDbContext();
+        var userId = Guid.NewGuid();
+        var arrangement = CreateArrangement("Canceled", ArrangementStatus.Canceled);
+        arrangement.Participants.Add(new ArrangementParticipant { Id = Guid.NewGuid(), ArrangementId = arrangement.Id, UserId = userId });
+        db.Arrangements.Add(arrangement);
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ConflictException>(() => new GetParticipantArrangementHandler(db)
+            .HandleAsync(new GetParticipantArrangementQuery(arrangement.Id, userId)));
     }
 
     [Fact]

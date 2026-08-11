@@ -1,4 +1,6 @@
 using SharedLibrary.Services.Interfaces;
+using System.Text.Json.Serialization;
+using Tasting.Api.Features.Arrangement.Domain;
 
 namespace Tasting.Api.Features.Arrangement.Participants.GetParticipantArrangement;
 
@@ -8,7 +10,7 @@ public sealed record GetParticipantArrangementQuery(Guid ArrangementId, Guid Use
 public sealed record ParticipantArrangementResponse(
     Guid Id,
     string Name,
-    string Status,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))] ArrangementStatus Status,
     IReadOnlyList<ParticipantBeerResponse> Beers);
 
 public sealed record ParticipantBeerResponse(
