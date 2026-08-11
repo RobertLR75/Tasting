@@ -55,7 +55,15 @@ public abstract class DapperBase<T>(DbConnection connection)
             $"{prefix}{QuoteIdentifier(MapPropertyToColumn(p.Name))} AS {QuoteIdentifier(p.Name)}"));
     }
 
-    protected static string QuoteIdentifier(string identifier) => $"\"{identifier}\"";
+    protected static string QuoteIdentifier(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier) || identifier.Any(character => !(char.IsLetterOrDigit(character) || character == '_')))
+        {
+            throw new InvalidOperationException($"Unsafe PostgreSQL identifier '{identifier}'.");
+        }
+
+        return $"\"{identifier}\"";
+    }
 
     protected async Task EnsureConnectionOpenAsync(CancellationToken cancellationToken)
     {
