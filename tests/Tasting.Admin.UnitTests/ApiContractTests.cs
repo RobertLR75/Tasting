@@ -148,8 +148,8 @@ public sealed class ApiContractTests
     [Fact]
     public void ArrangementContracts_ShouldNotExposeRowVersion()
     {
-        var request = new AddBeerToArrangementRequest(Guid.NewGuid());
-        Assert.DoesNotContain(request.GetType().GetProperties(), property => property.Name == "RowVersion");
+        Assert.DoesNotContain(typeof(AddBeerToArrangementRequest).GetProperties(), property => property.Name == "RowVersion");
+        Assert.DoesNotContain(typeof(AddParticipantToArrangementRequest).GetProperties(), property => property.Name == "RowVersion");
         Assert.DoesNotContain(typeof(ArrangementDto).GetProperties(), property => property.Name == "RowVersion");
         Assert.DoesNotContain(typeof(UpdateArrangementRequest).GetProperties(), property => property.Name == "RowVersion");
     }
