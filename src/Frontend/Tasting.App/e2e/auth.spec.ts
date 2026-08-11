@@ -8,6 +8,7 @@ test('an unauthenticated participant is redirected to login', async ({ page }) =
 });
 
 test('a participant can log in and the session survives a reload', async ({ page }) => {
+  await page.route('**/api/v1/participant/arrangements', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{"items":[]}' }));
   await page.route('**/api/v1/users/login', async (route) => {
     await route.fulfill({
       status: 200,
@@ -27,11 +28,51 @@ test('a participant can log in and the session survives a reload', async ({ page
   await page.getByRole('button', { name: 'Logg inn' }).click();
 
   await expect(page).toHaveURL(/\/arrangements$/);
-  await expect(page.getByRole('heading', { name: 'Mine arrangementer' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Aktive arrangementer' })).toBeVisible();
 
   await page.reload();
   await expect(page).toHaveURL(/\/arrangements$/);
   await expect(page.getByText('Hei, Pat')).toBeVisible();
+});
+
+test('a participant can browse active arrangements and self-join', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ items: [{ id: 'arr-1', name: 'Sommerfest', description: 'Blindsmaking', joined: false }] }),
+  }));
+  await page.route('**/api/v1/participant/arrangements/arr-1/join', route => route.fulfill({
+    status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'arr-1', name: 'Sommerfest', status: 'Active' }),
+  }));
+
+  await page.goto('/arrangements');
+  await expect(page.getByRole('heading', { name: 'Sommerfest' })).toBeVisible();
+  await page.getByRole('button', { name: 'Bli med' }).click();
+
+  await expect(page).toHaveURL(/\/arrangements\/arr-1\/lobby$/);
+  await expect(page.getByRole('heading', { name: 'Du er med' })).toBeVisible();
+});
+
+test('a rejected self-join shows the backend error and stays on discovery', async ({ page }) => {
+  await page.addInitScript(token => localStorage.setItem('tasting.participant.session', JSON.stringify({
+    token, email: 'participant@tasting.no', firstName: 'Pat', lastName: 'Ticipant', role: 'User',
+  })), createToken(Date.now() + 60_000));
+  await page.route('**/api/v1/participant/arrangements', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ items: [{ id: 'arr-1', name: 'Sommerfest', joined: false }] }),
+  }));
+  await page.route('**/api/v1/participant/arrangements/arr-1/join', route => route.fulfill({
+    status: 409, contentType: 'application/json',
+    body: JSON.stringify({ code: 'conflict', message: 'Arrangementet kan ikke lenger ta imot deltakere.', correlationId: 'corr-join' }),
+  }));
+
+  await page.goto('/arrangements');
+  await page.getByRole('button', { name: 'Bli med' }).click();
+
+  await expect(page.getByRole('alert')).toHaveText('Arrangementet kan ikke lenger ta imot deltakere.');
+  await expect(page).toHaveURL(/\/arrangements$/);
 });
 
 function createToken(expiresAt: number): string {

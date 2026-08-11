@@ -172,7 +172,7 @@ Hvert wireframe følger dette mønsteret:
 │  Tasting                          [AppBar]   │
 ├──────────────────────────────────────────────┤
 │                                              │
-│  Mine arrangementer                          │
+│  Aktive arrangementer                        │
 │                                              │
 │  ┌──────────────────────────────────────┐    │
 │  │ Navn       │ Dato       │ Status     │    │
@@ -189,10 +189,10 @@ Hvert wireframe følger dette mønsteret:
 
 | Element | Regel |
 |---|---|
-| Grid | Viser kun arrangementer med status `Created` eller `Started` |
-| Grid | Viser kun arrangementer der brukeren er registrert som Participant |
-| «Bli med»-lenke | Vises kun for `Created`-arrangementer der brukeren er Participant |
-| «Bli med»-lenke | Navigerer til Screen 4 (Lobby) for valgt arrangement |
+| Grid | Viser kun synlige arrangementer med status `Active` |
+| «Bli med»-knapp | Selvregistrerer autentisert bruker som Participant; klienten sender ikke UserId |
+| «Bli med»-knapp | Navigerer til Screen 4 (Lobby) etter vellykket backend-respons |
+| «Gå til lobby»-knapp | Vises når brukeren allerede er Participant og navigerer uten ny join |
 | Tom liste | Viser «Ingen aktive arrangementer.» |
 
 **Backend-feil:**

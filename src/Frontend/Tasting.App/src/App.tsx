@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { ArrangementsPage } from './pages/ArrangementsPage';
 import { LoginPage } from './pages/LoginPage';
+import { ArrangementLobbyPage } from './pages/ArrangementLobbyPage';
 
 setupIonicReact();
 
@@ -17,6 +18,7 @@ function Routes() {
         {session ? <Redirect to="/arrangements" /> : <LoginPage />}
       </Route>
       <ProtectedRoute exact path="/arrangements" component={ArrangementsPage} />
+      <ProtectedRoute exact path="/arrangements/:arrangementId/lobby" component={ArrangementLobbyPage} />
       <Route exact path="/">
         <Redirect to={session ? '/arrangements' : '/login'} />
       </Route>

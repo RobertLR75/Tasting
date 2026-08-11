@@ -80,3 +80,8 @@
   margin-top: 0;
   font-family: Georgia, "Times New Roman", serif;
 }
+
+.arrangement-list { display: grid; gap: 1rem; margin-top: 2rem; }
+.arrangement-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem; border: 1px solid #dbc9b1; border-radius: 1rem; background: #fffaf3; }
+.arrangement-card h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; }
+.arrangement-card p { margin: 0.4rem 0 0; color: #705d4e; }
