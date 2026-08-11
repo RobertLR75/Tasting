@@ -1,3 +1,4 @@
+using System.Reflection;
 using Tasting.Admin.Features.Identity.Models;
 using Tasting.Admin.Features.Catalog.Models;
 using Tasting.Admin.Features.Arrangement.Models;
@@ -7,6 +8,22 @@ namespace Tasting.Admin.UnitTests;
 
 public sealed class ApiContractTests
 {
+    [Fact]
+    public void FrontendFeatureModels_ShouldNotExposeInternalVersions()
+    {
+        var adminAssembly = Assembly.Load("Tasting.Admin");
+        var forbiddenProperties = adminAssembly.GetTypes()
+            .Where(type => type.IsPublic && type.Namespace?.StartsWith("Tasting.Admin.Features", StringComparison.Ordinal) == true)
+            .SelectMany(type => type.GetProperties()
+                .Where(property => property.Name.Contains("Version", StringComparison.OrdinalIgnoreCase)
+                    || property.Name.Contains("ETag", StringComparison.OrdinalIgnoreCase)
+                    || property.Name.Contains("ConcurrencyToken", StringComparison.OrdinalIgnoreCase))
+                .Select(property => $"{type.FullName}.{property.Name}"))
+            .ToArray();
+
+        Assert.Empty(forbiddenProperties);
+    }
+
     [Fact]
     public void UserDto_ShouldHaveAllRequiredProperties()
     {

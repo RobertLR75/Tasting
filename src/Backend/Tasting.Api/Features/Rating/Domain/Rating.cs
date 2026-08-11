@@ -1,10 +1,10 @@
-using SharedLibrary.Services.Interfaces;
-using DomainRating = Tasting.Api.Features.Rating.Domain.Rating;
+using SharedLibrary.Interfaces;
 
-namespace Tasting.Api.Features.Rating.Ratings.SubmitRating;
+namespace Tasting.Api.Features.Rating.Domain;
 
-public record SubmitRatingCommand : IRequest<DomainRating>
+public sealed class Rating : IEntity
 {
+    public Guid Id { get; set; }
     public Guid ArrangementId { get; init; }
     public Guid ParticipantId { get; init; }
     public Guid BeerId { get; init; }
@@ -12,4 +12,7 @@ public record SubmitRatingCommand : IRequest<DomainRating>
     public decimal Smell { get; init; }
     public decimal Taste { get; init; }
     public decimal Toast { get; init; }
+    public decimal TotalRating { get; init; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }
