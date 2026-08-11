@@ -15,12 +15,16 @@ public sealed class GetParticipantArrangementHandler(ArrangementDbContext dbCont
     {
         var arrangement = await dbContext.Arrangements
             .AsNoTracking()
-            .Include(item => item.Participants)
-            .Include(item => item.Beers)
             .FirstOrDefaultAsync(item => item.Id == request.ArrangementId, ct)
             ?? throw new ServiceNotFoundException($"Arrangement '{request.ArrangementId}' was not found.");
 
-        if (!arrangement.Participants.Any(participant => participant.UserId == request.UserId))
+        var isParticipant = await dbContext.Participants
+            .AsNoTracking()
+            .AnyAsync(
+                participant => participant.ArrangementId == request.ArrangementId && participant.UserId == request.UserId,
+                ct);
+
+        if (!isParticipant)
         {
             throw new ForbiddenException("You are not a participant in this arrangement.");
         }
@@ -30,14 +34,20 @@ public sealed class GetParticipantArrangementHandler(ArrangementDbContext dbCont
             throw new ConflictException("The arrangement is canceled.");
         }
 
-        var beers = arrangement.Status is ArrangementStatus.Started or ArrangementStatus.Completed
-            ? arrangement.Beers.Select(beer => new ParticipantBeerResponse(
-                beer.BeerId,
-                beer.NameSnapshot,
-                beer.BreweryNameSnapshot,
-                beer.BeerStyleSnapshot,
-                beer.BeerTypeSnapshot)).ToArray()
-            : [];
+        ParticipantBeerResponse[] beers = [];
+        if (arrangement.Status is ArrangementStatus.Started or ArrangementStatus.Completed)
+        {
+            beers = await dbContext.Beers
+                .AsNoTracking()
+                .Where(beer => beer.ArrangementId == arrangement.Id)
+                .Select(beer => new ParticipantBeerResponse(
+                    beer.BeerId,
+                    beer.NameSnapshot,
+                    beer.BreweryNameSnapshot,
+                    beer.BeerStyleSnapshot,
+                    beer.BeerTypeSnapshot))
+                .ToArrayAsync(ct);
+        }
 
         return new ParticipantArrangementResponse(arrangement.Id, arrangement.Name, arrangement.Status, beers);
     }
