@@ -16,6 +16,16 @@ public sealed class AuthApiClient(HttpClient httpClient) : IAuthApiClient
         response.EnsureSuccessStatusCode();
 
         var payload = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        return payload ?? throw new InvalidOperationException("Login succeeded but the response payload was empty.");
+        if (payload is null)
+        {
+            throw new InvalidOperationException("Login succeeded but the response payload was empty.");
+        }
+
+        if (!string.Equals(payload.Role, "Admin", StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException("Only administrators can access this application.");
+        }
+
+        return payload;
     }
 }
