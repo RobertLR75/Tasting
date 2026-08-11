@@ -17,7 +17,7 @@ public interface IArrangementsApiClient
     Task<ArrangementDto?> CompleteAsync(Guid id);
     Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request);
     Task<bool> RemoveBeerAsync(Guid id, Guid beerId);
-    Task<ArrangementParticipantDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request);
+    Task<ArrangementDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request);
     Task<bool> RemoveParticipantAsync(Guid id, Guid userId);
 }
 
@@ -142,13 +142,13 @@ public class ArrangementsApiClient : IArrangementsApiClient
         }
     }
 
-    public async Task<ArrangementParticipantDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request)
+    public async Task<ArrangementDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request)
     {
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/participants", request);
             await EnsureArrangementSuccessAsync(id, response);
-            return await response.Content.ReadFromJsonAsync<ArrangementParticipantDto>();
+            return await response.Content.ReadFromJsonAsync<ArrangementDto>();
         }
         catch (HttpRequestException)
         {

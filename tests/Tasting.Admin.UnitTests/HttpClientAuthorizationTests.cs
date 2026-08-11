@@ -204,6 +204,29 @@ public sealed class HttpClientAuthorizationTests
         Assert.Equal(2, innerHandler.RequestCount);
     }
 
+    [Fact]
+    public async Task ArrangementsApiClient_AddParticipantAsync_ReadsArrangementResponse()
+    {
+        var arrangementId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var innerHandler = new CapturingHandler(HttpStatusCode.Created)
+        {
+            ResponseContent = $$"""{"id":"{{arrangementId}}","name":"Participants","description":null,"status":0,"createdAt":"2026-08-06T00:00:00Z","updatedAt":null,"beers":[],"participants":[{"id":"{{Guid.NewGuid()}}","userId":"{{userId}}","userName":"Test Participant"}]}"""
+        };
+        var client = new ArrangementsApiClient(new HttpClient(innerHandler)
+        {
+            BaseAddress = new Uri("https://api.example.test")
+        });
+
+        var result = await client.AddParticipantAsync(
+            arrangementId,
+            new AddParticipantToArrangementRequest(userId));
+
+        Assert.NotNull(result);
+        Assert.Equal(arrangementId, result.Id);
+        Assert.Contains(result.Participants, participant => participant.UserId == userId);
+    }
+
     private sealed class CapturingHandler(HttpStatusCode statusCode) : HttpMessageHandler
     {
         public HttpRequestMessage? Request { get; private set; }
