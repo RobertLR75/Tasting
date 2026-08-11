@@ -16,13 +16,18 @@ public static class PersistenceConfigurationSelector
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var configuredProvider = configuration["Persistence:Provider"];
+        var configuredProvider = configuration["Persistence:Provider"]; 
         var provider = string.IsNullOrWhiteSpace(configuredProvider)
             ? PersistenceProvider.EntityFramework
-            : Enum.TryParse<PersistenceProvider>(configuredProvider, ignoreCase: true, out var parsed)
-                ? parsed
-                : throw new InvalidOperationException(
-                    $"Unsupported persistence provider '{configuredProvider}'. Expected EntityFramework or Dapper.");
+            : configuredProvider.Trim() switch
+            {
+                var value when value.Equals(nameof(PersistenceProvider.EntityFramework), StringComparison.OrdinalIgnoreCase)
+                    => PersistenceProvider.EntityFramework,
+                var value when value.Equals(nameof(PersistenceProvider.Dapper), StringComparison.OrdinalIgnoreCase)
+                    => PersistenceProvider.Dapper,
+                _ => throw new InvalidOperationException(
+                    $"Unsupported persistence provider '{configuredProvider}'. Expected EntityFramework or Dapper.")
+            };
 
         var connectionString = configuration.GetConnectionString("TastingDb");
         if (string.IsNullOrWhiteSpace(connectionString))
