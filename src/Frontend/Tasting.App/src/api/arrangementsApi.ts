@@ -46,3 +46,32 @@ export function joinArrangement(arrangementId: string): Promise<JoinedArrangemen
 export function getParticipantArrangement(arrangementId: string): Promise<ParticipantArrangement> {
   return authenticatedApiRequest(`/api/v1/participant/arrangements/${arrangementId}`);
 }
+
+export interface RatingScores {
+  visibility: number;
+  smell: number;
+  taste: number;
+  toast: number;
+}
+
+export interface SubmittedRating extends RatingScores {
+  id: string;
+  arrangementId: string;
+  participantId: string;
+  beerId: string;
+  totalRating: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export function submitRating(
+  arrangementId: string,
+  beerId: string,
+  scores: RatingScores,
+): Promise<SubmittedRating> {
+  return authenticatedApiRequest(`/api/v1/arrangements/${arrangementId}/ratings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ beerId, ...scores }),
+  });
+}
