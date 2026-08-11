@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
+using SharedLibrary.FastEndpoints.Contracts;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Features.Identity.Users.Login;
 using Tasting.Api.Features.Identity.Users.ListUsers;
@@ -64,6 +65,48 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(body.Token);
         Assert.Contains(jwt.Claims, claim => claim.Type == JwtRegisteredClaimNames.Sub && claim.Value == IdentityApiFactory.AdminId.ToString());
         Assert.Contains(jwt.Claims, claim => claim.Type == "role" && claim.Value == UserRole.Admin.ToString());
+    }
+
+    [Fact]
+    public async Task Login_returns_token_for_active_participant_with_valid_password()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/users/login",
+            new
+            {
+                email = "user@tasting.no",
+                password = "password123"
+            });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.NotNull(body);
+        Assert.False(string.IsNullOrWhiteSpace(body.Token));
+        Assert.Equal("user@tasting.no", body.Email);
+        Assert.Equal(UserRole.User.ToString(), body.Role);
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(body.Token);
+        Assert.Contains(jwt.Claims, claim => claim.Type == JwtRegisteredClaimNames.Sub && claim.Value == IdentityApiFactory.UserId.ToString());
+        Assert.Contains(jwt.Claims, claim => claim.Type == "role" && claim.Value == UserRole.User.ToString());
+    }
+
+    [Fact]
+    public async Task Login_returns_unified_unauthorized_error_for_invalid_credentials()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/v1/users/login",
+            new
+            {
+                email = "user@tasting.no",
+                password = "wrong-password"
+            });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("unauthorized", body.Code);
+        Assert.Equal("Invalid email or password.", body.Message);
+        Assert.False(string.IsNullOrWhiteSpace(body.CorrelationId));
     }
 
     [Fact]
