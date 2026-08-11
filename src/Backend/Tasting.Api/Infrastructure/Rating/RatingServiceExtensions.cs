@@ -6,7 +6,7 @@ using Tasting.Api.Contracts;
 using Tasting.Api.Infrastructure.Arrangement;
 using Tasting.Api.Features.Rating.Ratings.SubmitRating;
 using Tasting.Api.Features.Rating.Results.GetResults;
-using RatingEntity = Tasting.Api.Infrastructure.Rating.Entities.Rating;
+using DomainRating = Tasting.Api.Features.Rating.Domain.Rating;
 
 namespace Tasting.Api.Infrastructure.Rating;
 
@@ -29,7 +29,7 @@ public static class RatingServiceExtensions
                 options.UseInMemoryDatabase("tasting-rating"));
         }
 
-        builder.Services.AddScoped<IRequestHandler<SubmitRatingCommand, RatingEntity>, SubmitRatingHandler>();
+        builder.Services.AddScoped<IRequestHandler<SubmitRatingCommand, DomainRating>, SubmitRatingHandler>();
         builder.Services.AddScoped<IRequestHandler<GetResultsQuery, GetResultsResponse>, GetResultsHandler>();
     }
 }

@@ -176,15 +176,15 @@ public class SubmitRatingHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task HandleAsync_NewRatingIncrements_RowVersionToOne()
+    public void RatingDomainModel_DoesNotExposePersistenceVersion()
     {
-        var cmd = ValidCommand();
-        var rating = await _handler.HandleAsync(cmd);
-        Assert.Equal(1u, rating.RowVersion);
+        Assert.DoesNotContain(
+            typeof(Tasting.Api.Features.Rating.Domain.Rating).GetProperties(),
+            property => property.Name.Contains("Version", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task HandleAsync_UpdatedRating_IncrementsRowVersion()
+    public async Task HandleAsync_UpdatedRating_ReturnsPureDomainModel()
     {
         var arrangementId = Guid.NewGuid();
         var participantId = Guid.NewGuid();
@@ -194,6 +194,7 @@ public class SubmitRatingHandlerTests : IDisposable
         await _handler.HandleAsync(cmd);
         var updated = await _handler.HandleAsync(cmd);
 
-        Assert.Equal(2u, updated.RowVersion);
+        Assert.IsType<Tasting.Api.Features.Rating.Domain.Rating>(updated);
+        Assert.Equal(8.25m, updated.TotalRating);
     }
 }

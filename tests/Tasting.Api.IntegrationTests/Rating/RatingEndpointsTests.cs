@@ -5,11 +5,13 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Data.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
@@ -138,6 +140,74 @@ public class RatingEndpointsTests : IClassFixture<RatingTestWebFactory>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task ConcurrentFirstSubmissions_OneWins_OneConflicts_ResultStaysConsistent_AndFreshSubmitSucceeds()
+    {
+        var arrangementId = Guid.NewGuid();
+        var beerId = Guid.NewGuid();
+        var payload = new { beerId, visibility = 8.0, smell = 8.0, taste = 8.0, toast = 8.0 };
+        _factory.ConcurrentRatingReadBarrier.Arm();
+
+        var responses = await Task.WhenAll(
+            _client.PostAsJsonAsync($"/api/v1/arrangements/{arrangementId}/ratings", payload),
+            _client.PostAsJsonAsync($"/api/v1/arrangements/{arrangementId}/ratings", payload));
+
+        Assert.Contains(responses, response => response.StatusCode == HttpStatusCode.Created);
+        var loser = Assert.Single(responses, response => response.StatusCode == HttpStatusCode.Conflict);
+        var error = await loser.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("conflict", error.GetProperty("code").GetString());
+        Assert.False(string.IsNullOrWhiteSpace(error.GetProperty("message").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(error.GetProperty("correlationId").GetString()));
+
+        var resultsResponse = await _client.GetAsync($"/api/v1/arrangements/{arrangementId}/results");
+        var results = (await resultsResponse.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("results");
+        Assert.Single(results.EnumerateArray());
+        Assert.Equal(1, results[0].GetProperty("ratingCount").GetInt32());
+        Assert.Equal(8.0m, results[0].GetProperty("totalRating").GetDecimal());
+
+        _factory.ResetStubDefaults();
+        var freshResponse = await _client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/ratings",
+            new { beerId, visibility = 9.0, smell = 9.0, taste = 9.0, toast = 9.0 });
+        Assert.Equal(HttpStatusCode.OK, freshResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task ConcurrentUpdates_OneWins_OneConflicts_PreservesWinnerAndResult_AndFreshUpdateSucceeds()
+    {
+        var arrangementId = Guid.NewGuid();
+        var beerId = Guid.NewGuid();
+        await _client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/ratings",
+            new { beerId, visibility = 5.0, smell = 5.0, taste = 5.0, toast = 5.0 });
+
+        _factory.ConcurrentRatingReadBarrier.Arm();
+
+        var responses = await Task.WhenAll(
+            _client.PostAsJsonAsync($"/api/v1/arrangements/{arrangementId}/ratings",
+                new { beerId, visibility = 7.0, smell = 7.0, taste = 7.0, toast = 7.0 }),
+            _client.PostAsJsonAsync($"/api/v1/arrangements/{arrangementId}/ratings",
+                new { beerId, visibility = 9.0, smell = 9.0, taste = 9.0, toast = 9.0 }));
+
+        var winner = Assert.Single(responses, response => response.StatusCode == HttpStatusCode.OK);
+        var loser = Assert.Single(responses, response => response.StatusCode == HttpStatusCode.Conflict);
+        var winningRating = await winner.Content.ReadFromJsonAsync<JsonElement>();
+        var winningTotal = winningRating.GetProperty("totalRating").GetDecimal();
+        var error = await loser.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("conflict", error.GetProperty("code").GetString());
+
+        var resultsResponse = await _client.GetAsync($"/api/v1/arrangements/{arrangementId}/results");
+        var result = (await resultsResponse.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("results")[0];
+        Assert.Equal(1, result.GetProperty("ratingCount").GetInt32());
+        Assert.Equal(winningTotal, result.GetProperty("totalRating").GetDecimal());
+
+        _factory.ResetStubDefaults();
+        var freshResponse = await _client.PostAsJsonAsync(
+            $"/api/v1/arrangements/{arrangementId}/ratings",
+            new { beerId, visibility = 6.0, smell = 6.0, taste = 6.0, toast = 6.0 });
+        Assert.Equal(HttpStatusCode.OK, freshResponse.StatusCode);
+    }
 }
 
 /// <summary>
@@ -155,6 +225,7 @@ public class RatingTestWebFactory : WebApplicationFactory<Program>, IAsyncLifeti
     private string? _previousConnectionString;
 
     public IArrangementService ArrangementServiceStub { get; } = Substitute.For<IArrangementService>();
+    public ConcurrentRatingReadBarrier ConcurrentRatingReadBarrier { get; } = new();
 
     public async Task InitializeAsync()
     {
@@ -232,6 +303,12 @@ public class RatingTestWebFactory : WebApplicationFactory<Program>, IAsyncLifeti
         {
             services.RemoveAll<IArrangementService>();
             services.AddSingleton(ArrangementServiceStub);
+            services.RemoveAll<RatingDbContext>();
+            services.RemoveAll<DbContextOptions<RatingDbContext>>();
+            services.AddSingleton(ConcurrentRatingReadBarrier);
+            services.AddDbContext<RatingDbContext>((provider, options) => options
+                .UseNpgsql(_postgres.ConnectionString)
+                .AddInterceptors(provider.GetRequiredService<ConcurrentRatingReadBarrier>()));
 
             // Override JWT validation without changing scheme registration
             services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -250,5 +327,37 @@ public class RatingTestWebFactory : WebApplicationFactory<Program>, IAsyncLifeti
                 };
             });
         });
+    }
+}
+
+public sealed class ConcurrentRatingReadBarrier : DbCommandInterceptor
+{
+    private TaskCompletionSource? _bothReadsStarted;
+    private int _remainingReads;
+
+    public void Arm()
+    {
+        _remainingReads = 2;
+        _bothReadsStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    public override async ValueTask<DbDataReader> ReaderExecutedAsync(
+        DbCommand command,
+        CommandExecutedEventData eventData,
+        DbDataReader result,
+        CancellationToken cancellationToken = default)
+    {
+        var gate = _bothReadsStarted;
+        if (gate is null
+            || Volatile.Read(ref _remainingReads) <= 0
+            || !command.CommandText.Contains("ratings", StringComparison.OrdinalIgnoreCase))
+            return result;
+
+        if (Interlocked.Decrement(ref _remainingReads) == 0)
+            gate.TrySetResult();
+
+        await gate.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+        _bothReadsStarted = null;
+        return result;
     }
 }
