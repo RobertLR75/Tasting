@@ -31,6 +31,18 @@ public class GenericDbContextTests
     }
 
     [Fact]
+    public void Model_StoresComplexValuesAsJson()
+    {
+        using var context = CreateContext();
+
+        var property = context.Model.FindEntityType(typeof(TestEntity))!
+            .FindProperty(nameof(TestEntity.Metadata))!;
+
+        Assert.Equal(typeof(string), property.GetValueConverter()!.ProviderClrType);
+        Assert.Equal(200, property.GetMaxLength());
+    }
+
+    [Fact]
     public void Model_WithNullableForeignKeyType_MapsNavigationUsingConventions()
     {
         using var context = CreateNullableNavigationContext();
@@ -81,6 +93,12 @@ public class GenericDbContextTests
         public DateTimeOffset? UpdatedAt { get; set; }
         public string Name { get; set; } = string.Empty;
         public EntityStatus Status { get; set; }
+        public Metadata Metadata { get; set; } = new();
+    }
+
+    private sealed class Metadata
+    {
+        public string Label { get; set; } = string.Empty;
     }
 
     private sealed class NullableNavigationEntity : IEntity

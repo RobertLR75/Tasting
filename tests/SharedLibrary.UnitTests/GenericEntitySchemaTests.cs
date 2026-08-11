@@ -46,6 +46,31 @@ public class GenericEntitySchemaTests
         Assert.False(result);
     }
 
+    [Theory]
+    [InlineData(nameof(AllTypesEntity.Number), GenericEntityColumnKind.Int32)]
+    [InlineData(nameof(AllTypesEntity.Offset), GenericEntityColumnKind.DateTimeOffset)]
+    [InlineData(nameof(AllTypesEntity.Timestamp), GenericEntityColumnKind.DateTime)]
+    [InlineData(nameof(AllTypesEntity.Id), GenericEntityColumnKind.Guid)]
+    [InlineData(nameof(AllTypesEntity.Enabled), GenericEntityColumnKind.Boolean)]
+    [InlineData(nameof(AllTypesEntity.LargeNumber), GenericEntityColumnKind.Int64)]
+    [InlineData(nameof(AllTypesEntity.Amount), GenericEntityColumnKind.Decimal)]
+    public void BuildPropertyRule_MapsSupportedScalarKinds(string propertyName, GenericEntityColumnKind expected)
+    {
+        var property = typeof(AllTypesEntity).GetProperty(propertyName)!;
+
+        var rule = GenericEntitySchema.BuildPropertyRule(property, typeof(AllTypesEntity));
+
+        Assert.Equal(expected, rule.ColumnKind);
+    }
+
+    [Fact]
+    public void EntityMetadata_ReturnsIdPropertiesAndTableName()
+    {
+        Assert.Equal(nameof(AllTypesEntity.Id), GenericEntitySchema.GetIdProperty(typeof(AllTypesEntity)).Name);
+        Assert.Contains(GenericEntitySchema.GetProperties(typeof(AllTypesEntity)), property => property.Name == nameof(AllTypesEntity.Amount));
+        Assert.Equal("AllTypesEntitys", GenericEntitySchema.GetTableName(typeof(AllTypesEntity)));
+    }
+
     private enum SampleStatus
     {
         Draft,
@@ -71,5 +96,18 @@ public class GenericEntitySchemaTests
     private sealed class UnsupportedEntity
     {
         public decimal Id { get; set; }
+    }
+
+    private sealed class AllTypesEntity : IEntity
+    {
+        public Guid Id { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
+        public int Number { get; set; }
+        public DateTimeOffset Offset { get; set; }
+        public DateTime Timestamp { get; set; }
+        public bool Enabled { get; set; }
+        public long LargeNumber { get; set; }
+        public decimal Amount { get; set; }
     }
 }
