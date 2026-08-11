@@ -10,7 +10,8 @@ Tasting/
 │   ├── Backend/
 │   │   └── Tasting.Api/              # .NET 8 API backend
 │   ├── Frontend/
-│   │   └── Tasting.Admin/            # Blazor Server frontend
+│   │   ├── Tasting.Admin/            # Blazor Server admin frontend
+│   │   └── Tasting.App/              # Ionic React participant frontend
 │   └── Shared/
 │       └── SharedLibrary/            # Shared code (DTOs, interfaces, utilities)
 ├── docs/
@@ -37,6 +38,8 @@ Tasting/
 - MudBlazor UI components
 - Razor components for pages and shared components
 - HttpClient for API communication
+- Ionic React + TypeScript participant app
+- Playwright participant journey tests
 
 ## Prerequisites
 
@@ -106,6 +109,14 @@ dotnet build
 dotnet run
 
 # Frontend available at: http://localhost:5002 (or next available port)
+```
+
+The participant app is developed independently from the admin backoffice:
+
+```bash
+cd src/Frontend/Tasting.App
+npm install
+VITE_API_BASE_URL=http://localhost:5000 npm run dev
 ```
 
 ### 4. Test Login

@@ -16,17 +16,12 @@ public sealed class LoginHandler(
 
         if (user is null || !user.IsActive)
         {
-            throw new InvalidOperationException("Invalid email or password");
+            throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            throw new InvalidOperationException("Invalid email or password");
-        }
-
-        if (user.Role != UserRole.Admin)
-        {
-            throw new UnauthorizedAccessException("Only administrators can access this application");
+            throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
         var token = tokenService.GenerateToken(user);
