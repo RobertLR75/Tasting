@@ -1,4 +1,5 @@
 export const SESSION_STORAGE_KEY = 'tasting.participant.session';
+export const SESSION_INVALIDATED_EVENT = 'tasting:participant-session-invalidated';
 
 export interface ParticipantSession {
   token: string;

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { persistSession, type ParticipantSession } from '../auth/session';
-import { authenticatedApiRequest } from './apiClient';
+import { persistSession, SESSION_INVALIDATED_EVENT, SESSION_STORAGE_KEY, type ParticipantSession } from '../auth/session';
+import { ApiError, authenticatedApiRequest } from './apiClient';
 
 const session: ParticipantSession = {
   token: createToken(Date.now() + 60_000),
@@ -25,6 +25,22 @@ describe('authenticated API requests', () => {
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(new Headers(init.headers).get('Authorization')).toBe(`Bearer ${session.token}`);
+  });
+
+  it('invalidates the live session when an authenticated request returns 401', async () => {
+    persistSession(localStorage, session);
+    const invalidated = vi.fn();
+    window.addEventListener(SESSION_INVALIDATED_EVENT, invalidated, { once: true });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      code: 'unauthorized',
+      message: 'Authentication is required.',
+      correlationId: 'corr-1',
+    }), { status: 401, headers: { 'Content-Type': 'application/json' } })));
+
+    await expect(authenticatedApiRequest('/api/v1/example')).rejects.toBeInstanceOf(ApiError);
+
+    expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeNull();
+    expect(invalidated).toHaveBeenCalledOnce();
   });
 });
 

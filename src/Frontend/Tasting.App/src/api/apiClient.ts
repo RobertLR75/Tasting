@@ -1,4 +1,4 @@
-import { removeSession, restoreSession } from '../auth/session';
+import { removeSession, restoreSession, SESSION_INVALIDATED_EVENT } from '../auth/session';
 
 interface ErrorResponse {
   code: string;
@@ -36,6 +36,7 @@ export async function authenticatedApiRequest<T>(path: string, init: RequestInit
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       removeSession(localStorage);
+      window.dispatchEvent(new Event(SESSION_INVALIDATED_EVENT));
     }
     throw error;
   }

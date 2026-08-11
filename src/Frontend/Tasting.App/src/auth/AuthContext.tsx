@@ -1,5 +1,11 @@
-import { createContext, type PropsWithChildren, useContext, useMemo, useState } from 'react';
-import { persistSession, removeSession, restoreSession, type ParticipantSession } from './session';
+import { createContext, type PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  persistSession,
+  removeSession,
+  restoreSession,
+  SESSION_INVALIDATED_EVENT,
+  type ParticipantSession,
+} from './session';
 
 interface AuthContextValue {
   session: ParticipantSession | null;
@@ -11,6 +17,11 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<ParticipantSession | null>(() => restoreSession(localStorage));
+  useEffect(() => {
+    const invalidate = () => setSession(null);
+    window.addEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+    return () => window.removeEventListener(SESSION_INVALIDATED_EVENT, invalidate);
+  }, []);
   const value = useMemo<AuthContextValue>(() => ({
     session,
     login(nextSession) {
