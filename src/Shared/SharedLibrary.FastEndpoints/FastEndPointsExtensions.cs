@@ -86,7 +86,7 @@ public static class FastEndPointsExtensions
             ServiceNotFoundException => (StatusCodes.Status404NotFound, "not_found", exception.Message),
             ConflictException => (StatusCodes.Status409Conflict, "conflict", exception.Message),
             ForbiddenException => (StatusCodes.Status403Forbidden, "forbidden", exception.Message),
-            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "unauthorized", exception.Message),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "unauthorized", exception.Message),
             ValidationException => (StatusCodes.Status400BadRequest, "validation_error", exception.Message),
             FluentValidation.ValidationException => (StatusCodes.Status400BadRequest, "validation_error", exception.Message),
             _ => (StatusCodes.Status500InternalServerError, "internal_error", "An unexpected error occurred.")

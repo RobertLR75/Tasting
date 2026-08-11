@@ -33,6 +33,26 @@ public class FastEndpointsExtensionsTests
     }
 
     [Fact]
+    public async Task WriteErrorResponseAsync_MapsUnauthorizedServiceException()
+    {
+        var context = new DefaultHttpContext();
+        context.Response.Body = new MemoryStream();
+        context.Features.Set<IExceptionHandlerFeature>(new ExceptionHandlerFeature
+        {
+            Error = new UnauthorizedException("Invalid email or password.")
+        });
+
+        await FastEndPointsExtensions.WriteErrorResponseAsync(context);
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        context.Response.Body.Position = 0;
+        using var reader = new StreamReader(context.Response.Body);
+        var body = await reader.ReadToEndAsync();
+        Assert.Contains("\"code\":\"unauthorized\"", body);
+        Assert.Contains("\"message\":\"Invalid email or password.\"", body);
+    }
+
+    [Fact]
     public async Task CorrelationIdMiddleware_UsesHeaderAndSetsResponseHeader()
     {
         var context = new DefaultHttpContext();

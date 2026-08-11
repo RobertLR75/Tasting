@@ -1,4 +1,5 @@
 using SharedLibrary.Services.Interfaces;
+using SharedLibrary.Services.Exceptions;
 using Tasting.Api.Infrastructure.Identity;
 using Tasting.Api.Infrastructure.Security;
 
@@ -14,14 +15,11 @@ public sealed class LoginHandler(
         var user = await userRepository.GetByEmailNormalizedAsync(
             request.Email.ToLowerInvariant(), ct);
 
-        if (user is null || !user.IsActive)
+        if (user is null ||
+            !user.IsActive ||
+            !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            throw new UnauthorizedAccessException("Invalid email or password.");
-        }
-
-        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-        {
-            throw new UnauthorizedAccessException("Invalid email or password.");
+            throw new UnauthorizedException("Invalid email or password.");
         }
 
         var token = tokenService.GenerateToken(user);

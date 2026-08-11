@@ -10,6 +10,7 @@ import {
 } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import { login } from '../api/authApi';
+import { ApiError } from '../api/apiClient';
 import { useAuth } from '../auth/AuthContext';
 
 export function LoginPage() {
@@ -29,8 +30,12 @@ export function LoginPage() {
       const session = await login({ email, password });
       auth.login(session);
       history.replace('/arrangements');
-    } catch {
-      setError('Ugyldig e-post eller passord.');
+    } catch (requestError) {
+      setError(requestError instanceof ApiError
+        ? requestError.code === 'unauthorized'
+          ? 'Ugyldig e-post eller passord.'
+          : requestError.message
+        : 'Kunne ikke kontakte serveren. Prøv igjen.');
     } finally {
       setSubmitting(false);
     }

@@ -5,7 +5,7 @@ export interface ParticipantSession {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  role: 'Admin' | 'User';
 }
 
 export interface SessionStorage {
@@ -20,7 +20,7 @@ export function restoreSession(storage: SessionStorage): ParticipantSession | nu
 
   try {
     const session = JSON.parse(stored) as Partial<ParticipantSession>;
-    if (!session.token || !session.email || !session.role) {
+    if (!isCompleteSession(session) || isExpired(session.token)) {
       storage.removeItem(SESSION_STORAGE_KEY);
       return null;
     }
@@ -29,6 +29,26 @@ export function restoreSession(storage: SessionStorage): ParticipantSession | nu
   } catch {
     storage.removeItem(SESSION_STORAGE_KEY);
     return null;
+  }
+}
+
+function isCompleteSession(session: Partial<ParticipantSession>): session is ParticipantSession {
+  return typeof session.token === 'string' && session.token.length > 0
+    && typeof session.email === 'string' && session.email.length > 0
+    && typeof session.firstName === 'string' && session.firstName.length > 0
+    && typeof session.lastName === 'string' && session.lastName.length > 0
+    && (session.role === 'Admin' || session.role === 'User');
+}
+
+function isExpired(token: string): boolean {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return true;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const claims = JSON.parse(atob(normalized)) as { exp?: unknown };
+    return typeof claims.exp !== 'number' || claims.exp * 1000 <= Date.now();
+  } catch {
+    return true;
   }
 }
 
