@@ -2,11 +2,11 @@ using System.Security.Claims;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SharedLibrary.Services.Interfaces;
-using RatingEntity = Tasting.Api.Infrastructure.Rating.Entities.Rating;
+using DomainRating = Tasting.Api.Features.Rating.Domain.Rating;
 
 namespace Tasting.Api.Features.Rating.Ratings.SubmitRating;
 
-public class SubmitRatingEndpoint(IRequestHandler<SubmitRatingCommand, RatingEntity> handler)
+public class SubmitRatingEndpoint(IRequestHandler<SubmitRatingCommand, DomainRating> handler)
     : Endpoint<SubmitRatingRequest, SubmitRatingResponse>
 {
     public override void Configure()

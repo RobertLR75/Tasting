@@ -5,7 +5,7 @@ namespace Tasting.Api.Infrastructure.Rating;
 
 public class RatingDbContext(DbContextOptions<RatingDbContext> options) : DbContext(options)
 {
-    public DbSet<Entities.Rating> Ratings { get; set; } = null!;
+    public DbSet<RatingRecord> Ratings { get; set; } = null!;
     public DbSet<Result> Results { get; set; } = null!;
     public DbSet<ResultParticipant> ResultParticipants { get; set; } = null!;
 
@@ -18,7 +18,7 @@ public class RatingDbContext(DbContextOptions<RatingDbContext> options) : DbCont
 
     private static void ConfigureRating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Entities.Rating>(b =>
+        modelBuilder.Entity<RatingRecord>(b =>
         {
             b.ToTable("ratings");
             b.HasKey(r => r.Id);
@@ -34,8 +34,6 @@ public class RatingDbContext(DbContextOptions<RatingDbContext> options) : DbCont
             b.Property(r => r.RowVersion).HasColumnName("row_version").IsConcurrencyToken().IsRequired();
             b.Property(r => r.CreatedAt).HasColumnName("created_at_utc").IsRequired();
             b.Property(r => r.UpdatedAt).HasColumnName("updated_at_utc");
-
-            // Remove the UseXminAsConcurrencyToken() call — using explicit row_version column instead
 
             b.HasIndex(r => new { r.ArrangementId, r.ParticipantId, r.BeerId })
                 .IsUnique()

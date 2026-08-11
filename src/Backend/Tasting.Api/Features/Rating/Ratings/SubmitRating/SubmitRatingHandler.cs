@@ -1,18 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Contracts;
 using Tasting.Api.Infrastructure.Rating;
 using Tasting.Api.Infrastructure.Rating.Entities;
-using RatingEntity = Tasting.Api.Infrastructure.Rating.Entities.Rating;
+using DomainRating = Tasting.Api.Features.Rating.Domain.Rating;
 
 namespace Tasting.Api.Features.Rating.Ratings.SubmitRating;
 
 public class SubmitRatingHandler(RatingDbContext db, IArrangementService arrangementService)
-    : IRequestHandler<SubmitRatingCommand, RatingEntity>
+    : IRequestHandler<SubmitRatingCommand, DomainRating>
 {
-    public async Task<RatingEntity> HandleAsync(SubmitRatingCommand command, CancellationToken ct = default)
+    public async Task<DomainRating> HandleAsync(SubmitRatingCommand command, CancellationToken ct = default)
     {
         // 1. Verify arrangement is in Started status
         var status = await arrangementService.GetStatusAsync(command.ArrangementId, ct);
@@ -47,10 +48,10 @@ public class SubmitRatingHandler(RatingDbContext db, IArrangementService arrange
                      && r.BeerId == command.BeerId,
                 ct);
 
-        RatingEntity rating;
+        RatingRecord rating;
         if (existing is null)
         {
-            rating = new RatingEntity
+            rating = new RatingRecord
             {
                 Id = Guid.CreateVersion7(),
                 ArrangementId = command.ArrangementId,
@@ -84,16 +85,21 @@ public class SubmitRatingHandler(RatingDbContext db, IArrangementService arrange
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConflictException("A concurrent update was detected on the rating. Please retry.");
+            throw new ConflictException("A concurrent update was detected on the rating. Reload fresh data before trying again.");
+        }
+        catch (DbUpdateException exception) when (
+            exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            throw new ConflictException("A concurrent rating submission was detected. Reload fresh data before trying again.");
         }
 
         // 9 & 10. Auto-create/update Result and ResultParticipant (ADR-0011)
         await UpdateResultAsync(command, rating, ct);
 
-        return rating;
+        return rating.ToDomain();
     }
 
-    private async Task UpdateResultAsync(SubmitRatingCommand command, RatingEntity rating, CancellationToken ct)
+    private async Task UpdateResultAsync(SubmitRatingCommand command, RatingRecord rating, CancellationToken ct)
     {
         // Load all current ratings for this arrangement+beer to recalculate aggregates
         var allRatings = await db.Ratings
