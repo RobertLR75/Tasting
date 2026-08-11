@@ -42,9 +42,37 @@ public abstract class DapperBase<T>(DbConnection connection)
 
     protected static PropertyInfo[] GetMappedProperties()
     {
+        static Type Underlying(Type type) => Nullable.GetUnderlyingType(type) ?? type;
+
+        static bool IsSimpleScalar(Type type)
+            => type.IsEnum
+               || type == typeof(string)
+               || type == typeof(Guid)
+               || type == typeof(DateTimeOffset)
+               || type == typeof(DateTime)
+               || type == typeof(bool)
+               || type == typeof(int)
+               || type == typeof(long)
+               || type == typeof(decimal)
+               || type == typeof(double)
+               || type == typeof(float)
+               || type == typeof(short)
+               || type == typeof(byte);
+
+        static bool IsNavigationEntity(Type type)
+            => type != typeof(string)
+               && type.IsClass
+               && type != typeof(object)
+               && typeof(IEntityId).IsAssignableFrom(type);
+
         return typeof(T)
             .GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .Where(p => p.CanRead && p.CanWrite && p.GetIndexParameters().Length == 0)
+            .Where(p =>
+            {
+                var underlying = Underlying(p.PropertyType);
+                return IsSimpleScalar(underlying) && !IsNavigationEntity(underlying);
+            })
             .ToArray();
     }
 
