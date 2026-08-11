@@ -17,7 +17,7 @@ public interface IArrangementsApiClient
     Task<ArrangementDto?> CompleteAsync(Guid id);
     Task<ArrangementDto?> AddBeerAsync(Guid id, AddBeerToArrangementRequest request);
     Task<bool> RemoveBeerAsync(Guid id, Guid beerId);
-    Task<ArrangementParticipantDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request);
+    Task<ArrangementDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request);
     Task<bool> RemoveParticipantAsync(Guid id, Guid userId);
 }
 
@@ -111,8 +111,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/beers", request);
-            await EnsureSuccessWithApiMessageAsync(response);
+            await EnsureArrangementSuccessAsync(id, response);
             return await response.Content.ReadFromJsonAsync<ArrangementDto>();
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -125,7 +129,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/arrangements/{id}/beers/{beerId}");
-            return response.IsSuccessStatusCode;
+            await EnsureArrangementSuccessAsync(id, response);
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -133,13 +142,17 @@ public class ArrangementsApiClient : IArrangementsApiClient
         }
     }
 
-    public async Task<ArrangementParticipantDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request)
+    public async Task<ArrangementDto?> AddParticipantAsync(Guid id, AddParticipantToArrangementRequest request)
     {
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/participants", request);
-            await EnsureSuccessWithApiMessageAsync(response);
-            return await response.Content.ReadFromJsonAsync<ArrangementParticipantDto>();
+            await EnsureArrangementSuccessAsync(id, response);
+            return await response.Content.ReadFromJsonAsync<ArrangementDto>();
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -152,7 +165,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/arrangements/{id}/participants/{userId}");
-            return response.IsSuccessStatusCode;
+            await EnsureArrangementSuccessAsync(id, response);
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

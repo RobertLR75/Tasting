@@ -80,7 +80,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
 
         var response = await client.PostAsJsonAsync(
             $"/api/v1/arrangements/{arrangementId}/participants",
-            new { userId, rowVersion = 0 });
+            new { userId });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
@@ -134,7 +134,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
 
         var response = await client.PostAsJsonAsync(
             $"/api/v1/arrangements/{arrangementId}/participants",
-            new { userId, rowVersion = 0 });
+            new { userId });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
@@ -161,7 +161,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
 
         var response = await client.PostAsJsonAsync(
             $"/api/v1/arrangements/{arrangementId}/beers",
-            new { beerId = Guid.NewGuid(), rowVersion = 0 });
+            new { beerId = Guid.NewGuid() });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
@@ -748,7 +748,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var request = new HttpRequestMessage(
             HttpMethod.Delete,
             $"/api/v1/arrangements/{arrangementId}/participants/{userId}");
-        request.Content = JsonContent.Create(new { rowVersion = 0 });
+        request.Content = JsonContent.Create(new { });
 
         var response = await client.SendAsync(request);
 
@@ -790,7 +790,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var request = new HttpRequestMessage(
             HttpMethod.Delete,
             $"/api/v1/arrangements/{arrangementId}/participants/{userId}");
-        request.Content = JsonContent.Create(new { rowVersion = 0 });
+        request.Content = JsonContent.Create(new { });
 
         var response = await client.SendAsync(request);
 
@@ -836,7 +836,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var request = new HttpRequestMessage(
             HttpMethod.Delete,
             $"/api/v1/arrangements/{arrangementId}/beers/{beerId}");
-        request.Content = JsonContent.Create(new { rowVersion = 0 });
+        request.Content = JsonContent.Create(new { });
 
         var response = await client.SendAsync(request);
 
@@ -880,7 +880,7 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var request = new HttpRequestMessage(
             HttpMethod.Delete,
             $"/api/v1/arrangements/{arrangementId}/beers/{beerId}");
-        request.Content = JsonContent.Create(new { rowVersion = 0 });
+        request.Content = JsonContent.Create(new { });
 
         var response = await client.SendAsync(request);
 

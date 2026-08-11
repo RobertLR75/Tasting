@@ -168,6 +168,65 @@ public sealed class HttpClientAuthorizationTests
         Assert.Equal("Winner", exception.FreshArrangement?.Name);
     }
 
+    [Theory]
+    [InlineData("add-beer")]
+    [InlineData("remove-beer")]
+    [InlineData("add-participant")]
+    [InlineData("remove-participant")]
+    public async Task ArrangementsApiClient_MembershipMutations_UseSharedConflictHandling(string mutation)
+    {
+        var arrangementId = Guid.NewGuid();
+        var memberId = Guid.NewGuid();
+        var innerHandler = new CapturingHandler(HttpStatusCode.Conflict)
+        {
+            ResponseContent = """{"code":"conflict","message":"Membership changed concurrently.","correlationId":"test-123"}""",
+            SecondStatusCode = HttpStatusCode.OK,
+            SecondResponseContent = $$"""{"id":"{{arrangementId}}","name":"Fresh","description":null,"status":0,"createdAt":"2026-08-06T00:00:00Z","updatedAt":null,"beers":[],"participants":[]}"""
+        };
+        var client = new ArrangementsApiClient(new HttpClient(innerHandler)
+        {
+            BaseAddress = new Uri("https://api.example.test")
+        });
+
+        Task mutationTask = mutation switch
+        {
+            "add-beer" => client.AddBeerAsync(arrangementId, new AddBeerToArrangementRequest(memberId)),
+            "remove-beer" => client.RemoveBeerAsync(arrangementId, memberId),
+            "add-participant" => client.AddParticipantAsync(arrangementId, new AddParticipantToArrangementRequest(memberId)),
+            "remove-participant" => client.RemoveParticipantAsync(arrangementId, memberId),
+            _ => throw new ArgumentOutOfRangeException(nameof(mutation))
+        };
+
+        var exception = await Assert.ThrowsAsync<ArrangementConflictException>(() => mutationTask);
+
+        Assert.Equal("Membership changed concurrently.", exception.Message);
+        Assert.Equal("Fresh", exception.FreshArrangement?.Name);
+        Assert.Equal(2, innerHandler.RequestCount);
+    }
+
+    [Fact]
+    public async Task ArrangementsApiClient_AddParticipantAsync_ReadsArrangementResponse()
+    {
+        var arrangementId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var innerHandler = new CapturingHandler(HttpStatusCode.Created)
+        {
+            ResponseContent = $$"""{"id":"{{arrangementId}}","name":"Participants","description":null,"status":0,"createdAt":"2026-08-06T00:00:00Z","updatedAt":null,"beers":[],"participants":[{"id":"{{Guid.NewGuid()}}","userId":"{{userId}}","userName":"Test Participant"}]}"""
+        };
+        var client = new ArrangementsApiClient(new HttpClient(innerHandler)
+        {
+            BaseAddress = new Uri("https://api.example.test")
+        });
+
+        var result = await client.AddParticipantAsync(
+            arrangementId,
+            new AddParticipantToArrangementRequest(userId));
+
+        Assert.NotNull(result);
+        Assert.Equal(arrangementId, result.Id);
+        Assert.Contains(result.Participants, participant => participant.UserId == userId);
+    }
+
     private sealed class CapturingHandler(HttpStatusCode statusCode) : HttpMessageHandler
     {
         public HttpRequestMessage? Request { get; private set; }
@@ -176,6 +235,7 @@ public sealed class HttpClientAuthorizationTests
         public HttpStatusCode? SecondStatusCode { get; set; }
         public string? SecondResponseContent { get; set; }
         private int _requestCount;
+        public int RequestCount => _requestCount;
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
