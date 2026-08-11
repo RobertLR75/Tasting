@@ -1,10 +1,10 @@
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
-using Tasting.Api.Infrastructure.Identity;
 
 namespace Tasting.Api.Features.Identity.Users.CreateUser;
 
-public sealed class CreateUserHandler(IUserRepository userRepository) : IRequestHandler<CreateUserCommand, User>
+public sealed class CreateUserHandler(IPersistenceService<User> users) : IRequestHandler<CreateUserCommand, User>
 {
     public async Task<User> HandleAsync(CreateUserCommand request, CancellationToken ct = default)
     {
@@ -16,7 +16,8 @@ public sealed class CreateUserHandler(IUserRepository userRepository) : IRequest
         var email = request.Email.Trim();
         var normalizedEmail = email.ToLowerInvariant();
 
-        var existing = await userRepository.GetByEmailNormalizedAsync(normalizedEmail, ct);
+        var existing = (await users.SearchAsync(new UserByNormalizedEmailSpecification(normalizedEmail), ct))
+            .SingleOrDefault();
         if (existing is not null)
         {
             throw new ConflictException("En bruker med denne e-posten finnes allerede.");
@@ -33,7 +34,7 @@ public sealed class CreateUserHandler(IUserRepository userRepository) : IRequest
             IsActive = true
         };
 
-        await userRepository.CreateAsync(user, ct);
+        await users.CreateAsync(user, ct);
         return user;
     }
 }
