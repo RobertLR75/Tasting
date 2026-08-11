@@ -62,6 +62,20 @@ public sealed class AdminFrontendPagesTests
         Assert.Contains("IArrangementsApiClient", arrangementsPageMarkup);
     }
 
+    [Theory]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/AddBeersPage.razor", "Failed to add beer: {ex.Message}")]
+    [InlineData("src/Frontend/Tasting.Admin/Features/Arrangement/Pages/AddParticipantsPage.razor", "Failed to add participant: {ex.Message}")]
+    public void MembershipPages_ShowSharedApiError_WithoutConcurrencyState(
+        string relativePath,
+        string expectedError)
+    {
+        var markup = File.ReadAllText(GetProjectFile(relativePath));
+
+        Assert.Contains(expectedError, markup);
+        Assert.DoesNotContain("RowVersion", markup, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("ArrangementConflictException", markup);
+    }
+
     [Fact]
     public void StatusChangePage_ShouldUseMudSelect_NotMudTextField_ForStatusField()
     {

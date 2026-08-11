@@ -111,8 +111,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/beers", request);
-            await EnsureSuccessWithApiMessageAsync(response);
+            await EnsureArrangementSuccessAsync(id, response);
             return await response.Content.ReadFromJsonAsync<ArrangementDto>();
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -125,7 +129,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/arrangements/{id}/beers/{beerId}");
-            return response.IsSuccessStatusCode;
+            await EnsureArrangementSuccessAsync(id, response);
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -138,8 +147,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"/api/v1/arrangements/{id}/participants", request);
-            await EnsureSuccessWithApiMessageAsync(response);
+            await EnsureArrangementSuccessAsync(id, response);
             return await response.Content.ReadFromJsonAsync<ArrangementParticipantDto>();
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -152,7 +165,12 @@ public class ArrangementsApiClient : IArrangementsApiClient
         try
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/arrangements/{id}/participants/{userId}");
-            return response.IsSuccessStatusCode;
+            await EnsureArrangementSuccessAsync(id, response);
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
