@@ -5,3 +5,7 @@ riderModule.iml
 /_ReSharper.Caches/
 .DS_Store
 .idea/
+node_modules/
+dist/
+playwright-report/
+test-results/
