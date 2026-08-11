@@ -13,6 +13,8 @@ using Tasting.Api.Infrastructure.Migrations;
 using Tasting.Api.Infrastructure.Rating;
 
 var builder = WebApplication.CreateBuilder(args);
+var persistenceConfiguration = PersistenceConfigurationSelector.Select(builder.Configuration);
+builder.Services.AddSingleton(persistenceConfiguration);
 
 builder.AddServiceDefaults();
 builder.ConfigureFastEndPoints();
@@ -86,15 +88,12 @@ builder.Services.AddCatalog(builder.Configuration);
 builder.Services.AddArrangement(builder.Configuration);
 
 var app = builder.Build();
+app.Logger.LogInformation("Using {PersistenceProvider} persistence provider", persistenceConfiguration.Provider);
 
 app.UseExceptionHandler(errorApp => errorApp.Run(FastEndPointsExtensions.WriteErrorResponseAsync));
 
-var connectionString = app.Configuration.GetConnectionString("TastingDb");
-if (!string.IsNullOrWhiteSpace(connectionString))
-{
-    var tags = app.Environment.IsDevelopment() ? new[] { "Development" } : Array.Empty<string>();
-    new TastingMigrationService().MigrateUp(connectionString, tags);
-}
+var tags = app.Environment.IsDevelopment() ? new[] { "Development" } : Array.Empty<string>();
+new TastingMigrationService().MigrateUp(persistenceConfiguration.ConnectionString, tags);
 
 app.UseCors();
 app.UseAuthentication();

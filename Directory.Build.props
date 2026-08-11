@@ -6,6 +6,6 @@
     <Threshold>90</Threshold>
     <ThresholdType>line</ThresholdType>
     <ThresholdStat>total</ThresholdStat>
-    <ExcludeByFile>**/obj/**/*.cs;**/bin/**/*.cs;**/Migrations/**/*.cs;**/Properties/AssemblyInfo.cs</ExcludeByFile>
+    <ExcludeByFile>**/obj/**/*.cs;**/bin/**/*.cs;**/Migrations/**/*.cs;**/Properties/AssemblyInfo.cs;**/Configuration/AuthSettings.cs;**/Configuration/IdentityClientSettings.cs;**/Configuration/OpenIdConnectSettings.cs;**/Configuration/ServiceSettings.cs</ExcludeByFile>
   </PropertyGroup>
 </Project>
