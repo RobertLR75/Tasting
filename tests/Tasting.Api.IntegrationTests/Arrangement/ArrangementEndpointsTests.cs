@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using SharedLibrary.FastEndpoints.Contracts;
 using Tasting.Api.Features.Arrangement;
 using Tasting.Api.Features.Arrangement.Domain;
 using Tasting.Api.Features.Catalog.Domain;
@@ -841,6 +842,101 @@ public sealed class ArrangementEndpointsTests : IClassFixture<ArrangementApiFact
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ParticipantDiscovery_ReturnsOnlyActiveArrangements()
+    {
+        var activeId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db => db.Arrangements.AddRange(
+            new ArrangementEntity { Id = activeId, Name = "Visible", Status = ArrangementStatus.Active, CreatedAt = DateTimeOffset.UtcNow },
+            new ArrangementEntity { Id = Guid.NewGuid(), Name = "Hidden", Status = ArrangementStatus.Created, CreatedAt = DateTimeOffset.UtcNow }));
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.GetAsync("/api/v1/participant/arrangements");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<
+            Tasting.Api.Features.Arrangement.Participants.ListVisibleArrangements.ListVisibleArrangementsResponse>();
+        Assert.NotNull(body);
+        Assert.Contains(body.Items, item => item.Id == activeId);
+        Assert.DoesNotContain(body.Items, item => item.Name == "Hidden");
+    }
+
+    [Fact]
+    public async Task ParticipantSelfJoin_UsesAuthenticatedUser_AndRejectsDuplicate()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db => db.Arrangements.Add(new ArrangementEntity
+        {
+            Id = arrangementId, Name = "Joinable", Status = ArrangementStatus.Active, CreatedAt = DateTimeOffset.UtcNow
+        }));
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var joined = await client.PostAsync($"/api/v1/participant/arrangements/{arrangementId}/join", null);
+        var duplicate = await client.PostAsync($"/api/v1/participant/arrangements/{arrangementId}/join", null);
+
+        Assert.Equal(HttpStatusCode.OK, joined.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
+        var error = await duplicate.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(error);
+        Assert.Equal("conflict", error.Code);
+        Assert.False(string.IsNullOrWhiteSpace(error.Message));
+        Assert.False(string.IsNullOrWhiteSpace(error.CorrelationId));
+    }
+
+    [Fact]
+    public async Task ParticipantSelfJoin_ReturnsUnifiedNotFoundError_WhenArrangementDoesNotExist()
+    {
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.PostAsync($"/api/v1/participant/arrangements/{Guid.NewGuid()}/join", null);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(error);
+        Assert.Equal("not_found", error.Code);
+        Assert.False(string.IsNullOrWhiteSpace(error.Message));
+        Assert.False(string.IsNullOrWhiteSpace(error.CorrelationId));
+    }
+
+    [Fact]
+    public async Task ParticipantSelfJoin_ReturnsUnifiedConflictError_WhenArrangementIsNotActive()
+    {
+        var arrangementId = Guid.NewGuid();
+        await _factory.SeedArrangementAsync(db => db.Arrangements.Add(new ArrangementEntity
+        {
+            Id = arrangementId, Name = "Not active", Status = ArrangementStatus.Created, CreatedAt = DateTimeOffset.UtcNow
+        }));
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "user");
+
+        var response = await client.PostAsync($"/api/v1/participant/arrangements/{arrangementId}/join", null);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var error = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+        Assert.NotNull(error);
+        Assert.Equal("conflict", error.Code);
+        Assert.False(string.IsNullOrWhiteSpace(error.CorrelationId));
+    }
+
+    [Fact]
+    public async Task ParticipantDiscovery_ReturnsUnauthorized_WhenNotAuthenticated()
+    {
+        using var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/participant/arrangements");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
