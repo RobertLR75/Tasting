@@ -299,10 +299,12 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
             }
 
             var member = TryGetRootMember(binary.Left);
+            var lowerCase = IsLowerCaseRootMember(binary.Left);
             var valueExpression = binary.Right;
             if (member is null)
             {
                 member = TryGetRootMember(binary.Right);
+                lowerCase = IsLowerCaseRootMember(binary.Right);
                 valueExpression = binary.Left;
                 sqlOperator = Reverse(sqlOperator);
             }
@@ -313,7 +315,8 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
             }
 
             var value = Evaluate(valueExpression);
-            var column = $"root.{Quote(columnName(member.Member.Name))}";
+            var mappedColumn = $"root.{Quote(columnName(member.Member.Name))}";
+            var column = lowerCase ? $"LOWER({mappedColumn})" : mappedColumn;
             if (value is null)
             {
                 return sqlOperator switch
@@ -362,8 +365,34 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
         private static MemberExpression? TryGetRootMember(Expression expression)
         {
             expression = StripConvert(expression);
-            return expression is MemberExpression member && IsRootMember(member) ? member : null;
+            if (expression is MemberExpression member && IsRootMember(member))
+            {
+                return member;
+            }
+
+            return expression is MethodCallExpression
+                {
+                    Method.Name: nameof(string.ToLower),
+                    Method.DeclaringType: not null,
+                    Arguments.Count: 0,
+                    Object: MemberExpression lowerMember
+                }
+                && lowerMember.Type == typeof(string)
+                && IsRootMember(lowerMember)
+                    ? lowerMember
+                    : null;
         }
+
+        private static bool IsLowerCaseRootMember(Expression expression)
+            => StripConvert(expression) is MethodCallExpression
+            {
+                Method.Name: nameof(string.ToLower),
+                Method.DeclaringType: not null,
+                Arguments.Count: 0,
+                Object: MemberExpression member
+            }
+            && member.Type == typeof(string)
+            && IsRootMember(member);
 
         private static bool IsRootMember(MemberExpression member)
             => member.Expression is not null && StripConvert(member.Expression) is ParameterExpression;

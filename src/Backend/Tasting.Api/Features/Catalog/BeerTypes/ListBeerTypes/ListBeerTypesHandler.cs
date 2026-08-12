@@ -1,20 +1,18 @@
-using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Catalog.BeerTypes;
-using Tasting.Api.Infrastructure.Catalog;
+using Tasting.Api.Features.Catalog.Domain;
 
 namespace Tasting.Api.Features.Catalog.BeerTypes.ListBeerTypes;
 
-public sealed class ListBeerTypesHandler(CatalogDbContext dbContext) : IRequestHandler<ListBeerTypesQuery, ListBeerTypesResponse>
+public sealed class ListBeerTypesHandler(IPersistenceService<BeerType> types) : IRequestHandler<ListBeerTypesQuery, ListBeerTypesResponse>
 {
     public async Task<ListBeerTypesResponse> HandleAsync(ListBeerTypesQuery request, CancellationToken ct = default)
     {
-        var items = await dbContext.BeerTypes
-            .AsNoTracking()
-            .OrderBy(x => x.Name)
-            .Select(x => new BeerTypeSummaryResponse(x.Id, x.Name, x.CreatedAt, x.UpdatedAt))
-            .ToListAsync(ct);
-
-        return new ListBeerTypesResponse { BeerTypes = items };
+        var items = await types.SearchAsync(new AllBeerTypesSpecification(), ct);
+        return new ListBeerTypesResponse
+        {
+            BeerTypes = items.Select(x => new BeerTypeSummaryResponse(x.Id, x.Name, x.CreatedAt, x.UpdatedAt)).ToList()
+        };
     }
 }

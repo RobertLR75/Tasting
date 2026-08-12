@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tasting.Api.Features.Catalog.BeerStyles;
 using Tasting.Api.Features.Catalog.BeerStyles.ListBeerStyles;
@@ -18,11 +19,12 @@ using Xunit;
 
 namespace Tasting.Api.IntegrationTests.Catalog;
 
-public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>, IAsyncLifetime
+public abstract class CatalogEndpointsContractTests<TFactory> : IClassFixture<TFactory>, IAsyncLifetime
+    where TFactory : TastingApiFactory
 {
     private readonly TastingApiFactory _factory;
 
-    public CatalogEndpointsTests(TastingApiFactory factory)
+    protected CatalogEndpointsContractTests(TFactory factory)
     {
         _factory = factory;
     }
@@ -154,6 +156,56 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>, IA
         var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
         Assert.False((await db.Breweries.FindAsync(breweryId))!.IsActive);
         Assert.All(db.Beers.Where(x => x.BreweryId == breweryId).ToList(), beer => Assert.False(beer.IsActive));
+    }
+
+    [Fact]
+    public async Task DeactivateBrewery_RollsBackBrewery_WhenBeerPropagationFails()
+    {
+        var breweryId = Guid.NewGuid();
+        var styleId = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        await _factory.SeedAsync(db =>
+        {
+            db.BeerStyles.Add(new BeerStyle { Id = styleId, Name = $"Rollback Style {Guid.NewGuid():N}", CreatedAt = DateTimeOffset.UtcNow });
+            db.BeerTypes.Add(new BeerType { Id = typeId, Name = $"Rollback Type {Guid.NewGuid():N}", CreatedAt = DateTimeOffset.UtcNow });
+            db.Breweries.Add(new Brewery { Id = breweryId, Name = $"Rollback Brewery {Guid.NewGuid():N}", IsActive = true, CreatedAt = DateTimeOffset.UtcNow });
+            db.Beers.Add(new Beer { Id = Guid.NewGuid(), BreweryId = breweryId, BeerStyleId = styleId, BeerTypeId = typeId, Name = "Rollback Beer", IsActive = true, CreatedAt = DateTimeOffset.UtcNow });
+        });
+
+        await _factory.ExecuteSqlAsync("""
+            CREATE OR REPLACE FUNCTION fail_catalog_beer_deactivation() RETURNS trigger AS $$
+            BEGIN
+                IF OLD.is_active = TRUE AND NEW.is_active = FALSE THEN
+                    RAISE EXCEPTION 'forced catalog rollback';
+                END IF;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            CREATE TRIGGER fail_catalog_beer_deactivation
+            BEFORE UPDATE ON beers
+            FOR EACH ROW EXECUTE FUNCTION fail_catalog_beer_deactivation();
+            """);
+
+        try
+        {
+            using var client = CreateAuthorizedClient("admin");
+            var response = await client.PatchAsync(
+                $"/api/v1/breweries/{breweryId}/deactivate",
+                new StringContent("{}", Encoding.UTF8, "application/json"));
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+            Assert.True((await db.Breweries.FindAsync(breweryId))!.IsActive);
+            Assert.True((await db.Beers.SingleAsync(x => x.BreweryId == breweryId)).IsActive);
+        }
+        finally
+        {
+            await _factory.ExecuteSqlAsync("""
+                DROP TRIGGER IF EXISTS fail_catalog_beer_deactivation ON beers;
+                DROP FUNCTION IF EXISTS fail_catalog_beer_deactivation();
+                """);
+        }
     }
 
     [Fact]
@@ -410,3 +462,11 @@ public sealed class CatalogEndpointsTests : IClassFixture<TastingApiFactory>, IA
         return beerId;
     }
 }
+
+public sealed class EntityFrameworkCatalogEndpointsTests(TastingApiFactory factory)
+    : CatalogEndpointsContractTests<TastingApiFactory>(factory);
+
+public sealed class DapperTastingApiFactory() : TastingApiFactory("Dapper");
+
+public sealed class DapperCatalogEndpointsTests(DapperTastingApiFactory factory)
+    : CatalogEndpointsContractTests<DapperTastingApiFactory>(factory);

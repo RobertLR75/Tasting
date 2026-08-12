@@ -42,7 +42,7 @@ public sealed class ListBeersHandlerTests
             });
         await dbContext.SaveChangesAsync();
 
-        var sut = new ListBeersHandler(dbContext);
+        var sut = new ListBeersHandler(new CatalogTestPersistence(dbContext).Beers);
 
         var result = await sut.HandleAsync(new ListBeersQuery(false), CancellationToken.None);
 

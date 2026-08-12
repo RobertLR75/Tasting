@@ -1,42 +1,36 @@
-using Microsoft.EntityFrameworkCore;
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Catalog.Domain;
-using Tasting.Api.Infrastructure.Catalog;
 
 namespace Tasting.Api.Features.Catalog.Breweries.DeactivateBrewery;
 
-public sealed class DeactivateBreweryHandler(CatalogDbContext dbContext) : IRequestHandler<DeactivateBreweryCommand, Brewery>
+public sealed class DeactivateBreweryHandler(
+    IPersistenceService<Brewery> breweries,
+    IPersistenceService<Beer> beers,
+    ICatalogDeactivationService catalog) : IRequestHandler<DeactivateBreweryCommand, Brewery>
 {
     public async Task<Brewery> HandleAsync(DeactivateBreweryCommand request, CancellationToken ct = default)
     {
-        var brewery = await dbContext.Breweries
-            .FirstOrDefaultAsync(x => x.Id == request.Id, ct)
+        var brewery = await breweries.GetAsync(request.Id, ct)
             ?? throw new ServiceNotFoundException($"Brewery '{request.Id}' was not found.");
+        var activeBeers = await beers.SearchAsync(new ActiveBeersForBrewerySpecification(request.Id), ct);
 
-        if (!brewery.IsActive && !await dbContext.Beers.AnyAsync(x => x.BreweryId == request.Id && x.IsActive, ct))
+        if (!brewery.IsActive && activeBeers.Count == 0)
         {
             return brewery;
         }
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
-
+        var updatedAt = DateTimeOffset.UtcNow;
         brewery.IsActive = false;
-        brewery.UpdatedAt = DateTimeOffset.UtcNow;
-
-        var beers = await dbContext.Beers
-            .Where(x => x.BreweryId == request.Id && x.IsActive)
-            .ToListAsync(ct);
-
-        foreach (var beer in beers)
+        brewery.UpdatedAt = updatedAt;
+        foreach (var beer in activeBeers)
         {
             beer.IsActive = false;
-            beer.UpdatedAt = DateTimeOffset.UtcNow;
+            beer.UpdatedAt = updatedAt;
         }
 
-        await dbContext.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-
+        await catalog.SaveDeactivationAsync(brewery, activeBeers, ct);
         return brewery;
     }
 }

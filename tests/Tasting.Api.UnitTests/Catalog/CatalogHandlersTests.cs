@@ -26,7 +26,7 @@ public sealed class CatalogHandlersTests
     public async Task GetBrewery_Throws_WhenMissing()
     {
         await using var db = CreateDbContext();
-        var sut = new GetBreweryHandler(db);
+        var sut = new GetBreweryHandler(new CatalogTestPersistence(db).Breweries);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() => sut.HandleAsync(new(Guid.NewGuid()), CancellationToken.None));
     }
@@ -40,7 +40,7 @@ public sealed class CatalogHandlersTests
             new Brewery { Id = Guid.NewGuid(), Name = "Inactive", IsActive = false, CreatedAt = DateTimeOffset.UtcNow });
         await db.SaveChangesAsync();
 
-        var sut = new ListBreweriesHandler(db);
+        var sut = new ListBreweriesHandler(new CatalogTestPersistence(db).Breweries);
         var result = await sut.HandleAsync(new(false), CancellationToken.None);
 
         Assert.Single(result.Breweries);
@@ -55,7 +55,7 @@ public sealed class CatalogHandlersTests
         db.Breweries.Add(brewery);
         await db.SaveChangesAsync();
 
-        var sut = new UpdateBreweryHandler(db);
+        var sut = new UpdateBreweryHandler(new CatalogTestPersistence(db).Breweries);
         var result = await sut.HandleAsync(new(brewery.Id, "After", false), CancellationToken.None);
 
         Assert.Equal("After", result.Name);
@@ -74,7 +74,8 @@ public sealed class CatalogHandlersTests
         db.AddRange(brewery, style, type, beer);
         await db.SaveChangesAsync();
 
-        var sut = new DeactivateBreweryHandler(db);
+        var persistence = new CatalogTestPersistence(db);
+        var sut = new DeactivateBreweryHandler(persistence.Breweries, persistence.Beers, persistence.Deactivation);
         await sut.HandleAsync(new(brewery.Id), CancellationToken.None);
 
         Assert.False((await db.Breweries.FindAsync(brewery.Id))!.IsActive);
@@ -85,7 +86,7 @@ public sealed class CatalogHandlersTests
     public async Task GetBeer_Throws_WhenMissing()
     {
         await using var db = CreateDbContext();
-        var sut = new GetBeerHandler(db);
+        var sut = new GetBeerHandler(new CatalogTestPersistence(db).Beers);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() => sut.HandleAsync(new(Guid.NewGuid()), CancellationToken.None));
     }
@@ -102,7 +103,8 @@ public sealed class CatalogHandlersTests
         db.AddRange(style, type, brewery, beer, other);
         await db.SaveChangesAsync();
 
-        var sut = new UpdateBeerHandler(db);
+        var persistence = new CatalogTestPersistence(db);
+        var sut = new UpdateBeerHandler(persistence.Breweries, persistence.Styles, persistence.Types, persistence.Beers);
 
         await Assert.ThrowsAsync<ConflictException>(() => sut.HandleAsync(
             new UpdateBeerCommand(beer.Id, brewery.Id, style.Id, type.Id, "TWO", true),
@@ -120,7 +122,7 @@ public sealed class CatalogHandlersTests
         db.AddRange(style, type, brewery, beer);
         await db.SaveChangesAsync();
 
-        var sut = new DeactivateBeerHandler(db);
+        var sut = new DeactivateBeerHandler(new CatalogTestPersistence(db).Beers);
         await sut.HandleAsync(new(beer.Id), CancellationToken.None);
 
         Assert.False((await db.Beers.FindAsync(beer.Id))!.IsActive);
@@ -130,7 +132,7 @@ public sealed class CatalogHandlersTests
     public async Task CreateBeerStyle_CreatesEntity()
     {
         await using var db = CreateDbContext();
-        var sut = new CreateBeerStyleHandler(db);
+        var sut = new CreateBeerStyleHandler(new CatalogTestPersistence(db).Styles);
 
         var result = await sut.HandleAsync(new("Sour"), CancellationToken.None);
 
@@ -141,7 +143,7 @@ public sealed class CatalogHandlersTests
     public async Task GetBeerStyle_Throws_WhenMissing()
     {
         await using var db = CreateDbContext();
-        var sut = new GetBeerStyleHandler(db);
+        var sut = new GetBeerStyleHandler(new CatalogTestPersistence(db).Styles);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() => sut.HandleAsync(new(Guid.NewGuid()), CancellationToken.None));
     }
@@ -155,7 +157,7 @@ public sealed class CatalogHandlersTests
             new BeerStyle { Id = Guid.NewGuid(), Name = "Amber", CreatedAt = DateTimeOffset.UtcNow });
         await db.SaveChangesAsync();
 
-        var sut = new ListBeerStylesHandler(db);
+        var sut = new ListBeerStylesHandler(new CatalogTestPersistence(db).Styles);
         var result = await sut.HandleAsync(new(), CancellationToken.None);
 
         Assert.Equal(["Amber", "Stout"], result.BeerStyles.Select(x => x.Name).ToArray());
@@ -165,7 +167,7 @@ public sealed class CatalogHandlersTests
     public async Task CreateBeerType_CreatesEntity()
     {
         await using var db = CreateDbContext();
-        var sut = new CreateBeerTypeHandler(db);
+        var sut = new CreateBeerTypeHandler(new CatalogTestPersistence(db).Types);
 
         var result = await sut.HandleAsync(new("Lager"), CancellationToken.None);
 
@@ -176,7 +178,7 @@ public sealed class CatalogHandlersTests
     public async Task GetBeerType_Throws_WhenMissing()
     {
         await using var db = CreateDbContext();
-        var sut = new GetBeerTypeHandler(db);
+        var sut = new GetBeerTypeHandler(new CatalogTestPersistence(db).Types);
 
         await Assert.ThrowsAsync<ServiceNotFoundException>(() => sut.HandleAsync(new(Guid.NewGuid()), CancellationToken.None));
     }
@@ -190,7 +192,7 @@ public sealed class CatalogHandlersTests
             new BeerType { Id = Guid.NewGuid(), Name = "Ale", CreatedAt = DateTimeOffset.UtcNow });
         await db.SaveChangesAsync();
 
-        var sut = new ListBeerTypesHandler(db);
+        var sut = new ListBeerTypesHandler(new CatalogTestPersistence(db).Types);
         var result = await sut.HandleAsync(new(), CancellationToken.None);
 
         Assert.Equal(["Ale", "Stout"], result.BeerTypes.Select(x => x.Name).ToArray());
