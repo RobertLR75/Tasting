@@ -45,8 +45,8 @@ internal sealed class ProviderNeutralUserStore : IPersistenceService<User>
     {
         IEnumerable<User> result = specification switch
         {
-            UserByNormalizedEmailSpecification byEmail => Users.Where(user =>
-                byEmail.WhereExpressions.Single().Filter.Compile()(user)),
+            UserByNormalizedEmailSpecification byEmail =>
+                Users.Where(byEmail.WhereExpressions.Single().Filter.Compile()),
             ActiveAdminsSpecification => Users.Where(user => user.IsActive && user.Role == UserRole.Admin),
             ListUsersSpecification list => ApplyListSpecification(list),
             _ => throw new NotSupportedException($"Unsupported test specification {specification.GetType().Name}.")
