@@ -138,6 +138,18 @@ public class PostgreSqlSpecificationTranslatorTests
     }
 
     [Fact]
+    public void Translate_SupportsCaseInsensitiveStringCriteriaThroughToLower()
+    {
+        var specification = new PersistenceSpecification<TestEntity>();
+        specification.Query.Where(entity => entity.Name.ToLower().Contains("mixed"));
+
+        var query = CreateTranslator().Translate(specification);
+
+        Assert.Contains("LOWER(root.\"name\") LIKE @p0", query.Sql, StringComparison.Ordinal);
+        Assert.Equal("%mixed%", query.Parameters.Get<string>("p0"));
+    }
+
+    [Fact]
     public void Translate_SupportsScalarAndMemberInitializerProjections()
     {
         var scalar = new ScalarProjectionSpecification();

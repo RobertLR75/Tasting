@@ -1,14 +1,14 @@
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Exceptions;
 using SharedLibrary.Services.Interfaces;
-using Tasting.Api.Infrastructure.Identity;
 
 namespace Tasting.Api.Features.Identity.Users.DeactivateUser;
 
-public sealed class DeactivateUserHandler(IUserRepository userRepository) : IRequestHandler<DeactivateUserCommand, User>
+public sealed class DeactivateUserHandler(IPersistenceService<User> users) : IRequestHandler<DeactivateUserCommand, User>
 {
     public async Task<User> HandleAsync(DeactivateUserCommand request, CancellationToken ct = default)
     {
-        var user = await userRepository.GetAsync(request.Id, ct);
+        var user = await users.GetAsync(request.Id, ct);
         if (user is null)
         {
             throw new ServiceNotFoundException("Bruker ble ikke funnet.");
@@ -20,14 +20,14 @@ public sealed class DeactivateUserHandler(IUserRepository userRepository) : IReq
         }
 
         if (user.Role == UserRole.Admin &&
-            await userRepository.CountActiveAdminsAsync(ct) == 1)
+            (await users.SearchAsync(new ActiveAdminsSpecification(), ct)).Count == 1)
         {
             throw new ConflictException("The last active admin cannot be deactivated.");
         }
 
         user.IsActive = false;
         user.UpdatedAt = DateTimeOffset.UtcNow;
-        await userRepository.UpdateAsync(user, ct);
+        await users.UpdateAsync(user, ct);
         return user;
     }
 }

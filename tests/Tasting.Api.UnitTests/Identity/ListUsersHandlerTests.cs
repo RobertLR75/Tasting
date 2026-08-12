@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Features.Identity.Users.ListUsers;
 
@@ -34,7 +33,7 @@ public sealed class ListUsersHandlerTests
         });
         await fixture.Context.SaveChangesAsync();
 
-        var handler = new ListUsersHandler(fixture.Context);
+        var handler = new ListUsersHandler(fixture.Repository);
         var result = await handler.HandleAsync(new ListUsersQuery());
 
         Assert.Equal(2, result.Users.Count);
@@ -47,7 +46,7 @@ public sealed class ListUsersHandlerTests
     {
         using var fixture = new HandlerTestFixture();
 
-        var handler = new ListUsersHandler(fixture.Context);
+        var handler = new ListUsersHandler(fixture.Repository);
         var result = await handler.HandleAsync(new ListUsersQuery());
 
         Assert.Empty(result.Users);
@@ -82,7 +81,7 @@ public sealed class ListUsersHandlerTests
             });
         await fixture.Context.SaveChangesAsync();
 
-        var handler = new ListUsersHandler(fixture.Context);
+        var handler = new ListUsersHandler(fixture.Repository);
         var result = await handler.HandleAsync(new ListUsersQuery("BOB"));
 
         Assert.Single(result.Users);

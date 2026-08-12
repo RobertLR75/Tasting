@@ -1,11 +1,13 @@
 using System.Security.Claims;
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Exceptions;
+using Tasting.Api.Features.Identity.Users;
 
 namespace Tasting.Api.Infrastructure.Identity;
 
 public sealed class ActiveUserMiddleware(RequestDelegate next)
 {
-    public async Task InvokeAsync(HttpContext context, IUserRepository userRepository)
+    public async Task InvokeAsync(HttpContext context, IPersistenceService<User> users)
     {
         if (context.User.Identity?.IsAuthenticated != true)
         {
@@ -20,7 +22,7 @@ public sealed class ActiveUserMiddleware(RequestDelegate next)
             throw new ForbiddenException("Authenticated user mangler gyldig user id-claim.");
         }
 
-        var user = await userRepository.GetAsync(userId, context.RequestAborted);
+        var user = await users.GetAsync(userId, context.RequestAborted);
         if (user is null || !user.IsActive)
         {
             throw new ForbiddenException("Brukeren er inaktiv.");

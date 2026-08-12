@@ -27,7 +27,7 @@ public abstract class PostgresSqlDapperStorageBase<T>(DbConnection connection) :
 
         await Connection.ExecuteAsync(new CommandDefinition(
             sql,
-            entity,
+            GetCommandParameters(entity),
             transaction: transaction,
             cancellationToken: cancellationToken));
     }
@@ -56,7 +56,7 @@ public abstract class PostgresSqlDapperStorageBase<T>(DbConnection connection) :
 
         await Connection.ExecuteAsync(new CommandDefinition(
             sql,
-            entity,
+            GetCommandParameters(entity),
             transaction: transaction,
             cancellationToken: cancellationToken));
     }
@@ -169,6 +169,8 @@ public abstract class PostgresSqlDapperStorageBase<T>(DbConnection connection) :
     }
 
     protected virtual IReadOnlyCollection<DapperRelationship> Relationships => [];
+
+    protected virtual object GetCommandParameters(T entity) => entity;
 
     private PostgreSqlSpecificationTranslator<T> CreateSpecificationTranslator()
         => new(

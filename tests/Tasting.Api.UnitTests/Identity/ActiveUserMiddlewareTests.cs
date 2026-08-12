@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using NSubstitute;
+using SharedLibrary.Interfaces;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Identity;
 
@@ -25,7 +26,7 @@ public sealed class ActiveUserMiddlewareTests
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString())
             ], "test"))
         };
-        var userRepository = Substitute.For<IUserRepository>();
+        var userRepository = Substitute.For<IPersistenceService<User>>();
         userRepository.GetAsync(userId, Arg.Any<CancellationToken>())
             .Returns(new User
             {
