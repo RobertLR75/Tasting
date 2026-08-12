@@ -5,16 +5,29 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Infrastructure.Catalog;
 using Tasting.Api.Infrastructure.Identity;
 
 namespace Tasting.Api.IntegrationTests.Infrastructure;
 
-public sealed class TastingApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class TastingApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgresContainerFixture _postgres = new();
+    private readonly string _provider;
     private string? _previousConnectionString;
+
+    public TastingApiFactory() : this("EntityFramework")
+    {
+    }
+
+    protected TastingApiFactory(string provider)
+    {
+        _provider = provider;
+    }
+
+    public string ConnectionString => _postgres.ConnectionString;
 
     public async Task InitializeAsync()
     {
@@ -37,7 +50,8 @@ public sealed class TastingApiFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:TastingDb"] = _postgres.ConnectionString
+                ["ConnectionStrings:TastingDb"] = _postgres.ConnectionString,
+                ["Persistence:Provider"] = _provider
             });
         });
         builder.ConfigureServices(services =>
@@ -102,5 +116,14 @@ public sealed class TastingApiFactory : WebApplicationFactory<Program>, IAsyncLi
         var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
         configure(db);
         await db.SaveChangesAsync();
+    }
+
+    public async Task ExecuteSqlAsync(string sql)
+    {
+        await using var connection = new NpgsqlConnection(_postgres.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        await command.ExecuteNonQueryAsync();
     }
 }

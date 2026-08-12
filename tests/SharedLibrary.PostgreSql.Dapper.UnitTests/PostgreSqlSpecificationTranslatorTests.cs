@@ -83,17 +83,15 @@ public class PostgreSqlSpecificationTranslatorTests
     }
 
     [Fact]
-    public void Translate_RejectsUnsupportedConstructDeterministically()
+    public void Translate_SupportsCaseInsensitiveEquality()
     {
         var specification = new EntitySpecification();
         specification.Query.Where(entity => entity.Name.ToLower() == "ipa");
 
-        var exception = Assert.Throws<NotSupportedException>(() =>
-            CreateTranslator().Translate(specification));
+        var result = CreateTranslator().Translate(specification);
 
-        Assert.StartsWith(
-            "The persistence specification contains an unsupported construct.",
-            exception.Message);
+        Assert.Contains("LOWER(root.\"name\") = @p0", result.Sql);
+        Assert.Equal("ipa", result.Parameters.Get<string>("p0"));
     }
 
     [Fact]

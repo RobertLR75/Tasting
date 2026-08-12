@@ -1,10 +1,10 @@
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Catalog.Domain;
-using Tasting.Api.Infrastructure.Catalog;
 
 namespace Tasting.Api.Features.Catalog.BeerTypes.CreateBeerType;
 
-public sealed class CreateBeerTypeHandler(CatalogDbContext dbContext) : IRequestHandler<CreateBeerTypeCommand, BeerType>
+public sealed class CreateBeerTypeHandler(IPersistenceService<BeerType> types) : IRequestHandler<CreateBeerTypeCommand, BeerType>
 {
     public async Task<BeerType> HandleAsync(CreateBeerTypeCommand request, CancellationToken ct = default)
     {
@@ -15,8 +15,7 @@ public sealed class CreateBeerTypeHandler(CatalogDbContext dbContext) : IRequest
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        dbContext.BeerTypes.Add(entity);
-        await dbContext.SaveChangesAsync(ct);
+        await types.CreateAsync(entity, ct);
         return entity;
     }
 }
