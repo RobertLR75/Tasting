@@ -12,7 +12,10 @@ public sealed class UserByNormalizedEmailSpecification : PersistenceSpecificatio
 public sealed class ActiveAdminsSpecification : PersistenceSpecification<User>
 {
     public ActiveAdminsSpecification()
-        => Query.Where(user => user.IsActive && user.Role == UserRole.Admin);
+    {
+        Query.Where(user => user.IsActive && user.Role == UserRole.Admin);
+        Query.Take(2);
+    }
 }
 
 public sealed class ListUsersSpecification : PersistenceSpecification<User>
