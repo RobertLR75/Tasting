@@ -8,12 +8,12 @@ using Tasting.Api.Features.Identity.Users.ListUsers;
 
 namespace Tasting.Api.IntegrationTests.Identity;
 
-public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
+public abstract class IdentityEndpointsTests
 {
     private readonly HttpClient _client;
     private readonly IdentityApiFactory _factory;
 
-    public IdentityEndpointsTests(IdentityApiFactory factory)
+    protected IdentityEndpointsTests(IdentityApiFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
@@ -42,6 +42,28 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var response = await _client.SendAsync(message);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Create_user_returns_conflict_for_case_insensitive_duplicate_email()
+    {
+        using var message = new HttpRequestMessage(HttpMethod.Post, "/api/v1/users")
+        {
+            Content = JsonContent.Create(new
+            {
+                Email = "USER@TASTING.NO",
+                FirstName = "Duplicate",
+                LastName = "User",
+                Password = "password123",
+                Role = UserRole.User
+            })
+        };
+        message.Headers.Add(TestAuthHandler.UserIdHeader, IdentityApiFactory.AdminId.ToString());
+        message.Headers.Add(TestAuthHandler.RoleHeader, UserRole.Admin.ToString());
+
+        var response = await _client.SendAsync(message);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]
@@ -119,6 +141,10 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         var response = await _client.SendAsync(message);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<UserResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(UserRole.User.ToString(), body.Role);
+        Assert.Equal("Active", body.Status);
     }
 
     [Fact]
@@ -306,3 +332,14 @@ public sealed class IdentityEndpointsTests : IClassFixture<IdentityApiFactory>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }
+
+[Collection("Identity provider matrix")]
+public sealed class EntityFrameworkIdentityEndpointsTests(EntityFrameworkIdentityApiFactory factory)
+    : IdentityEndpointsTests(factory), IClassFixture<EntityFrameworkIdentityApiFactory>;
+
+[Collection("Identity provider matrix")]
+public sealed class DapperIdentityEndpointsTests(DapperIdentityApiFactory factory)
+    : IdentityEndpointsTests(factory), IClassFixture<DapperIdentityApiFactory>;
+
+[CollectionDefinition("Identity provider matrix", DisableParallelization = true)]
+public sealed class IdentityProviderMatrixCollection;

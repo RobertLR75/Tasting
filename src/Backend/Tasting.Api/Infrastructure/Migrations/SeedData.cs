@@ -1,5 +1,4 @@
-using Tasting.Api.Infrastructure.Identity;
-using SharedLibrary.Services.Interfaces;
+using SharedLibrary.Interfaces;
 using Tasting.Api.Features.Identity.Users;
 
 namespace Tasting.Api.Infrastructure.Migrations;
@@ -10,7 +9,7 @@ namespace Tasting.Api.Infrastructure.Migrations;
 /// </summary>
 public static class SeedData
 {
-    public static void SeedTestUsers(IUserRepository userRepository)
+    public static void SeedTestUsers(IPersistenceService<User> users)
     {
         var adminUser = new User
         {

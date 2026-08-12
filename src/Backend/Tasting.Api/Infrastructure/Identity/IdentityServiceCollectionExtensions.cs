@@ -1,4 +1,9 @@
+using System.Data.Common;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using SharedLibrary.Configuration;
+using SharedLibrary.Interfaces;
 using SharedLibrary.Services.Interfaces;
 using Tasting.Api.Features.Identity.Users;
 using Tasting.Api.Features.Identity.Users.CreateUser;
@@ -13,22 +18,27 @@ namespace Tasting.Api.Infrastructure.Identity;
 
 public static class IdentityServiceCollectionExtensions
 {
-    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIdentityInfrastructure(
+        this IServiceCollection services,
+        PersistenceConfiguration persistence)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(persistence);
+        // Arrangement still reads UsersDbContext until its own persistence ticket is implemented.
+        // Identity itself is always resolved through the globally selected persistence service below.
+        services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(persistence.ConnectionString));
 
-        var connectionString = configuration.GetConnectionString("TastingDb");
-        if (!string.IsNullOrWhiteSpace(connectionString))
+        if (persistence.Provider == PersistenceProvider.EntityFramework)
         {
-            services.AddDbContext<UsersDbContext>(options => options.UseNpgsql(connectionString));
+            services.AddScoped<IPersistenceService<User>, EntityFrameworkUserPersistence>();
         }
         else
         {
-            services.AddDbContext<UsersDbContext>(options => options.UseInMemoryDatabase("tasting-api"));
+            SqlMapper.AddTypeHandler(new UserRoleTypeHandler());
+            services.AddScoped<DbConnection>(_ => new NpgsqlConnection(persistence.ConnectionString));
+            services.AddScoped<IPersistenceService<User>, DapperUserPersistence>();
         }
 
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITokenService, JwtTokenService>();
 
         services.AddScoped<IRequestHandler<CreateUserCommand, User>, CreateUserHandler>();

@@ -329,7 +329,7 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
 
         private string WriteMethodCall(MethodCallExpression call)
         {
-            if (call.Object is MemberExpression member && IsRootMember(member) &&
+            if (TryGetStringMember(call.Object, out var member, out var lowerCase) &&
                 call.Method.DeclaringType == typeof(string) && call.Arguments.Count == 1)
             {
                 var raw = Convert.ToString(Evaluate(call.Arguments[0])) ?? string.Empty;
@@ -346,10 +346,46 @@ public sealed class PostgreSqlSpecificationTranslator<T>(
                     _ => throw Unsupported($"String method '{call.Method.Name}' is not supported.")
                 };
 
-                return $"root.{Quote(columnName(member.Member.Name))} LIKE {AddParameter(pattern)} ESCAPE '\\'";
+                var column = $"root.{Quote(columnName(member.Member.Name))}";
+                if (lowerCase)
+                {
+                    column = $"LOWER({column})";
+                }
+
+                return $"{column} LIKE {AddParameter(pattern)} ESCAPE '\\'";
             }
 
             throw Unsupported($"Method call '{call.Method.Name}' is not supported.");
+        }
+
+        private static bool TryGetStringMember(
+            Expression? expression,
+            out MemberExpression member,
+            out bool lowerCase)
+        {
+            expression = expression is null ? null : StripConvert(expression);
+            if (expression is MemberExpression direct && IsRootMember(direct))
+            {
+                member = direct;
+                lowerCase = false;
+                return true;
+            }
+
+            if (expression is MethodCallExpression
+                {
+                    Method.Name: nameof(string.ToLower),
+                    Arguments.Count: 0,
+                    Object: MemberExpression lowered
+                } && IsRootMember(lowered))
+            {
+                member = lowered;
+                lowerCase = true;
+                return true;
+            }
+
+            member = null!;
+            lowerCase = false;
+            return false;
         }
 
         private string AddParameter(object value)

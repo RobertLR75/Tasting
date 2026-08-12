@@ -19,7 +19,7 @@ builder.Services.AddSingleton(persistenceConfiguration);
 builder.AddServiceDefaults();
 builder.ConfigureFastEndPoints();
 builder.ConfigureServices();
-builder.Services.AddIdentityInfrastructure(builder.Configuration);
+builder.Services.AddIdentityInfrastructure(persistenceConfiguration);
 builder.AddRatingServices();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
